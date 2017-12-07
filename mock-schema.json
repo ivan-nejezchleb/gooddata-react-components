@@ -34,6 +34,15 @@
             "Purple",
             "Salmon"
           ]
+        },
+        {
+          "identifier": "5",
+          "title": "Popularity",
+          "elements": [
+            "low",
+            "medium",
+            "high"
+          ]
         }
       ]
     }

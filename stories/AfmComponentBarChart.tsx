@@ -4,7 +4,8 @@ import { storiesOf } from '@storybook/react';
 import { BarChart } from '../src/components/afm/BarChart';
 import {
     AFM_ONE_MEASURE_ONE_ATTRIBUTE,
-    AFM_TWO_MEASURES_ONE_ATTRIBUTE
+    AFM_TWO_MEASURES_ONE_ATTRIBUTE,
+    AFM_ONE_MEASURE_TWO_ATTRIBUTES
 } from './data/afmComponentProps';
 import { CUSTOM_COLORS } from './data/colors';
 import { onErrorHandler } from './mocks';
@@ -28,6 +29,38 @@ storiesOf('AFM components - BarChart', module)
                 projectId="storybook"
                 afm={AFM_ONE_MEASURE_ONE_ATTRIBUTE}
                 config={{ colors: CUSTOM_COLORS }}
+                onError={onErrorHandler}
+            />
+        </div>
+    )).add('stackBy', () => (
+        <div style={{ width: 800, height: 400 }}>
+            <BarChart
+                projectId="storybook"
+                afm={AFM_ONE_MEASURE_ONE_ATTRIBUTE}
+                resultSpec={{
+                    dimensions: [{
+                        itemIdentifiers: ['a1']
+                    },
+                    {
+                        itemIdentifiers: ['measureGroup']
+                    }]
+                }}
+                onError={onErrorHandler}
+            />
+        </div>
+    )).add('viewBy + stackBy', () => (
+        <div style={{ width: 800, height: 400 }}>
+            <BarChart
+                projectId="storybook"
+                afm={AFM_ONE_MEASURE_TWO_ATTRIBUTES}
+                resultSpec={{
+                    dimensions: [{
+                        itemIdentifiers: ['a1']
+                    },
+                    {
+                        itemIdentifiers: ['a2', 'measureGroup']
+                    }]
+                }}
                 onError={onErrorHandler}
             />
         </div>

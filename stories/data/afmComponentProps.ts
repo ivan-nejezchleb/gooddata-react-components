@@ -29,6 +29,13 @@ const ATTRIBUTE_COLOURS: AFM.IAttribute = {
     }
 };
 
+const ATTRIBUTE_POPULARITY: AFM.IAttribute = {
+    localIdentifier: 'a2',
+    displayForm: {
+        uri: '/gdc/md/storybook/obj/5.df'
+    }
+};
+
 export const AFM_ONE_MEASURE_ONE_ATTRIBUTE: AFM.IAfm = {
     measures: [
         MEASURE_1
@@ -51,6 +58,16 @@ export const AFM_TWO_MEASURES_ONE_ATTRIBUTE: AFM.IAfm = {
         MEASURE_2
     ],
     attributes: [
+        ATTRIBUTE_COLOURS
+    ]
+};
+
+export const AFM_ONE_MEASURE_TWO_ATTRIBUTES: AFM.IAfm = {
+    measures: [
+        MEASURE_1
+    ],
+    attributes: [
+        ATTRIBUTE_POPULARITY,
         ATTRIBUTE_COLOURS
     ]
 };
