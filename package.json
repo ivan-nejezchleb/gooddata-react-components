@@ -15,7 +15,7 @@
   "devDependencies": {
     "@gooddata/mock-js": "1.0.0-alpha3",
     "@gooddata/test-storybook": "1.1.0",
-    "@gooddata/typings": "1.0.0",
+    "@gooddata/typings": "2.0.0-alpha0",
     "@storybook/addon-actions": "3.2.18",
     "@storybook/addon-options": "3.2.6",
     "@storybook/react": "3.2.6",
@@ -43,10 +43,11 @@
     "ts-jest": "21.2.4",
     "ts-loader": "2.3.7",
     "tslint-config-gooddata": "0.0.8",
-    "typescript": "2.3.3"
+    "typescript": "2.3.3",
+    "utility-types": "^1.1.0"
   },
   "dependencies": {
-    "@gooddata/data-layer": "7.0.0-alpha0",
+    "@gooddata/data-layer": "7.0.0-alpha1",
     "@gooddata/goodstrap": "54.0.0-alpha2",
     "@gooddata/indigo-visualizations": "^1.3.2",
     "@gooddata/js-utils": "^0.9.0",
@@ -68,8 +69,9 @@
   "scripts": {
     "test": "jest --watch",
     "build-css": "node-sass --importer node_modules/node-sass-magic-importer/dist/cli.js -o styles/css styles/scss/main.scss",
-    "dev": "rm -rf dist && tsc --watch && cp -rf src/translations/ dist/translations/",
+    "dev": "rm -rf dist && tsc --watch -p tsconfig.dev.json && cp -rf src/translations/ dist/translations/",
     "prepublish": "rm -rf dist && tsc && cp -rf src/translations/ dist/translations/ && yarn build-css",
+    "prepublish-dev": "rm -rf dist && tsc -p tsconfig.dev.json && cp -rf src/translations/ dist/translations/ && yarn build-css",
     "run-tslint": "tslint -p tsconfig.base.json",
     "tslint": "yarn run-tslint -t verbose $npm_package_config_tslint",
     "tslint-ci": "mkdir -p ./ci/results && yarn run-tslint -t checkstyle -o ./ci/results/tslint-results.xml $npm_package_config_tslint",
