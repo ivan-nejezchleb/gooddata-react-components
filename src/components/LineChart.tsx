@@ -77,7 +77,7 @@ export function LineChart(props: ILineChartProps): JSX.Element {
         <Component
             {...props}
             projectId={props.projectId}
-            afm={convertBucketsToAFM(buckets)}
+            afm={convertBucketsToAFM(buckets, props.filters)}
             resultSpec={getStackingResultSpec(buckets)}
         />
     );

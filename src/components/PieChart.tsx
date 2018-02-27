@@ -53,7 +53,7 @@ export function PieChart(props: IPieChartProps): JSX.Element {
         <Component
             {...props}
             projectId={props.projectId}
-            afm={convertBucketsToAFM(buckets)}
+            afm={convertBucketsToAFM(buckets, props.filters)}
         />
     );
 }
