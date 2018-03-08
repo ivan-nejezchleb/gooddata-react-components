@@ -16,7 +16,7 @@ export const MEASURE_1: VisualizationObject.IMeasure = {
 export const MEASURE_1_WITH_ALIAS: VisualizationObject.IMeasure = {
     measure: {
         ...MEASURE_1.measure,
-        alias: 'My alias'
+        alias: 'My measure alias'
     }
 };
 
@@ -45,7 +45,7 @@ export const ATTRIBUTE_1: VisualizationObject.IVisualizationAttribute = {
 export const ATTRIBUTE_1_WITH_ALIAS: VisualizationObject.IVisualizationAttribute = {
     visualizationAttribute: {
         ...ATTRIBUTE_1.visualizationAttribute,
-        alias: 'My alias'
+        alias: 'My attribute alias'
     }
 };
 
