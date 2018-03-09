@@ -4,7 +4,7 @@ import CatalogHelper from './helpers/CatalogHelper';
 import { isEmptyResult } from './helpers/errorHandlers';
 import { BaseChart, ILegendConfig, IBaseChartProps } from './components/core/base/BaseChart';
 import { Table as CoreTable } from './components/core/Table';
-import { Headline } from './components/core/Headline';
+import { Headline as CoreHeadline } from './components/core/Headline';
 import { ICommonVisualizationProps } from './components/core/base/VisualizationLoadingHOC';
 import { Kpi } from './components/simple/Kpi';
 import { Visualization, VisualizationEnvironment } from './components/uri/Visualization';
@@ -26,11 +26,11 @@ import { ColumnChart } from './components/ColumnChart';
 import { LineChart } from './components/LineChart';
 import { PieChart } from './components/PieChart';
 import { Table } from './components/Table';
-
+import { Headline } from './components/Headline';
 
 const CoreComponents = {
     BaseChart,
-    Headline,
+    Headline: CoreHeadline,
     Table: CoreTable
 };
 
@@ -48,6 +48,7 @@ export {
     ErrorStates,
     Execute,
     generateDimensions,
+    Headline,
     IBaseChartProps,
     ICommonVisualizationProps,
     IDataSourceProviderInjectedProps,

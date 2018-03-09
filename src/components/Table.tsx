@@ -44,7 +44,7 @@ export function Table(props: ITableProps): JSX.Element {
 
     return (
         <Component
-            projectId={props.projectId}
+            {...props}
             afm={convertBucketsToAFM(buckets, props.filters)}
             resultSpec={{ dimensions: getTableDimensions(buckets) }}
             totalsEditAllowed={props.totalsEditAllowed ? props.totalsEditAllowed : false}
