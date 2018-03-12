@@ -23,7 +23,7 @@ export class SortableTable
         pushData: noop
     };
 
-    constructor(props: ITableProps) {
+    constructor(props: ITableProps & IDataSourceProviderInjectedProps) {
         super(props);
 
         this.state = {
