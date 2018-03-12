@@ -27,6 +27,7 @@ import { LineChart } from './components/LineChart';
 import { PieChart } from './components/PieChart';
 import { Table } from './components/Table';
 import { Headline } from './components/Headline';
+import { AreaChart } from './components/AreaChart';
 
 const CoreComponents = {
     BaseChart,
@@ -36,6 +37,7 @@ const CoreComponents = {
 
 export {
     AfmComponents,
+    AreaChart,
     AttributeElements,
     AttributeFilter,
     BarChart,
