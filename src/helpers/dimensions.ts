@@ -144,6 +144,41 @@ function getLineDimensions(mdObject: VisualizationObject.IVisualizationObjectCon
     ];
 }
 
+function getAreaDimensions(mdObject: VisualizationObject.IVisualizationObjectContent): AFM.IDimension[] {
+    const view: VisualizationObject.IBucket = mdObject.buckets
+        .find(bucket => bucket.localIdentifier === VIEW);
+
+    const stack: VisualizationObject.IBucket = mdObject.buckets
+        .find(bucket => bucket.localIdentifier === STACK);
+    const hasNoStacks = !stack || !stack.items || stack.items.length === 0;
+
+    if (hasNoStacks) {
+        return [
+            {
+                itemIdentifiers: [MEASUREGROUP]
+            },
+            {
+                itemIdentifiers: (view && view.items || [])
+                    .map((t: VisualizationObject.IVisualizationAttribute) =>
+                        t.visualizationAttribute.localIdentifier)
+            }
+        ];
+    }
+
+    return [
+        {
+            itemIdentifiers: (stack && stack.items || [])
+                .map((s: VisualizationObject.IVisualizationAttribute) =>
+                    s.visualizationAttribute.localIdentifier)
+        },
+        {
+            itemIdentifiers: ((view && view.items || [])
+                .map((t: VisualizationObject.IVisualizationAttribute) => t.visualizationAttribute.localIdentifier))
+                .concat([MEASUREGROUP])
+        }
+    ];
+}
+
 function getHeadlinesDimensions(): AFM.IDimension[] {
     return [
         { itemIdentifiers: ['measureGroup'] }
@@ -162,7 +197,6 @@ export function generateDimensions(
         case VisualizationTypes.PIE: {
             return getPieDimensions(mdObject);
         }
-        case VisualizationTypes.AREA:
         case VisualizationTypes.LINE: {
             return getLineDimensions(mdObject);
         }
@@ -173,6 +207,8 @@ export function generateDimensions(
         case VisualizationTypes.HEADLINE: {
             return getHeadlinesDimensions();
         }
+        case VisualizationTypes.AREA:
+            return getAreaDimensions(mdObject);
     }
     return [];
 }
