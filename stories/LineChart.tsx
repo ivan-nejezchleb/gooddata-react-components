@@ -14,7 +14,7 @@ storiesOf('LineChart', module)
                 <LineChart
                     projectId="storybook"
                     measures={[MEASURE_1, MEASURE_2]}
-                    attributes={[ATTRIBUTE_1]}
+                    trendBy={ATTRIBUTE_1}
                     onError={onErrorHandler}
                 />
             </div>
@@ -26,7 +26,7 @@ storiesOf('LineChart', module)
                 <LineChart
                     projectId="storybook"
                     measures={[MEASURE_1, MEASURE_2]}
-                    attributes={[ATTRIBUTE_1_WITH_ALIAS]}
+                    trendBy={ATTRIBUTE_1_WITH_ALIAS}
                     onError={onErrorHandler}
                 />
             </div>
@@ -38,7 +38,7 @@ storiesOf('LineChart', module)
                 <LineChart
                     projectId="storybook"
                     measures={[MEASURE_1]}
-                    attributes={[ATTRIBUTE_1]}
+                    trendBy={ATTRIBUTE_1}
                     config={{ colors: CUSTOM_COLORS }}
                     onError={onErrorHandler}
                 />
