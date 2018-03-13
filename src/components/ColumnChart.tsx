@@ -1,20 +1,26 @@
 import * as React from 'react';
+import { omit } from 'lodash';
+import { Subtract } from 'utility-types';
 import { VisualizationObject, AFM } from '@gooddata/typings';
 
-import { ColumnChart as CoreColumnChart } from './core/ColumnChart';
+import { ColumnChart as AfmColumnChart } from './afm/ColumnChart';
 import { ICommonChartProps } from './core/base/BaseChart';
-import { dataSourceProvider } from './afm/DataSourceProvider';
 import { convertBucketsToAFM } from '../helpers/conversion';
 import { generateStackedDimensions } from '../helpers/dimensions';
 import { isStackedChart } from '../helpers/stacks';
 
-export interface IColumnChartProps extends ICommonChartProps {
-    projectId: string;
+export interface IColumnChartBucketProps {
     measures: VisualizationObject.BucketItem[];
-    attributes?: VisualizationObject.IVisualizationAttribute[];
-    stacks?: VisualizationObject.IVisualizationAttribute[];
+    viewBy?: VisualizationObject.IVisualizationAttribute;
+    stackBy?: VisualizationObject.IVisualizationAttribute;
     filters?: VisualizationObject.VisualizationObjectFilter[];
 }
+
+export interface IColumnChartProps extends ICommonChartProps, IColumnChartBucketProps {
+    projectId: string;
+}
+
+type IColumnChartNonBucketProps = Subtract<IColumnChartProps, IColumnChartBucketProps>;
 
 function generateDefaultDimensions(afm: AFM.IAfm): AFM.IDimension[] {
     return [
@@ -40,8 +46,6 @@ function getStackingResultSpec(buckets: VisualizationObject.IBucket[]): AFM.IRes
 }
 
 export function ColumnChart(props: IColumnChartProps): JSX.Element {
-    const Component = dataSourceProvider(CoreColumnChart, generateDefaultDimensions);
-
     const buckets: VisualizationObject.IBucket[] = [
         {
             localIdentifier: 'measures',
@@ -49,17 +53,20 @@ export function ColumnChart(props: IColumnChartProps): JSX.Element {
         },
         {
             localIdentifier: 'attributes',
-            items: props.attributes || []
+            items: props.viewBy ? [props.viewBy] : []
         },
         {
             localIdentifier: 'stacks',
-            items: props.stacks || []
+            items: props.stackBy ? [props.stackBy] : []
         }
     ];
 
+    const newProps
+        = omit<IColumnChartProps, IColumnChartNonBucketProps>(props, ['measures', 'viewBy', 'stackBy', 'filters']);
+
     return (
-        <Component
-            {...props}
+        <AfmColumnChart
+            {...newProps}
             projectId={props.projectId}
             afm={convertBucketsToAFM(buckets, props.filters)}
             resultSpec={getStackingResultSpec(buckets)}

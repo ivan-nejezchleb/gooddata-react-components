@@ -1,57 +1,42 @@
 import * as React from 'react';
-import { VisualizationObject, AFM } from '@gooddata/typings';
+import { omit } from 'lodash';
+import { Subtract } from 'utility-types';
+import { VisualizationObject } from '@gooddata/typings';
 
-import { PieChart as CorePieChart } from './core/PieChart';
+import { PieChart as AfmPieChart } from './afm/PieChart';
 import { ICommonChartProps } from './core/base/BaseChart';
-import { dataSourceProvider } from './afm/DataSourceProvider';
 import { convertBucketsToAFM } from '../helpers/conversion';
 
-export interface IPieChartProps extends ICommonChartProps {
-    projectId: string;
+export interface IPieChartBucketProps {
     measures: VisualizationObject.BucketItem[];
-    attributes?: VisualizationObject.IVisualizationAttribute[];
+    viewBy?: VisualizationObject.IVisualizationAttribute;
     filters?: VisualizationObject.VisualizationObjectFilter[];
 }
 
-function generateDefaultDimensions(afm: AFM.IAfm): AFM.IDimension[] {
-    if ((afm.attributes || []).length === 0) {
-        return [
-            {
-                itemIdentifiers: []
-            },
-            {
-                itemIdentifiers: ['measureGroup']
-            }
-        ];
-    }
-
-    return [
-        {
-            itemIdentifiers: ['measureGroup']
-        },
-        {
-            itemIdentifiers: (afm.attributes || []).map(a => a.localIdentifier)
-        }
-    ];
+export interface IPieChartProps extends ICommonChartProps, IPieChartBucketProps {
+    projectId: string;
 }
 
-export function PieChart(props: IPieChartProps): JSX.Element {
-    const Component = dataSourceProvider(CorePieChart, generateDefaultDimensions);
+type IPieChartNonBucketProps = Subtract<IPieChartProps, IPieChartBucketProps>;
 
+export function PieChart(props: IPieChartProps): JSX.Element {
     const buckets: VisualizationObject.IBucket[] = [
         {
             localIdentifier: 'measures',
             items: props.measures || []
         },
         {
-            localIdentifier: 'attributes',
-            items: props.attributes || []
+            localIdentifier: 'view',
+            items: props.viewBy ? [props.viewBy] : []
         }
     ];
 
+    const newProps
+        = omit<IPieChartProps, IPieChartNonBucketProps>(props, ['measures', 'viewBy', 'filters']);
+
     return (
-        <Component
-            {...props}
+        <AfmPieChart
+            {...newProps}
             projectId={props.projectId}
             afm={convertBucketsToAFM(buckets, props.filters)}
         />
