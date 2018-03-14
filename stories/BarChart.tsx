@@ -14,7 +14,7 @@ storiesOf('BarChart', module)
                 <BarChart
                     projectId="storybook"
                     measures={[MEASURE_1, MEASURE_2]}
-                    attributes={[ATTRIBUTE_1]}
+                    viewBy={ATTRIBUTE_1}
                     onError={onErrorHandler}
                 />
             </div>
@@ -26,8 +26,8 @@ storiesOf('BarChart', module)
                 <BarChart
                     projectId="storybook"
                     measures={[MEASURE_1]}
-                    attributes={[ATTRIBUTE_2]}
-                    stacks={[ATTRIBUTE_1]}
+                    viewBy={ATTRIBUTE_2}
+                    stackBy={ATTRIBUTE_1}
                     onError={onErrorHandler}
                 />
             </div>
@@ -50,7 +50,7 @@ storiesOf('BarChart', module)
                 <BarChart
                     projectId="storybook"
                     measures={[MEASURE_1]}
-                    attributes={[ATTRIBUTE_1]}
+                    viewBy={ATTRIBUTE_1}
                     config={{ colors: CUSTOM_COLORS }}
                     onError={onErrorHandler}
                 />

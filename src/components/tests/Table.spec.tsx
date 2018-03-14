@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { shallow } from 'enzyme';
 import { VisualizationObject, AFM } from '@gooddata/typings';
-import { Headline } from '../Headline';
-import { Headline as AfmHeadline } from '../afm/Headline';
+import { Table } from '../Table';
+import { Table as AfmTable } from '../afm/Table';
 
-describe('Headline', () => {
+describe('Table', () => {
     const measure: VisualizationObject.IMeasure = {
         measure: {
             localIdentifier: 'm1',
@@ -18,9 +18,18 @@ describe('Headline', () => {
         }
     };
 
-    it('should render headline and convert the bucket to AFM', () => {
+    const attribute: VisualizationObject.IVisualizationAttribute = {
+        visualizationAttribute: {
+            localIdentifier: 'a1',
+            displayForm: {
+                identifier: 'attribute1'
+            }
+        }
+    };
+
+    it('should render table and convert the buckets to AFM', () => {
         const wrapper = shallow(
-            <Headline projectId="foo" measure={measure} />
+            <Table projectId="foo" measures={[measure]} attributes={[attribute]} />
         );
 
         const expectedAfm: AFM.IAfm = {
@@ -35,10 +44,18 @@ describe('Headline', () => {
                         }
                     }
                 }
+            ],
+            attributes: [
+                {
+                    localIdentifier: 'a1',
+                    displayForm: {
+                        identifier: 'attribute1'
+                    }
+                }
             ]
         };
 
-        expect(wrapper.find(AfmHeadline)).toHaveLength(1);
-        expect(wrapper.find(AfmHeadline).prop('afm')).toEqual(expectedAfm);
+        expect(wrapper.find(AfmTable)).toHaveLength(1);
+        expect(wrapper.find(AfmTable).prop('afm')).toEqual(expectedAfm);
     });
 });

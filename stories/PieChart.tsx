@@ -24,7 +24,7 @@ storiesOf('PieChart', module)
                 <PieChart
                     projectId="storybook"
                     measures={[MEASURE_1]}
-                    attributes={[ATTRIBUTE_1]}
+                    viewBy={ATTRIBUTE_1}
                     onError={onErrorHandler}
                 />
             </div>
@@ -36,7 +36,7 @@ storiesOf('PieChart', module)
                 <PieChart
                     projectId="storybook"
                     measures={[MEASURE_1_WITH_ALIAS]}
-                    attributes={[ATTRIBUTE_1_WITH_ALIAS]}
+                    viewBy={ATTRIBUTE_1_WITH_ALIAS}
                     onError={onErrorHandler}
                 />
             </div>
@@ -48,7 +48,7 @@ storiesOf('PieChart', module)
                 <PieChart
                     projectId="storybook"
                     measures={[MEASURE_1]}
-                    attributes={[ATTRIBUTE_1]}
+                    viewBy={ATTRIBUTE_1}
                     config={{ legend: { position: 'bottom' } }}
                     onError={onErrorHandler}
                 />

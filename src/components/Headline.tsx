@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { omit } from 'lodash';
-import { VisualizationObject } from '@gooddata/typings';
 import { Subtract } from 'utility-types';
+import { VisualizationObject } from '@gooddata/typings';
 
 import { Headline as AfmHeadline } from './afm/Headline';
 import { ICommonChartProps } from './core/base/BaseChart';
