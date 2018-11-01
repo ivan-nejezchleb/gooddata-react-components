@@ -112,9 +112,9 @@
     qs "6.5.1"
     rxjs "^5.5.6"
 
-"@gooddata/goodstrap@57.1.8":
-  version "57.1.8"
-  resolved "https://registry.yarnpkg.com/@gooddata/goodstrap/-/goodstrap-57.1.8.tgz#f5caaf78b5468a453449e57f0ba5078962eec2ff"
+"@gooddata/goodstrap@57.1.8-bertold8-ONE-3408-2018-11-01T08-02-02-656Z":
+  version "57.1.8-bertold8-ONE-3408-2018-11-01T08-02-02-656Z"
+  resolved "https://registry.yarnpkg.com/@gooddata/goodstrap/-/goodstrap-57.1.8-bertold8-ONE-3408-2018-11-01T08-02-02-656Z.tgz#837297f5a9fd389bcce0d1c3336da14fecd93038"
   dependencies:
     "@gooddata/js-utils" "^2.0.0"
     classnames "2.2.5"
