@@ -36,11 +36,11 @@ function getAttributeSortItems(
 
     const enrichedAggregation = aggregation
         ? {
-              aggregation: "sum",
+              aggregation: "sum" as "sum",
           }
         : {};
 
-    const attributeSortItem = {
+    const attributeSortItem: AFM.SortItem = {
         attributeSortItem: {
             ...base,
             ...enrichedAggregation,
@@ -57,8 +57,8 @@ function getAllMeasuresSorts(afm: AFM.IAfm): AFM.SortItem[] {
 }
 
 export function getDefaultTreemapSort(afm: AFM.IAfm, resultSpec: AFM.IResultSpec): AFM.SortItem[] {
-    const viewByAttributeIdentifier = get<string>(resultSpec, "dimensions.0.itemIdentifiers.0");
-    const stackByAttributeIdentifier = get<string>(resultSpec, "dimensions.0.itemIdentifiers.1");
+    const viewByAttributeIdentifier: string = get(resultSpec, "dimensions.0.itemIdentifiers.0");
+    const stackByAttributeIdentifier: string = get(resultSpec, "dimensions.0.itemIdentifiers.1");
 
     if (viewByAttributeIdentifier && stackByAttributeIdentifier) {
         return [...getAttributeSortItems(viewByAttributeIdentifier, ASC, false), ...getAllMeasuresSorts(afm)];

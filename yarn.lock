@@ -50,10 +50,10 @@
     rxjs "^5.5.6"
     uuid "3.2.1"
 
-"@gooddata/goodstrap@60.3.2":
-  version "60.3.2"
-  resolved "https://registry.yarnpkg.com/@gooddata/goodstrap/-/goodstrap-60.3.2.tgz#0d931a032ae0aab8e1e3f7eb7fee80055a78a6de"
-  integrity sha512-LKJxC4wAWl7a25GRVHltj9S6isKS6llk0Mkp8D4hV9IxpISYwZhcNnGF1M9YDab7CVn/V4yCW9chrnbDVREPTA==
+"@gooddata/goodstrap@60.3.2-bertold8-ine-fet-157-2019-04-08T11-29-30-835Z":
+  version "60.3.2-bertold8-ine-fet-157-2019-04-08T11-29-30-835Z"
+  resolved "https://registry.yarnpkg.com/@gooddata/goodstrap/-/goodstrap-60.3.2-bertold8-ine-fet-157-2019-04-08T11-29-30-835Z.tgz#e06e62aa790e0b97d8f793965ffd4449b4a18fa5"
+  integrity sha512-PfGh0OdPr7MNHemvXNbFje5AgwprK84I4xHmC/2aRCh3V1QF4OGX+HJNuxZ0CiqXlSO56IivKbO3yQCtLd2daA==
   dependencies:
     "@gooddata/js-utils" "3.4.0"
     classnames "2.2.6"
@@ -355,9 +355,10 @@
   version "0.22.7"
   resolved "https://registry.yarnpkg.com/@types/cheerio/-/cheerio-0.22.7.tgz#4a92eafedfb2b9f4437d3a4410006d81114c66ce"
 
-"@types/classnames@2.2.3":
-  version "2.2.3"
-  resolved "https://registry.yarnpkg.com/@types/classnames/-/classnames-2.2.3.tgz#3f0ff6873da793870e20a260cada55982f38a9e5"
+"@types/classnames@2.2.7":
+  version "2.2.7"
+  resolved "https://registry.yarnpkg.com/@types/classnames/-/classnames-2.2.7.tgz#fb68cc9be8487e6ea5b13700e759bfbab7e0fefd"
+  integrity sha512-rzOhiQ55WzAiFgXRtitP/ZUT8iVNyllEpylJ5zHzR4vArUvMB39GTk+Zon/uAM0JxEFAWnwsxC2gH8s+tZ3Myg==
 
 "@types/core-js@^0.9.41":
   version "0.9.45"
@@ -376,9 +377,10 @@
     "@types/cheerio" "*"
     "@types/react" "*"
 
-"@types/enzyme@3.1.13":
-  version "3.1.13"
-  resolved "https://registry.yarnpkg.com/@types/enzyme/-/enzyme-3.1.13.tgz#4bbc5c81fa40c9fc7efee25c4a23cb37119a33ea"
+"@types/enzyme@3.1.18":
+  version "3.1.18"
+  resolved "https://registry.yarnpkg.com/@types/enzyme/-/enzyme-3.1.18.tgz#4b984b9a3eb9fd025c4d77e0f53d3301c3c31ef9"
+  integrity sha512-AXxcTvIEBDzcCLpLZxdSHUOvBuyAzxtsi/DGzVdAxqQRqplG9+8xxVErAJYwF+aI48/LtL2BjU6DdD+phc7IfQ==
   dependencies:
     "@types/cheerio" "*"
     "@types/react" "*"
@@ -407,14 +409,22 @@
   version "2.2.29"
   resolved "https://registry.yarnpkg.com/@types/invariant/-/invariant-2.2.29.tgz#aa845204cd0a289f65d47e0de63a6a815e30cc66"
 
-"@types/jest@23.3.0":
-  version "23.3.0"
-  resolved "https://registry.yarnpkg.com/@types/jest/-/jest-23.3.0.tgz#5dd70033b616a6228042244ebd992f6426808810"
-  integrity sha512-wjOtCEZ9z5ZamhrapT1ew9g1O0aJk6dkd2SwhUJMmySz7upVgC+7xft8joxGJA+/Q8HOcx3sG/T/+tCAA1oHPA==
+"@types/jest-diff@*":
+  version "20.0.1"
+  resolved "https://registry.yarnpkg.com/@types/jest-diff/-/jest-diff-20.0.1.tgz#35cc15b9c4f30a18ef21852e255fdb02f6d59b89"
+  integrity sha512-yALhelO3i0hqZwhjtcr6dYyaLoCHbAMshwtj6cGxTvHZAKXHsYGdff6E8EPw3xLKY0ELUTQ69Q1rQiJENnccMA==
 
-"@types/lodash@4.14.61":
-  version "4.14.61"
-  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.61.tgz#0518c10805b1f9d21f98f82b1311ac2a6ec75892"
+"@types/jest@24.0.6":
+  version "24.0.6"
+  resolved "https://registry.yarnpkg.com/@types/jest/-/jest-24.0.6.tgz#ba4c8c7900ce098a82ca99293cbe4192bde4f355"
+  integrity sha512-NE7FBG/F4cMDKdCBqgyd+Sa6JZ5GiMOyA5QwJdeS4Ii/Z9a18WgGbFrHbcr48/7I9HdnkaAYP+S2MmQ27qoqJA==
+  dependencies:
+    "@types/jest-diff" "*"
+
+"@types/lodash@4.14.121":
+  version "4.14.121"
+  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.121.tgz#9327e20d49b95fc2bf983fc2f045b2c6effc80b9"
+  integrity sha512-ORj7IBWj13iYufXt/VXrCNMbUuCTJfhzme5kx9U/UtcIPdJYuvPDUAlHlbNhz/8lKCLy9XGIZnGrqXOtQbPGoQ==
 
 "@types/lodash@^4.14.72":
   version "4.14.108"
@@ -436,15 +446,20 @@
   version "9.6.23"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-9.6.23.tgz#fc429962c1b75f32bd66214a3997f660e8434f0d"
 
+"@types/prop-types@*":
+  version "15.7.0"
+  resolved "https://registry.yarnpkg.com/@types/prop-types/-/prop-types-15.7.0.tgz#4c48fed958d6dcf9487195a0ef6456d5f6e0163a"
+  integrity sha512-eItQyV43bj4rR3JPV0Skpl1SncRCdziTEK9/v8VwXmV6d/qOUO8/EuWeHBbCZcsfSHfzI5UyMJLCSXtxxznyZg==
+
 "@types/prop-types@15.5.2":
   version "15.5.2"
   resolved "https://registry.yarnpkg.com/@types/prop-types/-/prop-types-15.5.2.tgz#3c6b8dceb2906cc87fe4358e809f9d20c8d59be1"
 
-"@types/react-dom@16.0.3":
-  version "16.0.3"
-  resolved "https://registry.yarnpkg.com/@types/react-dom/-/react-dom-16.0.3.tgz#8accad7eabdab4cca3e1a56f5ccb57de2da0ff64"
+"@types/react-dom@16.8.2":
+  version "16.8.2"
+  resolved "https://registry.yarnpkg.com/@types/react-dom/-/react-dom-16.8.2.tgz#9bd7d33f908b243ff0692846ef36c81d4941ad12"
+  integrity sha512-MX7n1wq3G/De15RGAAqnmidzhr2Y9O/ClxPxyqaNg96pGyeXUYPSvujgzEVpLo9oIP4Wn1UETl+rxTN02KEpBw==
   dependencies:
-    "@types/node" "*"
     "@types/react" "*"
 
 "@types/react-intl@2.3.5":
@@ -469,9 +484,17 @@
   dependencies:
     "@types/react" "*"
 
-"@types/react@*", "@types/react@16.0.34":
+"@types/react@*":
   version "16.0.34"
   resolved "https://registry.yarnpkg.com/@types/react/-/react-16.0.34.tgz#7a8f795afd8a404a9c4af9539b24c75d3996914e"
+
+"@types/react@16.8.4":
+  version "16.8.4"
+  resolved "https://registry.yarnpkg.com/@types/react/-/react-16.8.4.tgz#134307f5266e866d5e7c25e47f31f9abd5b2ea34"
+  integrity sha512-Mpz1NNMJvrjf0GcDqiK8+YeOydXfD8Mgag3UtqQ5lXYTsMnOiHcKmO48LiSWMb1rSHB9MV/jlgyNzeAVxWMZRQ==
+  dependencies:
+    "@types/prop-types" "*"
+    csstype "^2.2.0"
 
 "@types/rimraf@^0.0.28":
   version "0.0.28"
@@ -1304,9 +1327,10 @@ babel-jest@^23.6.0:
     babel-plugin-istanbul "^4.1.6"
     babel-preset-jest "^23.2.0"
 
-babel-loader@7.1.2:
-  version "7.1.2"
-  resolved "https://registry.yarnpkg.com/babel-loader/-/babel-loader-7.1.2.tgz#f6cbe122710f1aa2af4d881c6d5b54358ca24126"
+babel-loader@7.1.5:
+  version "7.1.5"
+  resolved "https://registry.yarnpkg.com/babel-loader/-/babel-loader-7.1.5.tgz#e3ee0cd7394aa557e013b02d3e492bfd07aa6d68"
+  integrity sha512-iCHfbieL5d1LfOQeeVJEUyD9rTwBcP/fcEbRCfempxTDuqrKpu0AZjLAQHEQa3Yqyj9ORKe2iHfoj4rHLf7xpw==
   dependencies:
     find-cache-dir "^1.0.0"
     loader-utils "^1.0.2"
@@ -11435,9 +11459,10 @@ typedarray@^0.0.6:
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
 
-typescript@2.3.3:
-  version "2.3.3"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.3.3.tgz#9639f3c3b40148e8ca97fe08a51dd1891bb6be22"
+typescript@3.3.4000:
+  version "3.3.4000"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.3.4000.tgz#76b0f89cfdbf97827e1112d64f283f1151d6adf0"
+  integrity sha512-jjOcCZvpkl2+z7JFn0yBOoLQyLoIkNZAs/fYJkUG6VKy6zLPHJGfQJYFHzibB6GJaF/8QrcECtlQ5cpvRHSMEA==
 
 typescript@^2.2.2:
   version "2.8.3"

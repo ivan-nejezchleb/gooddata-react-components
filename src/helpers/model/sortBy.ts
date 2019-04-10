@@ -47,8 +47,12 @@ export class MeasureSortItemBuilder implements AFM.IMeasureSortItem {
     };
 }
 
-export const attributeSortItem = (attributeIdentifier: string, direction: AFM.SortDirection) =>
+type AttributeSortItemFactory = (attributeIdentifier: string, direction: AFM.SortDirection) => AttributeSortItemBuilder;
+
+export const attributeSortItem: AttributeSortItemFactory = (attributeIdentifier: string, direction: AFM.SortDirection) =>
     new AttributeSortItemBuilder(attributeIdentifier, direction);
 
-export const measureSortItem = (measureIdentifier: AFM.Identifier, direction: AFM.SortDirection) =>
+type MeasureSortItemFactory = (measureIdentifier: AFM.Identifier, direction: AFM.SortDirection) => MeasureSortItemBuilder;
+
+export const measureSortItem: MeasureSortItemFactory = (measureIdentifier: AFM.Identifier, direction: AFM.SortDirection) =>
     new MeasureSortItemBuilder(measureIdentifier, direction);
