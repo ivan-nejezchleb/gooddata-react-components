@@ -247,6 +247,7 @@ export function getRgbStringFromRGB(color: IColor) {
 }
 
 export function getColorMappingPredicate(idOrUri: string): IHeaderPredicate {
+    console.log(idOrUri);
     return (header: IMappingHeader, _context: IHeaderPredicateContext): boolean => {
         if (isMappingHeaderAttributeItem(header)) {
             return idOrUri ? idOrUri === header.attributeHeaderItem.uri : false;
