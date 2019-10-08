@@ -32,7 +32,12 @@ import {
     getMeasureCellStyle,
 } from "../../helpers/tableCell";
 
-import { IDrillEvent, IDrillEventContextTable } from "../../interfaces/DrillEvents";
+import {
+    IDrillEvent,
+    IDrillEventContextTable,
+    IDrillEventContextTableExtended,
+    IDrillEventExtended,
+} from "../../interfaces/DrillEvents";
 import { IHeaderPredicate } from "../../interfaces/HeaderPredicate";
 import { IMappingHeader } from "../../interfaces/MappingHeader";
 import { IMenuAggregationClickConfig, IPivotTableConfig } from "../../interfaces/PivotTable";
@@ -61,7 +66,11 @@ import {
     ROW_SUBTOTAL,
 } from "./pivotTable/agGridConst";
 import { createAgGridDataSource } from "./pivotTable/agGridDataSource";
-import { getDrillIntersection, getDrillRowData } from "./pivotTable/agGridDrilling";
+import {
+    getDrillIntersection,
+    getDrillRowData,
+    getDrillIntersectionFromExtended,
+} from "./pivotTable/agGridDrilling";
 import { getSortsFromModel, isSortedByFirstAttibute } from "./pivotTable/agGridSorting";
 import {
     ICustomGridOptions,
@@ -468,6 +477,7 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
     private cellClicked = (cellEvent: IGridCellEvent) => {
         const {
             onFiredDrillEvent,
+            onDrill,
             execution: { executionResponse },
         } = this.props;
         const { columnDefs } = this.state;
@@ -500,15 +510,33 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
         const leafColumnDefs = getTreeLeaves(columnDefs);
         const columnIndex = leafColumnDefs.findIndex(gridHeader => gridHeader.field === colDef.field);
         const row = getDrillRowData(leafColumnDefs, cellEvent.data);
-        const intersection = getDrillIntersection(drillItems, afm);
+        const intersection = getDrillIntersection(drillItems);
 
-        const drillContext: IDrillEventContextTable = {
+        const drillContextExtended: IDrillEventContextTableExtended = {
             type: VisualizationTypes.TABLE,
             element: "cell",
             columnIndex,
             rowIndex,
             row,
             intersection,
+        };
+        const drillEventExtended: IDrillEventExtended = {
+            executionContext: afm,
+            drillContext: drillContextExtended,
+        };
+
+        if (onDrill) {
+            onDrill(drillEventExtended);
+        }
+
+        // Old drill event for backward compatibility
+        const drillContext: IDrillEventContextTable = {
+            type: VisualizationTypes.TABLE,
+            element: "cell",
+            columnIndex,
+            rowIndex,
+            row,
+            intersection: getDrillIntersectionFromExtended(intersection, afm),
         };
         const drillEvent: IDrillEvent = {
             executionContext: afm,

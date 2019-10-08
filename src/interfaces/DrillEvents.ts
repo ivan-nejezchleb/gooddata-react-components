@@ -13,6 +13,7 @@ import {
 } from "../constants/visualizationTypes";
 import { TableRowForDrilling } from "./Table";
 import { OnFiredDrillEvent } from "./Events";
+import { IMappingHeader } from "./MappingHeader";
 
 export interface IDrillableItemUri {
     uri: string;
@@ -36,6 +37,7 @@ export function isDrillableItemIdentifier(item: IDrillableItem): item is IDrilla
 }
 
 export type IDrillEventCallback = (event: IDrillEvent) => void | boolean;
+export type IDrillEventExtendedCallback = (event: IDrillEventExtended) => void;
 
 // Intersection element
 export interface IDrillEventIntersectionElement {
@@ -47,15 +49,31 @@ export interface IDrillEventIntersectionElement {
     };
 }
 
-// Drill context for tables
-export interface IDrillEventContextTable {
+export interface IDrillEventIntersectionElementExtended {
+    header: IMappingHeader;
+}
+
+export interface IDrillEventContextTableBase {
     type: TableType;
     element: TableElementType;
     columnIndex: number;
     rowIndex: number;
     row: any[];
+}
+
+export interface IDrillEventIntersection {
     intersection: IDrillEventIntersectionElement[];
 }
+
+export interface IDrillEventIntersectionExtended {
+    intersection: IDrillEventIntersectionElementExtended[];
+}
+// Drill context for tables
+export interface IDrillEventContextTable extends IDrillEventContextTableBase, IDrillEventIntersection {}
+
+export interface IDrillEventContextTableExtended
+    extends IDrillEventContextTableBase,
+        IDrillEventIntersectionExtended {}
 
 // Drill context for headline
 export interface IDrillEventContextHeadline {
@@ -94,7 +112,7 @@ export interface IDrillEventContextGroup {
 }
 
 // Drill context for all visualization types
-export interface IDrillEventContext {
+export interface IDrillEventContextBase {
     type: VisType; // type of visualization
     element: VisElementType; // type of visualization element drilled
     x?: number; // chart x coordinate (if supported)
@@ -104,16 +122,29 @@ export interface IDrillEventContext {
     rowIndex?: number;
     row?: any[]; // table row data of the drilled row
     value?: string; // cell or element value drilled
-    // some drill headers that are relevant for current drill element
-    intersection?: IDrillEventIntersectionElement[];
     // A collection of chart series points (if available)
     points?: IDrillPoint[];
+}
+
+export interface IDrillEventContext extends IDrillEventContextBase {
+    // some drill headers that are relevant for current drill element
+    intersection?: IDrillEventIntersectionElement[];
+}
+
+export interface IDrillEventContextExtended extends IDrillEventContextBase {
+    // some drill headers that are relevant for current drill element
+    intersection?: IDrillEventIntersectionElementExtended[];
 }
 
 // IDrillEvent is a parameter of the onFiredDrillEvent is callback
 export interface IDrillEvent {
     executionContext: AFM.IAfm;
     drillContext: IDrillEventContext;
+}
+
+export interface IDrillEventExtended {
+    executionContext: AFM.IAfm;
+    drillContext: IDrillEventContextExtended;
 }
 
 export interface IHighchartsParentTick {

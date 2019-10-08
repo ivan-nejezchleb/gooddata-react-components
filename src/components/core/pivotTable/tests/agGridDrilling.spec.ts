@@ -10,6 +10,7 @@ import {
     assignDrillItemsAndType,
     getDrillIntersection,
     getDrillRowData,
+    getDrillIntersectionFromExtended,
 } from "../agGridDrilling";
 import { IGridHeader } from "../agGridTypes";
 import { getTreeLeaves } from "../agGridUtils";
@@ -124,6 +125,71 @@ describe("assignDrillItemsAndType", () => {
 });
 
 describe("getDrillIntersection", () => {
+    const { columnDefs, rowData } = executionToAGGridAdapter(
+        {
+            executionResponse: pivotTableWithColumnAndRowAttributes.executionResponse,
+            executionResult: pivotTableWithColumnAndRowAttributes.executionResult,
+        },
+        {},
+        intl,
+    );
+    it("should return intersection of row attribute and row attribute value for row header cell", async () => {
+        const rowColDef = columnDefs[0]; // row header
+        const drillItems = [...rowColDef.drillItems, rowData[0].headerItemMap[rowColDef.field]];
+        const intersection = getDrillIntersection(drillItems);
+        expect(intersection).toEqual([
+            {
+                header: drillItems[0],
+            },
+            {
+                header: drillItems[1],
+            },
+        ]);
+    });
+
+    it("should return intersection of all column header attributes and values and a measure for column header cell", async () => {
+        const colDef = getTreeLeaves(columnDefs)[3]; // column leaf header
+        const intersection = getDrillIntersection(colDef.drillItems);
+        expect(intersection).toEqual([
+            {
+                header: colDef.drillItems[0],
+            },
+            {
+                header: colDef.drillItems[1],
+            },
+            {
+                header: colDef.drillItems[2],
+            },
+            {
+                header: colDef.drillItems[3],
+            },
+            {
+                header: colDef.drillItems[4],
+            },
+        ]);
+    });
+
+    // tslint:disable-next-line:max-line-length
+    it("should return intersection without header property when measure has neither uri nor identifier (arithmetic measure)", async () => {
+        const drillItems: IMappingHeader[] = [
+            {
+                measureHeaderItem: {
+                    localIdentifier: "am1",
+                    name: "Arithmetic measure",
+                    format: "",
+                },
+            },
+        ];
+        const intersection = getDrillIntersection(drillItems);
+        expect(intersection).toEqual([
+            {
+                header: drillItems[0],
+            },
+        ]);
+    });
+});
+
+describe("getDrillIntersectionFromExtended", () => {
     const afm = pivotTableWithColumnAndRowAttributes.executionRequest.afm;
     const { columnDefs, rowData } = executionToAGGridAdapter(
         {
@@ -136,7 +202,7 @@ describe("getDrillIntersection", () => {
     it("should return intersection of row attribute and row attribute value for row header cell", async () => {
         const rowColDef = columnDefs[0]; // row header
         const drillItems = [...rowColDef.drillItems, rowData[0].headerItemMap[rowColDef.field]];
-        const intersection = getDrillIntersection(drillItems, afm);
+        const intersection = getDrillIntersectionFromExtended(getDrillIntersection(drillItems), afm);
         expect(intersection).toEqual([
             {
                 header: {
@@ -159,7 +225,7 @@ describe("getDrillIntersection", () => {
 
     it("should return intersection of all column header attributes and values and a measure for column header cell", async () => {
         const colDef = getTreeLeaves(columnDefs)[3]; // column leaf header
-        const intersection = getDrillIntersection(colDef.drillItems, afm);
+        const intersection = getDrillIntersectionFromExtended(getDrillIntersection(colDef.drillItems), afm);
         expect(intersection).toEqual([
             {
                 header: {
@@ -215,7 +281,7 @@ describe("getDrillIntersection", () => {
                 },
             },
         ];
-        const intersection = getDrillIntersection(drillItems, afm);
+        const intersection = getDrillIntersectionFromExtended(getDrillIntersection(drillItems), afm);
         expect(intersection).toEqual([
             {
                 id: "am1",
