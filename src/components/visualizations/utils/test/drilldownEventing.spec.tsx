@@ -7,6 +7,7 @@ import {
     chartClick,
     cellClick,
     createDrillIntersectionElement,
+    getDrillIntersectionFromExtended,
 } from "../drilldownEventing";
 import { VisualizationTypes } from "../../../../constants/visualizationTypes";
 import { SeriesChartTypes } from "../../../../constants/series";
@@ -14,6 +15,7 @@ import {
     IDrillConfig,
     IDrillEventIntersectionElement,
     IHighchartsPointObject,
+    IDrillEventIntersectionElementExtended,
 } from "../../../../interfaces/DrillEvents";
 
 describe("Drilldown Eventing", () => {
@@ -753,6 +755,53 @@ describe("Drilldown Eventing", () => {
                     intersection: linePoint.drillIntersection,
                 },
             });
+        });
+    });
+
+    describe("getDrillIntersectionFromExtended", () => {
+        it("should handle empty intersection", () => {
+            expect(getDrillIntersectionFromExtended([], afm)).toEqual([]);
+        });
+
+        it("should convert IMeasureHeaderItem in extended selection", () => {
+            const afm: AFM.IAfm = {
+                measures: [
+                    {
+                        localIdentifier: "m1",
+                        definition: {
+                            measure: {
+                                item: {
+                                    uri: "/gdc/md/project_id/obj/1",
+                                },
+                            },
+                        },
+                    },
+                ],
+            };
+            const drillIntersectionExteded: IDrillEventIntersectionElementExtended = {
+                header: {
+                    measureHeaderItem: {
+                        name: "Lost",
+                        format: "$#,##0.00",
+                        localIdentifier: "m1",
+                        uri: "/gdc/md/project_id/obj/1",
+                        identifier: "metric.lost",
+                    },
+                },
+            };
+            const expectedIntersection = [
+                {
+                    id: "m1",
+                    title: "Lost",
+                    header: {
+                        uri: "/gdc/md/project_id/obj/1",
+                        identifier: "",
+                    },
+                },
+            ];
+            expect(getDrillIntersectionFromExtended([drillIntersectionExteded], afm)).toEqual(
+                expectedIntersection,
+            );
         });
     });
 });

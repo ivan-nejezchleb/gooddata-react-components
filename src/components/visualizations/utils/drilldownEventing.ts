@@ -22,10 +22,14 @@ import {
     isGroupHighchartsDrillEvent,
     IDrillEventContextPoint,
     IDrillEventContext,
+    IDrillEventIntersectionElementExtended,
 } from "../../../interfaces/DrillEvents";
 import { OnFiredDrillEvent } from "../../../interfaces/Events";
 import { isComboChart, isHeatmap, isTreemap } from "./common";
 import { getVisualizationType } from "../../../helpers/visualizationType";
+import { isMappingHeaderMeasureItem } from "../../../interfaces/MappingHeader";
+import { getMasterMeasureObjQualifier } from "../../../helpers/afmHelper";
+import { AFM, Execution } from "@gooddata/typings";
 
 export function getClickableElementNameByChartType(type: VisType): ChartElementType {
     switch (type) {
@@ -247,4 +251,41 @@ export function createDrillIntersectionElement(
     }
 
     return element;
+}
+
+export function getDrillIntersectionFromExtended(
+    intersectionExtended: IDrillEventIntersectionElementExtended[],
+    afm: AFM.IAfm,
+): IDrillEventIntersectionElement[] {
+    return intersectionExtended
+        .filter(({ header }) => isMappingHeaderMeasureItem(header))
+        .map(intersectionElement => {
+            const header = intersectionElement.header as Execution.IMeasureHeaderItem;
+
+            const masterMeasureQualifier = getMasterMeasureObjQualifier(
+                afm,
+                header.measureHeaderItem.localIdentifier,
+            );
+
+            if (!masterMeasureQualifier) {
+                throw new Error("The metric ids has not been found in execution request!");
+            }
+            const id: string = header.measureHeaderItem.localIdentifier;
+            const title: string = header.measureHeaderItem.name;
+            const uri: string = masterMeasureQualifier.uri;
+            const identifier: string = masterMeasureQualifier.identifier;
+            const element: IDrillEventIntersectionElement = {
+                id: id || "",
+                title: title || "",
+            };
+
+            if (uri || identifier) {
+                element.header = {
+                    uri: uri || "",
+                    identifier: identifier || "",
+                };
+            }
+
+            return element;
+        });
 }

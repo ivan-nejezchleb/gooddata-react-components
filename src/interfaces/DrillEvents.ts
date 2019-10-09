@@ -12,7 +12,7 @@ import {
     VisType,
 } from "../constants/visualizationTypes";
 import { TableRowForDrilling } from "./Table";
-import { OnFiredDrillEvent } from "./Events";
+import { OnFiredDrillEvent, OnDrill } from "./Events";
 import { IMappingHeader } from "./MappingHeader";
 
 export interface IDrillableItemUri {
@@ -53,6 +53,14 @@ export interface IDrillEventIntersectionElementExtended {
     header: IMappingHeader;
 }
 
+export interface IDrillEventIntersection {
+    intersection: IDrillEventIntersectionElement[];
+}
+
+export interface IDrillEventIntersectionExtended {
+    intersection: IDrillEventIntersectionElementExtended[];
+}
+
 export interface IDrillEventContextTableBase {
     type: TableType;
     element: TableElementType;
@@ -61,13 +69,6 @@ export interface IDrillEventContextTableBase {
     row: any[];
 }
 
-export interface IDrillEventIntersection {
-    intersection: IDrillEventIntersectionElement[];
-}
-
-export interface IDrillEventIntersectionExtended {
-    intersection: IDrillEventIntersectionElementExtended[];
-}
 // Drill context for tables
 export interface IDrillEventContextTable extends IDrillEventContextTableBase, IDrillEventIntersection {}
 
@@ -76,15 +77,18 @@ export interface IDrillEventContextTableExtended
         IDrillEventIntersectionExtended {}
 
 // Drill context for headline
-export interface IDrillEventContextHeadline {
+export interface IDrillEventContextHeadlineBase {
     type: HeadlineType;
     element: HeadlineElementType;
     value: string;
-    intersection: IDrillEventIntersectionElement[];
 }
+export interface IDrillEventContextHeadline extends IDrillEventContextHeadlineBase, IDrillEventIntersection {}
+export interface IDrillEventContextHeadlineExtended
+    extends IDrillEventContextHeadlineBase,
+        IDrillEventIntersectionExtended {}
 
 // Drill context for chart
-export interface IDrillEventContextPoint {
+export interface IDrillEventContextPoint extends IDrillEventIntersection {
     type: ChartType;
     element: ChartElementType;
     elementChartType?: ChartType;
@@ -92,16 +96,17 @@ export interface IDrillEventContextPoint {
     y?: number;
     z?: number;
     value?: string;
-    intersection: IDrillEventIntersectionElement[];
 }
 
-// Chart series point with intersection element
-export interface IDrillPoint {
+export interface IDrillPointBase {
     x: number;
     y: number;
-    intersection: IDrillEventIntersectionElement[];
     type?: ChartType;
 }
+// Chart series point with intersection element
+export interface IDrillPoint extends IDrillPointBase, IDrillEventIntersection {}
+
+export interface IDrillPointExtended extends IDrillPointBase, IDrillEventIntersectionExtended {}
 
 // Drill context for chart element group (multiple series + click on axis value)
 // where every point has own intersection
@@ -122,16 +127,18 @@ export interface IDrillEventContextBase {
     rowIndex?: number;
     row?: any[]; // table row data of the drilled row
     value?: string; // cell or element value drilled
-    // A collection of chart series points (if available)
-    points?: IDrillPoint[];
 }
 
 export interface IDrillEventContext extends IDrillEventContextBase {
+    // A collection of chart series points (if available)
+    points?: IDrillPoint[];
     // some drill headers that are relevant for current drill element
     intersection?: IDrillEventIntersectionElement[];
 }
 
 export interface IDrillEventContextExtended extends IDrillEventContextBase {
+    // A collection of chart series points (if available)
+    points?: IDrillPointExtended[];
     // some drill headers that are relevant for current drill element
     intersection?: IDrillEventIntersectionElementExtended[];
 }
