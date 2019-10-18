@@ -868,8 +868,36 @@ describe("Drilldown Eventing", () => {
             },
         };
 
+        const attributeHeader: IMappingHeader = {
+            attributeHeader: {
+                uri: "uri.a1",
+                identifier: "id.a1",
+                localIdentifier: "local.a1",
+                name: "name.a1",
+                formOf: {
+                    uri: "uri.f.a1",
+                    identifier: "id.f.a1",
+                    name: "name.f.a1",
+                },
+            },
+        };
+
+        const attributeHeaderItem: IMappingHeader = {
+            attributeHeaderItem: {
+                uri: "uri.a1.item",
+                name: "name.a1.item",
+            },
+        };
+
         it("should correctly join attribute items with attributes", () => {
-            expect(true).toEqual(false);
+            expect(getDrillIntersection([attributeHeaderItem, attributeHeader])).toEqual([
+                {
+                    header: {
+                        ...attributeHeaderItem,
+                        ...attributeHeader,
+                    },
+                },
+            ]);
         });
 
         it("should keep metric headers in drill items and wrap them in 'header'", () => {
