@@ -8,6 +8,7 @@ import {
     cellClick,
     createDrillIntersectionElement,
     convertHeadlineDrillIntersectionToLegacy,
+    getDrillIntersection,
 } from "../drilldownEventing";
 import { VisualizationTypes } from "../../../../constants/visualizationTypes";
 import { SeriesChartTypes } from "../../../../constants/series";
@@ -16,6 +17,7 @@ import {
     IHighchartsPointObject,
     IDrillEventIntersectionElementExtended,
 } from "../../../../interfaces/DrillEvents";
+import { IMappingHeader } from "../../../../interfaces/MappingHeader";
 
 describe("Drilldown Eventing", () => {
     jest.useFakeTimers();
@@ -851,12 +853,34 @@ describe("Drilldown Eventing", () => {
     });
 
     describe("getDrillIntersection", () => {
+        const measureHeader1: IMappingHeader = {
+            measureHeaderItem: {
+                localIdentifier: "l1",
+                name: "name1",
+                format: "format1",
+            },
+        };
+        const measureHeader2: IMappingHeader = {
+            measureHeaderItem: {
+                localIdentifier: "l2",
+                name: "name2",
+                format: "format2",
+            },
+        };
+
         it("should correctly join attribute items with attributes", () => {
             expect(true).toEqual(false);
         });
 
-        it("should not touch metric headers in drill items", () => {
-            expect(true).toEqual(false);
+        it("should keep metric headers in drill items and wrap them in 'header'", () => {
+            expect(getDrillIntersection([measureHeader1, measureHeader2])).toEqual([
+                {
+                    header: measureHeader1,
+                },
+                {
+                    header: measureHeader2,
+                },
+            ]);
         });
     });
 });
