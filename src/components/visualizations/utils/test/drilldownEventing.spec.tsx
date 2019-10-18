@@ -12,11 +12,13 @@ import {
 } from "../drilldownEventing";
 import { VisualizationTypes } from "../../../../constants/visualizationTypes";
 import { SeriesChartTypes } from "../../../../constants/series";
+import * as fixtures from "../../../../../stories/test_data/fixtures";
 import {
     IDrillConfig,
     IHighchartsPointObject,
     IDrillEventIntersectionElementExtended,
 } from "../../../../interfaces/DrillEvents";
+import { getMVS } from "../../chart/test/helper";
 
 describe("Drilldown Eventing", () => {
     jest.useFakeTimers();
