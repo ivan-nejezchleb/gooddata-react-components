@@ -1,7 +1,6 @@
 // (C) 2007-2018 GoodData Corporation
 import * as React from "react";
 import { storiesOf } from "@storybook/react";
-import { action } from "@storybook/addon-actions";
 import { screenshotWrap } from "@gooddata/test-storybook";
 
 import { BarChart, HeaderPredicateFactory } from "../../src";
@@ -540,7 +539,6 @@ storiesOf("Core components/BarChart", module)
                     drillableItems={[
                         HeaderPredicateFactory.uriMatch("/gdc/md/storybook/obj/5/elements?id=1"),
                     ]}
-                    onDrill={action("new onDrill fired")}
                 />
             </div>,
         ),
