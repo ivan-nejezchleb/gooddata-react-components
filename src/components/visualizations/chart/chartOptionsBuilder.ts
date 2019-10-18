@@ -33,7 +33,6 @@ import {
 } from "../../../helpers/executionResultHelper";
 import { unwrap } from "../../../helpers/utils";
 import { isBucketEmpty } from "../../../helpers/mdObjBucketHelper";
-import { getMasterMeasureObjQualifier } from "../../../helpers/afmHelper";
 import { isSomeHeaderPredicateMatched } from "../../../helpers/headerPredicate";
 
 import {
@@ -48,13 +47,12 @@ import {
     ISeriesItemConfig,
     ICategory,
 } from "../../../interfaces/Config";
-import { IDrillEventIntersectionElement } from "../../../interfaces/DrillEvents";
+import { IDrillEventIntersectionElementExtended } from "../../../interfaces/DrillEvents";
 import { IHeaderPredicate } from "../../../interfaces/HeaderPredicate";
 import { IMappingHeader } from "../../../interfaces/MappingHeader";
 import { getLighterColor, GRAY, WHITE, TRANSPARENT } from "../utils/color";
 
 import {
-    getAttributeElementIdFromAttributeElementUri,
     isAreaChart,
     isBarChart,
     isBubbleChart,
@@ -67,7 +65,7 @@ import {
     parseValue,
     stringifyChartTypes,
 } from "../utils/common";
-import { createDrillIntersectionElement } from "../utils/drilldownEventing";
+import { getDrillIntersection } from "../utils/drilldownEventing";
 import {
     canComboChartBeStackedInPercent,
     getComboChartSeries,
@@ -174,9 +172,17 @@ export const supportedStackingAttributesChartTypes = [
     VisualizationTypes.COMBO2,
 ];
 
-export type IUnwrappedAttributeHeadersWithItems = Execution.IAttributeHeader["attributeHeader"] & {
+type UnwrappedAttributeHeader = Execution.IAttributeHeader["attributeHeader"];
+
+export interface IUnwrappedAttributeHeadersWithItems extends UnwrappedAttributeHeader {
     items: Execution.IResultAttributeHeaderItem[];
-};
+}
+type UnwrappedAttributeHeaderItem = Execution.IResultAttributeHeaderItem["attributeHeaderItem"];
+export interface IAttributeItem extends UnwrappedAttributeHeaderItem {
+    attribute: IUnwrappedAttributeHeadersWithItems;
+}
+
+export type UnwrappedMeasureHeaderItem = Execution.IMeasureHeaderItem["measureHeaderItem"];
 
 export interface IValidationResult {
     dataTooLarge: boolean;
@@ -960,8 +966,9 @@ export function buildTooltipTreemapFactory(
 export interface ILegacyMeasureHeader {
     uri: string; // header attribute value or measure uri
     identifier?: string;
-    localIdentifier: string;
+    localIdentifier?: string;
     name: string; // header attribute value or measure text label
+    format?: string; // format of measure
 }
 
 export interface ILegacyAttributeHeader extends ILegacyMeasureHeader {
@@ -974,77 +981,45 @@ export function isLegacyAttributeHeader(header: ILegacyHeader): header is ILegac
     return (header as ILegacyAttributeHeader).attribute !== undefined;
 }
 
-function mapDrillIntersectionElement(header: ILegacyHeader, afm: AFM.IAfm): IDrillEventIntersectionElement {
-    const { name, localIdentifier } = header;
-
-    if (isLegacyAttributeHeader(header)) {
-        const { attribute, uri } = header;
-
-        return createDrillIntersectionElement(
-            getAttributeElementIdFromAttributeElementUri(uri),
-            name,
-            attribute.uri,
-            attribute.identifier,
-        );
-    }
-
-    const masterMeasureQualifier = getMasterMeasureObjQualifier(afm, localIdentifier);
-    const uri = masterMeasureQualifier.uri || header.uri;
-    const identifier = masterMeasureQualifier.identifier || header.identifier;
-
-    return createDrillIntersectionElement(localIdentifier, name, uri, identifier);
-}
-
-export function getDrillIntersection(
-    stackByItem: any,
-    viewByItems: any[],
-    measures: any[],
-    afm: AFM.IAfm,
-): IDrillEventIntersectionElement[] {
-    const headers = without([...measures, ...viewByItems, stackByItem], null);
-
-    return headers.map(header => mapDrillIntersectionElement(header, afm));
-}
-
-function getViewBy(viewByAttribute: IUnwrappedAttributeHeadersWithItems, viewByIndex: number) {
+function getViewBy(
+    viewByAttribute: IUnwrappedAttributeHeadersWithItems,
+    viewByIndex: number,
+): {
+    viewByItemHeader: Execution.IResultAttributeHeaderItem;
+    viewByAttributeHeader: Execution.IAttributeHeader;
+} {
     let viewByItemHeader: Execution.IResultAttributeHeaderItem = null;
-    let viewByItem = null;
     let viewByAttributeHeader: Execution.IAttributeHeader = null;
 
     if (viewByAttribute) {
         viewByItemHeader = viewByAttribute.items[viewByIndex];
-        viewByItem = {
-            ...unwrap(viewByItemHeader),
-            attribute: viewByAttribute,
-        };
         viewByAttributeHeader = { attributeHeader: viewByAttribute };
     }
 
     return {
         viewByItemHeader,
-        viewByItem,
         viewByAttributeHeader,
     };
 }
 
-function getStackBy(stackByAttribute: IUnwrappedAttributeHeadersWithItems, stackByIndex: number) {
+function getStackBy(
+    stackByAttribute: IUnwrappedAttributeHeadersWithItems,
+    stackByIndex: number,
+): {
+    stackByItemHeader: Execution.IResultAttributeHeaderItem;
+    stackByAttributeHeader: Execution.IAttributeHeader;
+} {
     let stackByItemHeader: Execution.IResultAttributeHeaderItem = null;
-    let stackByItem = null;
     let stackByAttributeHeader: Execution.IAttributeHeader = null;
 
     if (stackByAttribute) {
         // stackBy item index is always equal to seriesIndex
         stackByItemHeader = stackByAttribute.items[stackByIndex];
-        stackByItem = {
-            ...unwrap(stackByItemHeader),
-            attribute: stackByAttribute,
-        };
         stackByAttributeHeader = { attributeHeader: stackByAttribute };
     }
 
     return {
         stackByItemHeader,
-        stackByItem,
         stackByAttributeHeader,
     };
 }
@@ -1069,7 +1044,7 @@ export function getDrillableSeries(
         let data =
             seriesItem.data &&
             seriesItem.data.map((pointData: IPointData, pointIndex: number) => {
-                let measureHeaders: IMappingHeader[] = [];
+                let measureHeaders: Execution.IMeasureHeaderItem[] = [];
 
                 const isStackedTreemap = isTreemap(type) && !!stackByAttribute;
                 if (isScatterPlot(type)) {
@@ -1103,21 +1078,19 @@ export function getDrillableSeries(
                     stackByIndex = viewByIndex; // scatter plot uses stack by attribute but has only one serie
                 }
 
-                const { stackByItemHeader, stackByItem, stackByAttributeHeader } = getStackBy(
+                const { stackByItemHeader, stackByAttributeHeader } = getStackBy(
                     stackByAttribute,
                     stackByIndex,
                 );
 
                 const {
-                    viewByItem: viewByChildItem,
                     viewByItemHeader: viewByChildItemHeader,
                     viewByAttributeHeader: viewByChildAttributeHeader,
                 } = getViewBy(viewByChildAttribute, viewByIndex);
 
                 const {
-                    viewByItem: viewByParentItem,
                     viewByItemHeader: viewByParentItemHeader,
-                    viewByAttributeHeader: viewByParentdAttributeHeader,
+                    viewByAttributeHeader: viewByParentAttributeHeader,
                 } = getViewBy(viewByParentAttribute, viewByIndex);
 
                 // point is drillable if a drillableItem matches:
@@ -1131,7 +1104,7 @@ export function getDrillableSeries(
                         ...measureHeaders,
                         viewByChildAttributeHeader,
                         viewByChildItemHeader,
-                        viewByParentdAttributeHeader,
+                        viewByParentAttributeHeader,
                         viewByParentItemHeader,
                         stackByAttributeHeader,
                         stackByItemHeader,
@@ -1143,19 +1116,25 @@ export function getDrillableSeries(
                     isSomeHeaderPredicateMatched(drillableItems, drillableHook, afm, executionResponse),
                 );
 
-                const drillableProps: any = {
+                const drillableProps: {
+                    drilldown: boolean;
+                    drillIntersection?: IDrillEventIntersectionElementExtended[];
+                } = {
                     drilldown,
                 };
 
                 if (drilldown) {
-                    const measures = measureHeaders.map(unwrap);
-
-                    drillableProps.drillIntersection = getDrillIntersection(
-                        stackByItem,
-                        [viewByChildItem, viewByParentItem],
-                        measures,
-                        afm,
-                    );
+                    const headers: IMappingHeader[] = [
+                        ...measureHeaders,
+                        stackByItemHeader,
+                        stackByAttributeHeader,
+                        viewByChildItemHeader,
+                        viewByChildAttributeHeader,
+                        viewByParentItemHeader,
+                        viewByParentAttributeHeader,
+                    ];
+                    const sanitizedHeaders = without([...headers], null);
+                    drillableProps.drillIntersection = getDrillIntersection(sanitizedHeaders);
                     isSeriesDrillable = true;
                 }
                 return {

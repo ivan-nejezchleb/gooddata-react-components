@@ -12,6 +12,8 @@ import get = require("lodash/get");
 import {
     IDrillEventIntersectionElement,
     IDrillEventIntersectionElementExtended,
+    isDrillIntersectionAttributeItem,
+    isMappingMeasureHeaderItem,
 } from "../../../interfaces/DrillEvents";
 import { IMappingHeader, isMappingHeaderAttributeItem } from "../../../interfaces/MappingHeader";
 import { getAttributeElementIdFromAttributeElementUri } from "../../visualizations/utils/common";
@@ -46,22 +48,47 @@ export const getDrillRowData = (leafColumnDefs: ColDef[], rowData: { [key: strin
     }, []);
 };
 
-export const getDrillIntersection = (
-    drillItems: IMappingHeader[],
-): IDrillEventIntersectionElementExtended[] => {
-    return drillItems.map((drillItem: IMappingHeader) => {
-        return {
-            header: drillItem,
-        };
-    });
-};
+const isDrillingOnMeasure = (measureIndex: number) => measureIndex !== -1;
 
-export const getDrillIntersectionFromExtended = (
+const skipRowAttributes = (measureIndex: number) => (index: number) =>
+    isDrillingOnMeasure(measureIndex) && index > measureIndex;
+
+export const convertDrillIntersectionToLegacy = (
     intersectionExtended: IDrillEventIntersectionElementExtended[],
     afm: AFM.IAfm,
 ): IDrillEventIntersectionElement[] => {
-    const drillItems: IMappingHeader[] = intersectionExtended.map(
-        (intersectionElement: IDrillEventIntersectionElementExtended) => intersectionElement.header,
+    const measureIndex = intersectionExtended.findIndex(
+        (intersectionElement: IDrillEventIntersectionElementExtended) =>
+            isMappingMeasureHeaderItem(intersectionElement.header),
+    );
+    const drillingOnMeasure = isDrillingOnMeasure(measureIndex);
+    const shouldSkipRowAttributes = skipRowAttributes(measureIndex);
+    const drillItems: IMappingHeader[] = intersectionExtended.reduce(
+        (
+            drillItems: IMappingHeader[],
+            intersectionElement: IDrillEventIntersectionElementExtended,
+            index: number,
+        ) => {
+            if (shouldSkipRowAttributes(index)) {
+                // skip new row attributes in legacy intersection
+                return drillItems;
+            }
+            if (isDrillIntersectionAttributeItem(intersectionElement.header)) {
+                const { attributeHeader, attributeHeaderItem } = intersectionElement.header;
+                if (drillingOnMeasure) {
+                    // different item/attribute order for drilling on measure and drilling on attr :(
+                    drillItems.push({ attributeHeaderItem });
+                    drillItems.push({ attributeHeader });
+                } else {
+                    drillItems.push({ attributeHeader });
+                    drillItems.push({ attributeHeaderItem });
+                }
+            } else {
+                drillItems.push(intersectionElement.header);
+            }
+            return drillItems;
+        },
+        [],
     );
     // Drilling needs refactoring: all '' should be replaced by null (breaking change)
     // intersection consists of

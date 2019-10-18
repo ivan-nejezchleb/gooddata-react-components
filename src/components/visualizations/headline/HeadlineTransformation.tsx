@@ -20,7 +20,7 @@ import {
     fireDrillEvent,
     getHeadlineData,
 } from "./utils/HeadlineTransformationUtils";
-import { getDrillIntersectionFromExtended } from "../utils/drilldownEventing";
+import { convertHeadlineDrillIntersectionToLegacy } from "../utils/drilldownEventing";
 
 export interface IHeadlineTransformationProps {
     executionRequest: AFM.IExecution["execution"];
@@ -102,7 +102,7 @@ class HeadlineTransformation extends React.Component<IHeadlineTransformationProp
                 type,
                 element,
                 value,
-                intersection: getDrillIntersectionFromExtended(
+                intersection: convertHeadlineDrillIntersectionToLegacy(
                     drillContext.intersection,
                     executionRequest.afm,
                 ),

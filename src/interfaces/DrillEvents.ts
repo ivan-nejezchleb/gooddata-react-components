@@ -1,5 +1,5 @@
 // (C) 2007-2019 GoodData Corporation
-import { AFM } from "@gooddata/typings";
+import { AFM, Execution } from "@gooddata/typings";
 import Highcharts from "../components/visualizations/chart/highcharts/highchartsEntryPoint";
 import {
     ChartElementType,
@@ -13,7 +13,6 @@ import {
 } from "../constants/visualizationTypes";
 import { TableRowForDrilling } from "./Table";
 import { OnFiredDrillEvent, OnDrill } from "./Events";
-import { IMappingHeader } from "./MappingHeader";
 
 export interface IDrillableItemUri {
     uri: string;
@@ -49,8 +48,30 @@ export interface IDrillEventIntersectionElement {
     };
 }
 
+export interface IDrillIntersectionAttributeItem
+    extends Execution.IResultAttributeHeaderItem,
+        Execution.IAttributeHeader {}
+
+export function isDrillIntersectionAttributeItem(
+    header: DrillEventIntersectionElementHeader,
+): header is IDrillIntersectionAttributeItem {
+    return (header as IDrillIntersectionAttributeItem).attributeHeaderItem !== undefined;
+}
+
+export type DrillEventIntersectionElementHeader =
+    | Execution.IAttributeHeader
+    | Execution.IMeasureHeaderItem
+    | Execution.ITotalHeaderItem
+    | IDrillIntersectionAttributeItem;
+
+export function isMappingMeasureHeaderItem(
+    header: DrillEventIntersectionElementHeader,
+): header is Execution.IMeasureHeaderItem {
+    return (header as Execution.IMeasureHeaderItem).measureHeaderItem !== undefined;
+}
+
 export interface IDrillEventIntersectionElementExtended {
-    header: IMappingHeader;
+    header: DrillEventIntersectionElementHeader;
 }
 
 export interface IDrillEventIntersection {
@@ -88,7 +109,7 @@ export interface IDrillEventContextHeadlineExtended
         IDrillEventIntersectionExtended {}
 
 // Drill context for chart
-export interface IDrillEventContextPoint extends IDrillEventIntersection {
+export interface IDrillEventContextPointBase {
     type: ChartType;
     element: ChartElementType;
     elementChartType?: ChartType;
@@ -97,6 +118,11 @@ export interface IDrillEventContextPoint extends IDrillEventIntersection {
     z?: number;
     value?: string;
 }
+
+export interface IDrillEventContextPoint extends IDrillEventContextPointBase, IDrillEventIntersection {}
+export interface IDrillEventContextPointExtended
+    extends IDrillEventContextPointBase,
+        IDrillEventIntersectionExtended {}
 
 export interface IDrillPointBase {
     x: number;
@@ -110,10 +136,16 @@ export interface IDrillPointExtended extends IDrillPointBase, IDrillEventInterse
 
 // Drill context for chart element group (multiple series + click on axis value)
 // where every point has own intersection
-export interface IDrillEventContextGroup {
+export interface IDrillEventContextGroupBase {
     type: ChartType;
     element: ChartElementType;
+}
+export interface IDrillEventContextGroup extends IDrillEventContextGroupBase {
     points: IDrillPoint[];
+}
+
+export interface IDrillEventContextGroupExtended extends IDrillEventContextGroupBase {
+    points: IDrillPointExtended[];
 }
 
 // Drill context for all visualization types
@@ -165,7 +197,7 @@ export interface IHighchartsCategoriesTree {
 }
 
 export interface IHighchartsPointObject extends Highcharts.Point {
-    drillIntersection: IDrillEventIntersectionElement[];
+    drillIntersection: IDrillEventIntersectionElementExtended[];
     z?: number; // is missing in HCH's interface
     value?: number; // is missing in HCH's interface
 }
@@ -184,4 +216,5 @@ export interface ICellDrillEvent {
 export interface IDrillConfig {
     afm: AFM.IAfm;
     onFiredDrillEvent: OnFiredDrillEvent;
+    onDrill?: OnDrill;
 }

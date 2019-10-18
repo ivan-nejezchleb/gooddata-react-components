@@ -8,12 +8,14 @@ import { executionToAGGridAdapter } from "../agGridDataSource";
 import {
     getMeasureDrillItem,
     assignDrillItemsAndType,
-    getDrillIntersection,
     getDrillRowData,
-    getDrillIntersectionFromExtended,
+    convertDrillIntersectionToLegacy,
 } from "../agGridDrilling";
+
 import { IGridHeader } from "../agGridTypes";
 import { getTreeLeaves } from "../agGridUtils";
+// TODO INE move it to separate spec file
+import { getDrillIntersection } from "../../../visualizations/utils/drilldownEventing";
 
 const pivotTableWithColumnAndRowAttributes = fixtures.pivotTableWithColumnAndRowAttributes;
 const intl = createIntlMock();
@@ -189,7 +191,7 @@ describe("getDrillIntersection", () => {
     });
 });
 
-describe("getDrillIntersectionFromExtended", () => {
+describe("convertDrillIntersectionToLegacy", () => {
     const afm = pivotTableWithColumnAndRowAttributes.executionRequest.afm;
     const { columnDefs, rowData } = executionToAGGridAdapter(
         {
@@ -202,7 +204,7 @@ describe("getDrillIntersectionFromExtended", () => {
     it("should return intersection of row attribute and row attribute value for row header cell", async () => {
         const rowColDef = columnDefs[0]; // row header
         const drillItems = [...rowColDef.drillItems, rowData[0].headerItemMap[rowColDef.field]];
-        const intersection = getDrillIntersectionFromExtended(getDrillIntersection(drillItems), afm);
+        const intersection = convertDrillIntersectionToLegacy(getDrillIntersection(drillItems), afm);
         expect(intersection).toEqual([
             {
                 header: {
@@ -225,7 +227,7 @@ describe("getDrillIntersectionFromExtended", () => {
 
     it("should return intersection of all column header attributes and values and a measure for column header cell", async () => {
         const colDef = getTreeLeaves(columnDefs)[3]; // column leaf header
-        const intersection = getDrillIntersectionFromExtended(getDrillIntersection(colDef.drillItems), afm);
+        const intersection = convertDrillIntersectionToLegacy(getDrillIntersection(colDef.drillItems), afm);
         expect(intersection).toEqual([
             {
                 header: {
@@ -281,7 +283,7 @@ describe("getDrillIntersectionFromExtended", () => {
                 },
             },
         ];
-        const intersection = getDrillIntersectionFromExtended(getDrillIntersection(drillItems), afm);
+        const intersection = convertDrillIntersectionToLegacy(getDrillIntersection(drillItems), afm);
         expect(intersection).toEqual([
             {
                 id: "am1",

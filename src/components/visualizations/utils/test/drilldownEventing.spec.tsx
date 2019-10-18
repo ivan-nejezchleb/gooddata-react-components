@@ -7,7 +7,7 @@ import {
     chartClick,
     cellClick,
     createDrillIntersectionElement,
-    getDrillIntersectionFromExtended,
+    convertHeadlineDrillIntersectionToLegacy,
 } from "../drilldownEventing";
 import { VisualizationTypes } from "../../../../constants/visualizationTypes";
 import { SeriesChartTypes } from "../../../../constants/series";
@@ -758,9 +758,9 @@ describe("Drilldown Eventing", () => {
         });
     });
 
-    describe("getDrillIntersectionFromExtended", () => {
+    describe("convertHeadlineDrillIntersectionToLegacy", () => {
         it("should handle empty intersection", () => {
-            expect(getDrillIntersectionFromExtended([], afm)).toEqual([]);
+            expect(convertHeadlineDrillIntersectionToLegacy([], afm)).toEqual([]);
         });
 
         it("should convert IMeasureHeaderItem in extended selection", () => {
@@ -799,7 +799,7 @@ describe("Drilldown Eventing", () => {
                     },
                 },
             ];
-            expect(getDrillIntersectionFromExtended([drillIntersectionExteded], afm)).toEqual(
+            expect(convertHeadlineDrillIntersectionToLegacy([drillIntersectionExteded], afm)).toEqual(
                 expectedIntersection,
             );
         });

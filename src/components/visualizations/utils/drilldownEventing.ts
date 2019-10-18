@@ -12,7 +12,6 @@ import {
 } from "../../../constants/visualizationTypes";
 import {
     IDrillEvent,
-    IDrillEventContextGroup,
     IDrillEventIntersectionElement,
     IDrillEventContextTable,
     IDrillPoint,
@@ -20,16 +19,29 @@ import {
     IDrillConfig,
     ICellDrillEvent,
     isGroupHighchartsDrillEvent,
-    IDrillEventContextPoint,
     IDrillEventContext,
     IDrillEventIntersectionElementExtended,
+    IDrillEventContextExtended,
+    IDrillEventExtended,
+    IDrillPointExtended,
+    isMappingMeasureHeaderItem,
+    IDrillEventContextGroupExtended,
+    isDrillIntersectionAttributeItem,
+    IDrillPointBase,
+    IDrillEventContextPointExtended,
+    IDrillEventContextPointBase,
 } from "../../../interfaces/DrillEvents";
 import { OnFiredDrillEvent } from "../../../interfaces/Events";
-import { isComboChart, isHeatmap, isTreemap } from "./common";
+import { isComboChart, isHeatmap, isTreemap, getAttributeElementIdFromAttributeElementUri } from "./common";
 import { getVisualizationType } from "../../../helpers/visualizationType";
-import { isMappingHeaderMeasureItem } from "../../../interfaces/MappingHeader";
 import { getMasterMeasureObjQualifier } from "../../../helpers/afmHelper";
 import { AFM, Execution } from "@gooddata/typings";
+import {
+    IMappingHeader,
+    isMappingHeaderAttribute,
+    isMappingHeaderAttributeItem,
+    isMappingHeaderMeasureItem,
+} from "../../../interfaces/MappingHeader";
 
 export function getClickableElementNameByChartType(type: VisType): ChartElementType {
     switch (type) {
@@ -67,23 +79,26 @@ function fireEvent(onFiredDrillEvent: OnFiredDrillEvent, data: any, target: Even
     }
 }
 
+const getDrillPoint = (chartType: ChartType) => (point: IHighchartsPointObject): IDrillPointExtended => {
+    const customProps: Partial<IDrillPointBase> = isComboChart(chartType)
+        ? { type: get(point, "series.type") }
+        : {};
+
+    const result: IDrillPointExtended = {
+        x: point.x,
+        y: point.y,
+        intersection: point.drillIntersection,
+        ...customProps,
+    };
+    return result;
+};
+
 function composeDrillContextGroup(
     points: IHighchartsPointObject[],
     chartType: ChartType,
-): IDrillEventContextGroup {
+): IDrillEventContextGroupExtended {
     const sanitizedPoints = sanitizeContextPoints(chartType, points);
-    const contextPoints: IDrillPoint[] = sanitizedPoints.map((point: IHighchartsPointObject) => {
-        const customProps: Partial<IDrillPoint> = isComboChart(chartType)
-            ? { type: get(point, "series.type") }
-            : {};
-
-        return {
-            x: point.x,
-            y: point.y,
-            intersection: point.drillIntersection,
-            ...customProps,
-        };
-    });
+    const contextPoints: IDrillPointExtended[] = sanitizedPoints.map(getDrillPoint(chartType));
 
     return {
         type: chartType,
@@ -95,7 +110,7 @@ function composeDrillContextGroup(
 function composeDrillContextPoint(
     point: IHighchartsPointObject,
     chartType: ChartType,
-): IDrillEventContextPoint {
+): IDrillEventContextPointExtended {
     const zProp = isNaN(point.z) ? {} : { z: point.z };
     const valueProp =
         isTreemap(chartType) || isHeatmap(chartType)
@@ -111,7 +126,7 @@ function composeDrillContextPoint(
           };
 
     const elementChartType: ChartType = get(point, "series.type", chartType);
-    const customProp: Partial<IDrillEventContextPoint> = isComboChart(chartType)
+    const customProp: Partial<IDrillEventContextPointBase> = isComboChart(chartType)
         ? {
               elementChartType,
           }
@@ -128,6 +143,51 @@ function composeDrillContextPoint(
     };
 }
 
+const convertIntersectionToLegacy = (
+    intersection: IDrillEventIntersectionElementExtended[],
+    afm: AFM.IAfm,
+): IDrillEventIntersectionElement[] => {
+    return intersection.map((intersectionItem: IDrillEventIntersectionElementExtended) => {
+        const { header } = intersectionItem;
+        if (isDrillIntersectionAttributeItem(header)) {
+            const { uri: itemUri, name } = header.attributeHeaderItem;
+            const { uri, identifier } = header.attributeHeader;
+            return createDrillIntersectionElement(
+                getAttributeElementIdFromAttributeElementUri(itemUri),
+                name,
+                uri,
+                identifier,
+            );
+        } else if (isMappingMeasureHeaderItem(header)) {
+            return convertMeasureHeaderItem(header, afm);
+        }
+    });
+};
+
+const convertPointToLegacy = (afm: AFM.IAfm) => (point: IDrillPointExtended): IDrillPoint => {
+    return {
+        ...point,
+        intersection: convertIntersectionToLegacy(point.intersection, afm),
+    };
+};
+
+const convertDrillContextToLegacy = (
+    drillContext: IDrillEventContextExtended,
+    afm: AFM.IAfm,
+): IDrillEventContext => {
+    const isGroup = !!drillContext.points;
+    const pointsProp = isGroup
+        ? {
+              points: drillContext.points.map(convertPointToLegacy(afm)),
+          }
+        : {};
+    return {
+        type: drillContext.type,
+        element: drillContext.element,
+        ...pointsProp,
+    };
+};
+
 const chartClickDebounced = debounce(
     (
         drillConfig: IDrillConfig,
@@ -135,10 +195,9 @@ const chartClickDebounced = debounce(
         target: EventTarget,
         chartType: ChartType,
     ) => {
-        const { afm, onFiredDrillEvent } = drillConfig;
+        const { afm, onFiredDrillEvent, onDrill } = drillConfig;
         const type = getVisualizationType(chartType);
-        let drillContext: IDrillEventContext;
-
+        let drillContext: IDrillEventContextExtended = null;
         if (isGroupHighchartsDrillEvent(event)) {
             const points = event.points as IHighchartsPointObject[];
             drillContext = composeDrillContextGroup(points, type);
@@ -147,12 +206,22 @@ const chartClickDebounced = debounce(
             drillContext = composeDrillContextPoint(point, type);
         }
 
-        const data: IDrillEvent = {
+        const drillEventExtended: IDrillEventExtended = {
             executionContext: afm,
             drillContext,
         };
 
-        fireEvent(onFiredDrillEvent, data, target);
+        if (onDrill) {
+            onDrill(drillEventExtended);
+        }
+
+        const drillContextLegacy: IDrillEventContext = convertDrillContextToLegacy(drillContext, afm);
+        const drillEventLegacy: IDrillEvent = {
+            executionContext: afm,
+            drillContext: drillContextLegacy,
+        };
+
+        fireEvent(onFiredDrillEvent, drillEventLegacy, target);
     },
 );
 
@@ -165,6 +234,29 @@ export function chartClick(
     chartClickDebounced(drillConfig, event, target, chartType);
 }
 
+const getDrillEvent = (
+    points: IHighchartsPointObject[],
+    chartType: ChartType,
+    afm: AFM.IAfm,
+): IDrillEventExtended => {
+    const contextPoints: IDrillPointExtended[] = points.map((point: IHighchartsPointObject) => ({
+        x: point.x,
+        y: point.y,
+        intersection: point.drillIntersection,
+    }));
+
+    const drillContext: IDrillEventContextExtended = {
+        type: chartType,
+        element: "label",
+        points: contextPoints,
+    };
+
+    return {
+        executionContext: afm,
+        drillContext,
+    };
+};
+
 const tickLabelClickDebounce = debounce(
     (
         drillConfig: IDrillConfig,
@@ -172,18 +264,17 @@ const tickLabelClickDebounce = debounce(
         target: EventTarget,
         chartType: ChartType,
     ): void => {
-        const { afm, onFiredDrillEvent } = drillConfig;
+        const { afm, onFiredDrillEvent, onDrill } = drillConfig;
         const sanitizedPoints = sanitizeContextPoints(chartType, points);
-        const contextPoints: IDrillPoint[] = sanitizedPoints.map((point: IHighchartsPointObject) => ({
-            x: point.x,
-            y: point.y,
-            intersection: point.drillIntersection,
-        }));
-        const drillContext: IDrillEventContext = {
-            type: chartType,
-            element: "label",
-            points: contextPoints,
-        };
+
+        const dataExtended: IDrillEventExtended = getDrillEvent(sanitizedPoints, chartType, afm);
+
+        if (onDrill) {
+            onDrill(dataExtended);
+        }
+
+        const drillContext: IDrillEventContext = convertDrillContextToLegacy(dataExtended.drillContext, afm);
+
         const data: IDrillEvent = {
             executionContext: afm,
             drillContext,
@@ -253,39 +344,76 @@ export function createDrillIntersectionElement(
     return element;
 }
 
-export function getDrillIntersectionFromExtended(
+const convertMeasureHeaderItem = (
+    header: Execution.IMeasureHeaderItem,
+    afm: AFM.IAfm,
+): IDrillEventIntersectionElement => {
+    if (!isMappingMeasureHeaderItem(header)) {
+        throw new Error("Converting wrong item type, IMeasureHeaderItem expected!");
+    }
+
+    const { localIdentifier, name } = header.measureHeaderItem;
+
+    const masterMeasureQualifier = getMasterMeasureObjQualifier(afm, localIdentifier);
+
+    if (!masterMeasureQualifier) {
+        throw new Error("The metric ids has not been found in execution request!");
+    }
+    // TODO INE original code used alternative source of strings
+    //     const uri = masterMeasureQualifier.uri || header.uri;
+    //     const identifier = masterMeasureQualifier.identifier || header.identifier;
+    //     return createDrillIntersectionElement(localIdentifier, name, uri, identifier);
+    const id: string = localIdentifier;
+    const uri: string = masterMeasureQualifier.uri;
+    const identifier: string = masterMeasureQualifier.identifier;
+    return createDrillIntersectionElement(id, name, uri, identifier);
+};
+
+export function convertHeadlineDrillIntersectionToLegacy(
     intersectionExtended: IDrillEventIntersectionElementExtended[],
     afm: AFM.IAfm,
 ): IDrillEventIntersectionElement[] {
     return intersectionExtended
-        .filter(({ header }) => isMappingHeaderMeasureItem(header))
+        .filter(({ header }) => isMappingMeasureHeaderItem(header))
         .map(intersectionElement => {
-            const header = intersectionElement.header as Execution.IMeasureHeaderItem;
-
-            const masterMeasureQualifier = getMasterMeasureObjQualifier(
-                afm,
-                header.measureHeaderItem.localIdentifier,
-            );
-
-            if (!masterMeasureQualifier) {
-                throw new Error("The metric ids has not been found in execution request!");
-            }
-            const id: string = header.measureHeaderItem.localIdentifier;
-            const title: string = header.measureHeaderItem.name;
-            const uri: string = masterMeasureQualifier.uri;
-            const identifier: string = masterMeasureQualifier.identifier;
-            const element: IDrillEventIntersectionElement = {
-                id: id || "",
-                title: title || "",
-            };
-
-            if (uri || identifier) {
-                element.header = {
-                    uri: uri || "",
-                    identifier: identifier || "",
-                };
-            }
-
-            return element;
+            const { header } = intersectionElement;
+            return convertMeasureHeaderItem(header as Execution.IMeasureHeaderItem, afm);
         });
 }
+
+// shared by charts and table
+export const getDrillIntersection = (
+    drillItems: IMappingHeader[],
+): IDrillEventIntersectionElementExtended[] => {
+    return drillItems.reduce(
+        (
+            drillIntersection: IDrillEventIntersectionElementExtended[],
+            drillItem: IMappingHeader,
+            index: number,
+            drillItems: IMappingHeader[],
+        ): IDrillEventIntersectionElementExtended[] => {
+            if (isMappingHeaderAttribute(drillItem)) {
+                const attributeItem = drillItems[index - 1]; // attribute item is always before attribute
+                if (isMappingHeaderAttributeItem(attributeItem)) {
+                    drillIntersection.push({
+                        header: {
+                            ...attributeItem,
+                            ...drillItem,
+                        },
+                    });
+                } else {
+                    // no attr. item before attribute -> use only attribute header
+                    drillIntersection.push({
+                        header: drillItem,
+                    });
+                }
+            } else if (isMappingHeaderMeasureItem(drillItem)) {
+                drillIntersection.push({
+                    header: drillItem,
+                });
+            } // TODO INE what about total headers, can it be drilled?
+            return drillIntersection;
+        },
+        [],
+    );
+};

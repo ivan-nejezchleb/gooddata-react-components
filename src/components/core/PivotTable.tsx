@@ -2,7 +2,6 @@
 import { AFM, Execution, VisualizationObject } from "@gooddata/typings";
 import {
     BodyScrollEvent,
-    ColDef,
     ColumnResizedEvent,
     GridApi,
     GridReadyEvent,
@@ -39,7 +38,7 @@ import {
     IDrillEventExtended,
 } from "../../interfaces/DrillEvents";
 import { IHeaderPredicate } from "../../interfaces/HeaderPredicate";
-import { IMappingHeader } from "../../interfaces/MappingHeader";
+import { IMappingHeader, isMappingHeaderAttribute } from "../../interfaces/MappingHeader";
 import { IMenuAggregationClickConfig, IPivotTableConfig } from "../../interfaces/PivotTable";
 import { IDataSourceProviderInjectedProps } from "../afm/DataSourceProvider";
 import { LoadingComponent } from "../simple/LoadingComponent";
@@ -66,11 +65,7 @@ import {
     ROW_SUBTOTAL,
 } from "./pivotTable/agGridConst";
 import { createAgGridDataSource } from "./pivotTable/agGridDataSource";
-import {
-    getDrillIntersection,
-    getDrillRowData,
-    getDrillIntersectionFromExtended,
-} from "./pivotTable/agGridDrilling";
+import { getDrillRowData, convertDrillIntersectionToLegacy } from "./pivotTable/agGridDrilling";
 import { getSortsFromModel, isSortedByFirstAttibute } from "./pivotTable/agGridSorting";
 import {
     ICustomGridOptions,
@@ -106,6 +101,7 @@ import noop = require("lodash/noop");
 import sumBy = require("lodash/sumBy");
 
 import InjectedIntlProps = ReactIntl.InjectedIntlProps;
+import { getDrillIntersection } from "../visualizations/utils/drilldownEventing";
 
 export interface IPivotTableProps extends ICommonChartProps, IDataSourceProviderInjectedProps {
     totals?: VisualizationObject.IVisualizationTotal[];
@@ -118,7 +114,7 @@ export interface IPivotTableProps extends ICommonChartProps, IDataSourceProvider
 }
 
 export interface IPivotTableState {
-    columnDefs: ColDef[];
+    columnDefs: IGridHeader[];
     // rowData an an array of different objects depending on the content of the table.
     rowData: IGridRow[];
     execution: Execution.IExecutionResponses;
@@ -474,6 +470,32 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
         this.updateStickyRow();
     };
 
+    private getAttributeHeader(colId: string, columnDefs: IGridHeader[]): Execution.IAttributeHeader {
+        const matchingColDef: IGridHeader = columnDefs.find(
+            (columnDef: IGridHeader) => columnDef.field === colId,
+        );
+        if (matchingColDef && matchingColDef.drillItems.length === 1) {
+            const drillItemHeader = matchingColDef.drillItems[0];
+            if (isMappingHeaderAttribute(drillItemHeader)) {
+                return drillItemHeader;
+            }
+        }
+    }
+
+    private getItemAndAttributeHeaders = (
+        attributeItemHeaders: { [colId: string]: IMappingHeader },
+        columnDefs: IGridHeader[],
+    ): IMappingHeader[] => {
+        return Object.keys(attributeItemHeaders).reduce((headers: IMappingHeader[], colId: string) => {
+            const attributeHeader = this.getAttributeHeader(colId, columnDefs);
+            if (attributeHeader) {
+                headers.push(attributeItemHeaders[colId]);
+                headers.push(attributeHeader);
+            }
+            return headers;
+        }, []);
+    };
+
     private cellClicked = (cellEvent: IGridCellEvent) => {
         const {
             onFiredDrillEvent,
@@ -495,9 +517,14 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
         }
 
         const rowDrillItem = get(cellEvent, ["data", "headerItemMap", colDef.field]);
-        const drillItems: IMappingHeader[] = rowDrillItem
-            ? [...colDef.drillItems, rowDrillItem]
-            : colDef.drillItems;
+        let drillItems: IMappingHeader[];
+        if (rowDrillItem) {
+            drillItems = [rowDrillItem, ...colDef.drillItems];
+        } else {
+            const rowDrillItems = get(cellEvent, ["data", "headerItemMap"]);
+            const attributeHeaders = this.getItemAndAttributeHeaders(rowDrillItems, columnDefs);
+            drillItems = [...colDef.drillItems, ...attributeHeaders];
+        }
 
         const drillableHeaders = drillItems.filter((drillItem: IMappingHeader) =>
             isSomeHeaderPredicateMatched(drillablePredicates, drillItem, afm, executionResponse),
@@ -536,7 +563,7 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
             columnIndex,
             rowIndex,
             row,
-            intersection: getDrillIntersectionFromExtended(intersection, afm),
+            intersection: convertDrillIntersectionToLegacy(intersection, afm),
         };
         const drillEvent: IDrillEvent = {
             executionContext: afm,
