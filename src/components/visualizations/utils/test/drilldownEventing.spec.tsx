@@ -8,6 +8,7 @@ import {
     cellClick,
     createDrillIntersectionElement,
     convertHeadlineDrillIntersectionToLegacy,
+    getDrillIntersection,
 } from "../drilldownEventing";
 import { VisualizationTypes } from "../../../../constants/visualizationTypes";
 import { SeriesChartTypes } from "../../../../constants/series";
@@ -847,6 +848,84 @@ describe("Drilldown Eventing", () => {
             expect(convertHeadlineDrillIntersectionToLegacy([drillIntersectionExteded], afm)).toEqual(
                 expectedIntersection,
             );
+        });
+    });
+
+    describe("getDrillIntersection", () => {
+        it("should return correct intersection for bar chart with stack by and view by attributes", () => {
+            const dataSet = fixtures.barChartWithStackByAndViewByAttributes;
+            const { measureGroup, viewByAttribute, stackByAttribute } = getMVS(dataSet);
+            /*
+            "measureHeaderItem": {
+                "name": "Amount",
+                "format": "#,##0.00",
+                "localIdentifier": "amountMetric",
+                "uri": "/gdc/md/d20eyb3wfs0xe5l0lfscdnrnyhq1t42q/obj/1279",
+                "identifier": "ah1EuQxwaCqs"
+            }
+            */
+            const measures = [measureGroup.items[0].measureHeaderItem];
+
+            const viewByItem = {
+                ...viewByAttribute.items[0].attributeHeaderItem,
+                attribute: viewByAttribute,
+            };
+
+            const stackByItem = {
+                ...stackByAttribute.items[0].attributeHeaderItem,
+                attribute: stackByAttribute,
+            };
+
+            const { afm } = dataSet.executionRequest;
+            const drillIntersection = getDrillIntersection(stackByItem, [viewByItem], measures, afm);
+            expect(drillIntersection).toEqual([
+                {
+                    id: "amountMetric",
+                    title: "Amount",
+                    header: {
+                        identifier: "ah1EuQxwaCqs",
+                        uri: "/gdc/md/d20eyb3wfs0xe5l0lfscdnrnyhq1t42q/obj/1279",
+                    },
+                },
+                {
+                    id: "1226",
+                    title: "Direct Sales",
+                    header: {
+                        identifier: "label.owner.department",
+                        uri: "/gdc/md/d20eyb3wfs0xe5l0lfscdnrnyhq1t42q/obj/1027",
+                    },
+                },
+                {
+                    id: "1225",
+                    title: "East Coast",
+                    header: {
+                        identifier: "label.owner.region",
+                        uri: "/gdc/md/d20eyb3wfs0xe5l0lfscdnrnyhq1t42q/obj/1024",
+                    },
+                },
+            ]);
+        });
+
+        it("should return correct intersection for pie chart measures only", () => {
+            const dataSet = fixtures.pieChartWithMetricsOnly;
+            const { measureGroup } = getMVS(dataSet);
+            const measures = [measureGroup.items[0].measureHeaderItem];
+
+            const viewByItem: any = null;
+            const stackByItem: any = null;
+
+            const { afm } = dataSet.executionRequest;
+            const drillIntersection = getDrillIntersection(stackByItem, [viewByItem], measures, afm);
+            expect(drillIntersection).toEqual([
+                {
+                    id: "lostMetric",
+                    title: "Lost",
+                    header: {
+                        identifier: "af2Ewj9Re2vK",
+                        uri: "/gdc/md/d20eyb3wfs0xe5l0lfscdnrnyhq1t42q/obj/1283",
+                    },
+                },
+            ]);
         });
     });
 });
