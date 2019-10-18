@@ -13,7 +13,6 @@ import { VisualizationTypes } from "../../../../constants/visualizationTypes";
 import { SeriesChartTypes } from "../../../../constants/series";
 import {
     IDrillConfig,
-    IDrillEventIntersectionElement,
     IHighchartsPointObject,
     IDrillEventIntersectionElementExtended,
 } from "../../../../interfaces/DrillEvents";
@@ -42,27 +41,36 @@ describe("Drilldown Eventing", () => {
         value: 678.0,
         drillIntersection: [
             {
-                id: "id",
-                title: "title",
                 header: {
-                    identifier: "identifier1",
-                    uri: "uri1",
+                    measureHeaderItem: {
+                        uri: "uri1",
+                        identifier: "identifier1",
+                        localIdentifier: "id",
+                        name: "title",
+                        format: "",
+                    },
                 },
             },
             {
-                id: "id",
-                title: "title",
                 header: {
-                    identifier: "identifier2",
-                    uri: "uri2",
+                    measureHeaderItem: {
+                        uri: "uri2",
+                        identifier: "identifier2",
+                        localIdentifier: "id",
+                        name: "title",
+                        format: "",
+                    },
                 },
             },
             {
-                id: "id",
-                title: "title",
                 header: {
-                    identifier: "identifier3",
-                    uri: "uri3",
+                    measureHeaderItem: {
+                        uri: "uri3",
+                        identifier: "identifier3",
+                        localIdentifier: "id",
+                        name: "title",
+                        format: "",
+                    },
                 },
             },
         ],
@@ -195,29 +203,63 @@ describe("Drilldown Eventing", () => {
     });
 
     it("should remove duplicated values for heatmap", () => {
-        const drillIntersections: IDrillEventIntersectionElement[] = [
+        const drillIntersections: IDrillEventIntersectionElementExtended[] = [
             {
-                id: "1deea80aa5a54d1bbbc2e2de63989eef",
-                title: "Best Case",
                 header: {
-                    uri: "/gdc/md/dfnkvzqa683mz1c29ijdkydrsodm8wjw/obj/1282",
-                    identifier: "ac3EwmqvbxcX",
+                    attributeHeaderItem: {
+                        uri:
+                            "/gdc/md/dfnkvzqa683mz1c29ijdkydrsodm8wjw/obj/1281/elements?id=1deea80aa5a54d1bbbc2e2de63989eef",
+                        name: "Best Case",
+                    },
+                    attributeHeader: {
+                        uri: "/gdc/md/dfnkvzqa683mz1c29ijdkydrsodm8wjw/obj/1282",
+                        identifier: "ac3EwmqvbxcX",
+                        localIdentifier: "a1",
+                        name: "Case",
+                        formOf: {
+                            uri: "/gdc/md/dfnkvzqa683mz1c29ijdkydrsodm8wjw/obj/1281",
+                            identifier: "identifier1",
+                            name: "Case",
+                        },
+                    },
                 },
             },
             {
-                id: "168279",
-                title: "CompuSci",
                 header: {
-                    uri: "/gdc/md/dfnkvzqa683mz1c29ijdkydrsodm8wjw/obj/952",
-                    identifier: "label.product.id.name",
+                    attributeHeaderItem: {
+                        uri: "/gdc/md/dfnkvzqa683mz1c29ijdkydrsodm8wjw/obj/951/elements?id=168279",
+                        name: "CompuSci",
+                    },
+                    attributeHeader: {
+                        uri: "/gdc/md/dfnkvzqa683mz1c29ijdkydrsodm8wjw/obj/952",
+                        identifier: "label.product.id.name",
+                        localIdentifier: "a2",
+                        name: "Product",
+                        formOf: {
+                            uri: "/gdc/md/dfnkvzqa683mz1c29ijdkydrsodm8wjw/obj/951",
+                            identifier: "label.product.id",
+                            name: "Product",
+                        },
+                    },
                 },
             },
             {
-                id: "2010",
-                title: "2010",
                 header: {
-                    uri: "/gdc/md/dfnkvzqa683mz1c29ijdkydrsodm8wjw/obj/324",
-                    identifier: "closed.aag81lMifn6q",
+                    attributeHeaderItem: {
+                        uri: "/gdc/md/dfnkvzqa683mz1c29ijdkydrsodm8wjw/obj/323/elements?id=2010",
+                        name: "2010",
+                    },
+                    attributeHeader: {
+                        uri: "/gdc/md/dfnkvzqa683mz1c29ijdkydrsodm8wjw/obj/324",
+                        identifier: "closed.aag81lMifn6q",
+                        localIdentifier: "a3",
+                        name: "Closed",
+                        formOf: {
+                            uri: "/gdc/md/dfnkvzqa683mz1c29ijdkydrsodm8wjw/obj/323",
+                            identifier: "closed",
+                            name: "Closed",
+                        },
+                    },
                 },
             },
         ];
@@ -395,11 +437,14 @@ describe("Drilldown Eventing", () => {
             y: 2,
             drillIntersection: [
                 {
-                    id: "id",
-                    title: "title",
                     header: {
-                        identifier: "identifier1",
-                        uri: "uri1",
+                        measureHeaderItem: {
+                            uri: "uri1",
+                            identifier: "identifier1",
+                            localIdentifier: "id",
+                            name: "title",
+                            format: "",
+                        },
                     },
                 },
             ],

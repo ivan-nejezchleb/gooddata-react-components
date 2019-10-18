@@ -35,77 +35,8 @@ export const VisualizationByUri = () => (
     <div>
         <h1>Visualization by URI</h1>
 
-        <p>
-            These are the examples of the generic Visualization component that uses URI to identify insights.
-        </p>
-
-        <hr className="separator" />
-
-        <h2 id="column-chart">Column Chart</h2>
-        <ExampleWithSource
-            for={VisualizationColumnChartExample}
-            source={VisualizationColumnChartByUriExampleSRC}
-        />
-
-        <hr className="separator" />
-
-        <h2 id="table">Table</h2>
-        <ExampleWithSource for={VisualizationTableExample} source={VisualizationTableExampleSRC} />
-
-        <hr className="separator" />
-
-        <h2 id="bar">Bar Chart</h2>
-        <ExampleWithSource for={VisualizationBarExample} source={VisualizationBarExampleSRC} />
-
-        <hr className="separator" />
-
-        <h2 id="line">Line Chart</h2>
-        <ExampleWithSource for={VisualizationLineExample} source={VisualizationLineExampleSRC} />
-
-        <hr className="separator" />
-
         <h2 id="area">Stacked Area Chart</h2>
         <ExampleWithSource for={VisualizationAreaExample} source={VisualizationAreaExampleSRC} />
-
-        <hr className="separator" />
-
-        <h2 id="headline">Headline</h2>
-        <ExampleWithSource for={VisualizationHeadlineExample} source={VisualizationHeadlineExampleSRC} />
-
-        <hr className="separator" />
-
-        <h2 id="scatter">Scatter Plot</h2>
-        <ExampleWithSource for={VisualizationScatterExample} source={VisualizationScatterExampleSRC} />
-
-        <hr className="separator" />
-
-        <h2 id="bubble">Bubble Chart</h2>
-        <ExampleWithSource for={VisualizationBubbleExample} source={VisualizationBubbleExampleSRC} />
-
-        <hr className="separator" />
-
-        <h2 id="pie">Pie Chart</h2>
-        <ExampleWithSource for={VisualizationPieExample} source={VisualizationPieExampleSRC} />
-
-        <hr className="separator" />
-
-        <h2 id="donut">Donut Chart</h2>
-        <ExampleWithSource for={VisualizationDonutExample} source={VisualizationDonutExampleSRC} />
-
-        <hr className="separator" />
-
-        <h2 id="treemap">Treemap</h2>
-        <ExampleWithSource for={VisualizationTreemapExample} source={VisualizationTreemapExampleSRC} />
-
-        <hr className="separator" />
-
-        <h2 id="heatmap">Heatmap</h2>
-        <ExampleWithSource for={VisualizationHeatmapExample} source={VisualizationHeatmapExampleSRC} />
-
-        <hr className="separator" />
-
-        <h2 id="combo">Combo Chart</h2>
-        <ExampleWithSource for={VisualizationComboExample} source={VisualizationComboExampleSRC} />
     </div>
 );
 

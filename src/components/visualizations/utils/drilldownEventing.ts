@@ -411,7 +411,7 @@ export const getDrillIntersection = (
                 drillIntersection.push({
                     header: drillItem,
                 });
-            } // TODO INE what about total headers, can it be drilled?
+            }
             return drillIntersection;
         },
         [],
