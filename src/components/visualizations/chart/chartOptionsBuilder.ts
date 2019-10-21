@@ -1126,12 +1126,12 @@ export function getDrillableSeries(
                 if (drilldown) {
                     const headers: IMappingHeader[] = [
                         ...measureHeaders,
-                        stackByItemHeader,
-                        stackByAttributeHeader,
                         viewByChildItemHeader,
                         viewByChildAttributeHeader,
                         viewByParentItemHeader,
                         viewByParentAttributeHeader,
+                        stackByItemHeader,
+                        stackByAttributeHeader,
                     ];
                     const sanitizedHeaders = without([...headers], null);
                     drillableProps.drillIntersection = getDrillIntersection(sanitizedHeaders);

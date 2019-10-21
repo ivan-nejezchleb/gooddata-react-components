@@ -496,6 +496,15 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
         }, []);
     };
 
+    private getAttributeDrillItemsForMeasureDrill = (
+        cellEvent: IGridCellEvent,
+        columnDefs: IGridHeader[],
+    ): IMappingHeader[] => {
+        const rowDrillItems = get(cellEvent, ["data", "headerItemMap"]);
+        const attributeHeaders = this.getItemAndAttributeHeaders(rowDrillItems, columnDefs);
+        return [...attributeHeaders];
+    };
+
     private cellClicked = (cellEvent: IGridCellEvent) => {
         const {
             onFiredDrillEvent,
@@ -517,14 +526,9 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
         }
 
         const rowDrillItem = get(cellEvent, ["data", "headerItemMap", colDef.field]);
-        let drillItems: IMappingHeader[];
-        if (rowDrillItem) {
-            drillItems = [rowDrillItem, ...colDef.drillItems];
-        } else {
-            const rowDrillItems = get(cellEvent, ["data", "headerItemMap"]);
-            const attributeHeaders = this.getItemAndAttributeHeaders(rowDrillItems, columnDefs);
-            drillItems = [...colDef.drillItems, ...attributeHeaders];
-        }
+        const drillItems: IMappingHeader[] = rowDrillItem
+            ? [rowDrillItem, ...colDef.drillItems]
+            : colDef.drillItems;
 
         const drillableHeaders = drillItems.filter((drillItem: IMappingHeader) =>
             isSomeHeaderPredicateMatched(drillablePredicates, drillItem, afm, executionResponse),
@@ -537,7 +541,10 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
         const leafColumnDefs = getTreeLeaves(columnDefs);
         const columnIndex = leafColumnDefs.findIndex(gridHeader => gridHeader.field === colDef.field);
         const row = getDrillRowData(leafColumnDefs, cellEvent.data);
-        const intersection = getDrillIntersection(drillItems);
+        const completeDrillItems: IMappingHeader[] = rowDrillItem
+            ? drillItems
+            : [...drillItems, ...this.getAttributeDrillItemsForMeasureDrill(cellEvent, columnDefs)];
+        const intersection = getDrillIntersection(completeDrillItems);
 
         const drillContextExtended: IDrillEventContextTableExtended = {
             type: VisualizationTypes.TABLE,

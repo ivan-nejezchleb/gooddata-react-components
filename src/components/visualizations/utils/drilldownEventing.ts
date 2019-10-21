@@ -30,6 +30,7 @@ import {
     IDrillPointBase,
     IDrillEventContextPointExtended,
     IDrillEventContextPointBase,
+    IDrillEventContextBase,
 } from "../../../interfaces/DrillEvents";
 import { OnFiredDrillEvent } from "../../../interfaces/Events";
 import { isComboChart, isHeatmap, isTreemap, getAttributeElementIdFromAttributeElementUri } from "./common";
@@ -176,15 +177,16 @@ const convertDrillContextToLegacy = (
     afm: AFM.IAfm,
 ): IDrillEventContext => {
     const isGroup = !!drillContext.points;
-    const pointsProp = isGroup
+    const convertedProp = isGroup
         ? {
               points: drillContext.points.map(convertPointToLegacy(afm)),
           }
-        : {};
+        : {
+              intersection: convertIntersectionToLegacy(drillContext.intersection, afm),
+          };
     return {
-        type: drillContext.type,
-        element: drillContext.element,
-        ...pointsProp,
+        ...(drillContext as IDrillEventContextBase),
+        ...convertedProp,
     };
 };
 
@@ -352,20 +354,17 @@ const convertMeasureHeaderItem = (
         throw new Error("Converting wrong item type, IMeasureHeaderItem expected!");
     }
 
-    const { localIdentifier, name } = header.measureHeaderItem;
+    const { localIdentifier, name, uri: headerUri, identifier: headerIdentifier } = header.measureHeaderItem;
 
     const masterMeasureQualifier = getMasterMeasureObjQualifier(afm, localIdentifier);
 
     if (!masterMeasureQualifier) {
         throw new Error("The metric ids has not been found in execution request!");
     }
-    // TODO INE original code used alternative source of strings
-    //     const uri = masterMeasureQualifier.uri || header.uri;
-    //     const identifier = masterMeasureQualifier.identifier || header.identifier;
-    //     return createDrillIntersectionElement(localIdentifier, name, uri, identifier);
+
     const id: string = localIdentifier;
-    const uri: string = masterMeasureQualifier.uri;
-    const identifier: string = masterMeasureQualifier.identifier;
+    const uri = masterMeasureQualifier.uri || headerUri;
+    const identifier = masterMeasureQualifier.identifier || headerIdentifier;
     return createDrillIntersectionElement(id, name, uri, identifier);
 };
 
