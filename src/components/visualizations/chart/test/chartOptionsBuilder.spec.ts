@@ -1698,10 +1698,8 @@ describe("chartOptionsBuilder", () => {
                         },
                         {
                             header: {
-                                attributeHeader:
-                                    dataSet.executionResponse.dimensions[1].headers[0].attributeHeader,
-                                attributeHeaderItem:
-                                    dataSet.executionResult.headerItems[1][0][0].attributeHeaderItem,
+                                ...dataSet.executionResponse.dimensions[1].headers[0],
+                                ...dataSet.executionResult.headerItems[1][0][0],
                             },
                         },
                     ],
@@ -1814,10 +1812,8 @@ describe("chartOptionsBuilder", () => {
                     },
                     {
                         header: {
-                            attributeHeader:
-                                dataSet.executionResponse.dimensions[0].headers[0].attributeHeader,
-                            attributeHeaderItem:
-                                dataSet.executionResult.headerItems[0][0][8].attributeHeaderItem,
+                            ...dataSet.executionResponse.dimensions[0].headers[0],
+                            ...dataSet.executionResult.headerItems[0][0][8],
                         },
                     },
                 ];
@@ -2120,10 +2116,8 @@ describe("chartOptionsBuilder", () => {
                             },
                             {
                                 header: {
-                                    attributeHeader:
-                                        dataSet.executionResponse.dimensions[1].headers[0].attributeHeader,
-                                    attributeHeaderItem:
-                                        dataSet.executionResult.headerItems[1][0][0].attributeHeaderItem,
+                                    ...dataSet.executionResponse.dimensions[1].headers[0],
+                                    ...dataSet.executionResult.headerItems[1][0][0],
                                 },
                             },
                         ],
@@ -2136,10 +2130,8 @@ describe("chartOptionsBuilder", () => {
                             },
                             {
                                 header: {
-                                    attributeHeader:
-                                        dataSet.executionResponse.dimensions[1].headers[0].attributeHeader,
-                                    attributeHeaderItem:
-                                        dataSet.executionResult.headerItems[1][0][0].attributeHeaderItem,
+                                    ...dataSet.executionResponse.dimensions[1].headers[0],
+                                    ...dataSet.executionResult.headerItems[1][0][0],
                                 },
                             },
                         ],

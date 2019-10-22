@@ -16,6 +16,7 @@ import {
     IDrillConfig,
     IHighchartsPointObject,
     IDrillEventIntersectionElementExtended,
+    IDrillEventIntersectionElement,
 } from "../../../../interfaces/DrillEvents";
 import { IMappingHeader } from "../../../../interfaces/MappingHeader";
 import { executionToAGGridAdapter } from "../../../core/pivotTable/agGridDataSource";
@@ -25,22 +26,46 @@ import { getTreeLeaves } from "../../../core/pivotTable/agGridUtils";
 
 describe("Drilldown Eventing", () => {
     jest.useFakeTimers();
-    const ADHOC_MEASURE_LOCAL_IDENTIFIER = "m1";
-    const ADHOC_MEASURE_URI = "/gdc/md/projectId/obj/2";
-    const afm: AFM.IAfm = {
+    const simpleAfm: AFM.IAfm = {
         measures: [
             {
-                localIdentifier: ADHOC_MEASURE_LOCAL_IDENTIFIER,
+                localIdentifier: "id1",
                 definition: {
                     measure: {
                         item: {
-                            uri: ADHOC_MEASURE_URI,
+                            uri: "uri1",
                         },
                     },
                 },
             },
         ],
     };
+    const afm: AFM.IAfm = {
+        measures: [
+            ...simpleAfm.measures,
+            {
+                localIdentifier: "id2",
+                definition: {
+                    measure: {
+                        item: {
+                            uri: "uri2",
+                        },
+                    },
+                },
+            },
+            {
+                localIdentifier: "id3",
+                definition: {
+                    measure: {
+                        item: {
+                            uri: "uri3",
+                        },
+                    },
+                },
+            },
+        ],
+    };
+
     const point: Partial<IHighchartsPointObject> = {
         x: 1,
         y: 2,
@@ -51,7 +76,7 @@ describe("Drilldown Eventing", () => {
                     measureHeaderItem: {
                         uri: "uri1",
                         identifier: "identifier1",
-                        localIdentifier: "id",
+                        localIdentifier: "id1",
                         name: "title",
                         format: "",
                     },
@@ -62,7 +87,7 @@ describe("Drilldown Eventing", () => {
                     measureHeaderItem: {
                         uri: "uri2",
                         identifier: "identifier2",
-                        localIdentifier: "id",
+                        localIdentifier: "id2",
                         name: "title",
                         format: "",
                     },
@@ -73,7 +98,7 @@ describe("Drilldown Eventing", () => {
                     measureHeaderItem: {
                         uri: "uri3",
                         identifier: "identifier3",
-                        localIdentifier: "id",
+                        localIdentifier: "id3",
                         name: "title",
                         format: "",
                     },
@@ -81,6 +106,33 @@ describe("Drilldown Eventing", () => {
             },
         ],
     };
+    const expectedLegacyIntersection: IDrillEventIntersectionElement[] = [
+        {
+            id: "id1",
+            title: "title",
+            header: {
+                uri: "uri1",
+                identifier: "identifier1",
+            },
+        },
+        {
+            id: "id2",
+            title: "title",
+            header: {
+                uri: "uri2",
+                identifier: "identifier2",
+            },
+        },
+        {
+            id: "id3",
+            title: "title",
+            header: {
+                uri: "uri3",
+                identifier: "identifier3",
+            },
+        },
+    ];
+
     const pointClickEventData = ({ point } as any) as Highcharts.DrilldownEventObject;
 
     it("should get clickable chart element name", () => {
@@ -115,6 +167,7 @@ describe("Drilldown Eventing", () => {
 
         const drillContext = target.dispatchEvent.mock.calls[0][0].detail.drillContext;
         expect(drillContext.element).toEqual("point");
+        // TODO INE add expect for onDrill
     });
 
     it("should call default fire event on point click and fire correct data", () => {
@@ -128,51 +181,13 @@ describe("Drilldown Eventing", () => {
         expect(target.dispatchEvent).toHaveBeenCalled();
 
         expect(target.dispatchEvent.mock.calls[0][0].detail).toEqual({
-            executionContext: {
-                measures: [
-                    {
-                        localIdentifier: ADHOC_MEASURE_LOCAL_IDENTIFIER,
-                        definition: {
-                            measure: {
-                                item: {
-                                    uri: ADHOC_MEASURE_URI,
-                                },
-                            },
-                        },
-                    },
-                ],
-            },
+            executionContext: afm,
             drillContext: {
                 type: "line",
                 element: "point",
                 x: 1,
                 y: 2,
-                intersection: [
-                    {
-                        id: "id",
-                        title: "title",
-                        header: {
-                            identifier: "identifier1",
-                            uri: "uri1",
-                        },
-                    },
-                    {
-                        id: "id",
-                        title: "title",
-                        header: {
-                            identifier: "identifier2",
-                            uri: "uri2",
-                        },
-                    },
-                    {
-                        id: "id",
-                        title: "title",
-                        header: {
-                            identifier: "identifier3",
-                            uri: "uri3",
-                        },
-                    },
-                ],
+                intersection: expectedLegacyIntersection,
             },
         });
     });
@@ -296,6 +311,33 @@ describe("Drilldown Eventing", () => {
         const drillConfig = { afm, onFiredDrillEvent: () => true };
         const target = { dispatchEvent: jest.fn() };
 
+        const expectedLegacyIntersectionWithEmptyValues: IDrillEventIntersectionElement[] = [
+            {
+                id: "1deea80aa5a54d1bbbc2e2de63989eef",
+                title: "Best Case",
+                header: {
+                    uri: "/gdc/md/dfnkvzqa683mz1c29ijdkydrsodm8wjw/obj/1282",
+                    identifier: "ac3EwmqvbxcX",
+                },
+            },
+            {
+                id: "168279",
+                title: "CompuSci",
+                header: {
+                    uri: "/gdc/md/dfnkvzqa683mz1c29ijdkydrsodm8wjw/obj/952",
+                    identifier: "label.product.id.name",
+                },
+            },
+            {
+                id: "2010",
+                title: "2010",
+                header: {
+                    uri: "/gdc/md/dfnkvzqa683mz1c29ijdkydrsodm8wjw/obj/324",
+                    identifier: "closed.aag81lMifn6q",
+                },
+            },
+        ];
+
         chartClick(
             drillConfig,
             pointClickWithEmptyEventData,
@@ -309,22 +351,22 @@ describe("Drilldown Eventing", () => {
 
         expect(target.dispatchEvent.mock.calls[0][0].detail.drillContext.points).toEqual([
             {
-                intersection: drillIntersections,
+                intersection: expectedLegacyIntersectionWithEmptyValues,
                 x: 0,
                 y: 0,
             },
             {
-                intersection: drillIntersections,
+                intersection: expectedLegacyIntersectionWithEmptyValues,
                 x: 0,
                 y: 1,
             },
             {
-                intersection: drillIntersections,
+                intersection: expectedLegacyIntersectionWithEmptyValues,
                 x: 0,
                 y: 2,
             },
             {
-                intersection: drillIntersections,
+                intersection: expectedLegacyIntersectionWithEmptyValues,
                 x: 0,
                 y: 3,
             },
@@ -334,13 +376,13 @@ describe("Drilldown Eventing", () => {
     it("should correctly handle z coordinate of point", () => {
         const drillConfig = { afm, onFiredDrillEvent: () => true };
         const target = { dispatchEvent: jest.fn() };
-        const pointClickWitZEventData = cloneDeep(pointClickEventData);
+        const pointClickWithZEventData = cloneDeep(pointClickEventData);
 
-        pointClickWitZEventData.point.z = 12000;
+        pointClickWithZEventData.point.z = 12000;
 
         chartClick(
             drillConfig,
-            pointClickWitZEventData,
+            pointClickWithZEventData,
             (target as any) as EventTarget,
             VisualizationTypes.BUBBLE,
         );
@@ -350,52 +392,14 @@ describe("Drilldown Eventing", () => {
         expect(target.dispatchEvent).toHaveBeenCalled();
 
         expect(target.dispatchEvent.mock.calls[0][0].detail).toEqual({
-            executionContext: {
-                measures: [
-                    {
-                        localIdentifier: ADHOC_MEASURE_LOCAL_IDENTIFIER,
-                        definition: {
-                            measure: {
-                                item: {
-                                    uri: ADHOC_MEASURE_URI,
-                                },
-                            },
-                        },
-                    },
-                ],
-            },
+            executionContext: afm,
             drillContext: {
                 type: "bubble",
                 element: "point",
                 x: 1,
                 y: 2,
                 z: 12000,
-                intersection: [
-                    {
-                        id: "id",
-                        title: "title",
-                        header: {
-                            identifier: "identifier1",
-                            uri: "uri1",
-                        },
-                    },
-                    {
-                        id: "id",
-                        title: "title",
-                        header: {
-                            identifier: "identifier2",
-                            uri: "uri2",
-                        },
-                    },
-                    {
-                        id: "id",
-                        title: "title",
-                        header: {
-                            identifier: "identifier3",
-                            uri: "uri3",
-                        },
-                    },
-                ],
+                intersection: expectedLegacyIntersection,
             },
         });
     });
@@ -436,7 +440,7 @@ describe("Drilldown Eventing", () => {
     });
 
     it("should call fire event on label click", () => {
-        const drillConfig = { afm, onFiredDrillEvent: () => true };
+        const drillConfig = { afm: simpleAfm, onFiredDrillEvent: () => true };
         const target = { dispatchEvent: jest.fn() };
         const clickedPoint: Partial<IHighchartsPointObject> = {
             x: 1,
@@ -447,7 +451,7 @@ describe("Drilldown Eventing", () => {
                         measureHeaderItem: {
                             uri: "uri1",
                             identifier: "identifier1",
-                            localIdentifier: "id",
+                            localIdentifier: "id1",
                             name: "title",
                             format: "",
                         },
@@ -469,11 +473,11 @@ describe("Drilldown Eventing", () => {
             executionContext: {
                 measures: [
                     {
-                        localIdentifier: ADHOC_MEASURE_LOCAL_IDENTIFIER,
+                        localIdentifier: "id1",
                         definition: {
                             measure: {
                                 item: {
-                                    uri: ADHOC_MEASURE_URI,
+                                    uri: "uri1",
                                 },
                             },
                         },
@@ -487,16 +491,7 @@ describe("Drilldown Eventing", () => {
                     {
                         x: 1,
                         y: 2,
-                        intersection: [
-                            {
-                                id: "id",
-                                title: "title",
-                                header: {
-                                    identifier: "identifier1",
-                                    uri: "uri1",
-                                },
-                            },
-                        ],
+                        intersection: [expectedLegacyIntersection[0]],
                     },
                 ],
             },
@@ -504,7 +499,7 @@ describe("Drilldown Eventing", () => {
     });
 
     it("should call fire event on cell click", () => {
-        const drillConfig = { afm, onFiredDrillEvent: () => true };
+        const drillConfig = { afm: simpleAfm, onFiredDrillEvent: () => true };
         const target = { dispatchEvent: jest.fn() };
         const cellClickEventData = {
             columnIndex: 1,
@@ -527,20 +522,7 @@ describe("Drilldown Eventing", () => {
         expect(target.dispatchEvent).toHaveBeenCalled();
 
         expect(target.dispatchEvent.mock.calls[0][0].detail).toEqual({
-            executionContext: {
-                measures: [
-                    {
-                        localIdentifier: ADHOC_MEASURE_LOCAL_IDENTIFIER,
-                        definition: {
-                            measure: {
-                                item: {
-                                    uri: ADHOC_MEASURE_URI,
-                                },
-                            },
-                        },
-                    },
-                ],
-            },
+            executionContext: simpleAfm,
             drillContext: {
                 type: "table",
                 element: "cell",
@@ -705,6 +687,45 @@ describe("Drilldown Eventing", () => {
             drillIntersection,
         } as any;
 
+        const lineAfm: AFM.IAfm = {
+            measures: [
+                {
+                    localIdentifier: "id4",
+                    definition: {
+                        measure: {
+                            item: {
+                                uri: "uri4",
+                            },
+                        },
+                    },
+                },
+                {
+                    localIdentifier: "id5",
+                    definition: {
+                        measure: {
+                            item: {
+                                uri: "uri5",
+                            },
+                        },
+                    },
+                },
+                {
+                    localIdentifier: "id6",
+                    definition: {
+                        measure: {
+                            item: {
+                                uri: "uri6",
+                            },
+                        },
+                    },
+                },
+            ],
+        };
+
+        const comboAfm = {
+            measures: [...afm.measures, ...lineAfm.measures],
+        };
+
         const expectedLinePointIntersection = [
             {
                 id: "id4",
@@ -733,7 +754,7 @@ describe("Drilldown Eventing", () => {
         ];
 
         it("should return chart type for each point", () => {
-            const drillConfig: IDrillConfig = { afm, onFiredDrillEvent: jest.fn() };
+            const drillConfig: IDrillConfig = { afm: comboAfm, onFiredDrillEvent: jest.fn() };
             const target: any = { dispatchEvent: jest.fn() };
             const pointClickEventData: Highcharts.DrilldownEventObject = {
                 point: columnPoint,
@@ -754,13 +775,13 @@ describe("Drilldown Eventing", () => {
                     {
                         x: columnPoint.x,
                         y: columnPoint.y,
-                        intersection: columnPoint.drillIntersection,
+                        intersection: expectedLegacyIntersection,
                         type: SeriesChartTypes.COLUMN,
                     },
                     {
                         x: linePoint.x,
                         y: linePoint.y,
-                        intersection: linePoint.drillIntersection,
+                        intersection: expectedLinePointIntersection,
                         type: SeriesChartTypes.LINE,
                     },
                 ],
@@ -768,12 +789,39 @@ describe("Drilldown Eventing", () => {
         });
 
         it("should fire event on cell click and fire correct data", () => {
-            const drillConfig: IDrillConfig = { afm, onFiredDrillEvent: () => true };
+            const drillConfig: IDrillConfig = { afm: lineAfm, onFiredDrillEvent: () => true };
             const target: any = { dispatchEvent: jest.fn() };
             const pointClickEventData: Highcharts.DrilldownEventObject = {
                 point: linePoint,
                 points: null,
             } as any;
+
+            const expectedLegacyIntersection: IDrillEventIntersectionElement[] = [
+                {
+                    id: "id4",
+                    title: "title4",
+                    header: {
+                        uri: "uri4",
+                        identifier: "identifier4",
+                    },
+                },
+                {
+                    id: "id5",
+                    title: "title5",
+                    header: {
+                        uri: "uri5",
+                        identifier: "identifier5",
+                    },
+                },
+                {
+                    id: "id6",
+                    title: "title6",
+                    header: {
+                        uri: "uri6",
+                        identifier: "identifier6",
+                    },
+                },
+            ];
 
             chartClick(drillConfig, pointClickEventData, target as EventTarget, VisualizationTypes.COMBO2);
 
@@ -781,14 +829,14 @@ describe("Drilldown Eventing", () => {
 
             expect(target.dispatchEvent).toHaveBeenCalled();
             expect(target.dispatchEvent.mock.calls[0][0].detail).toEqual({
-                executionContext: afm,
+                executionContext: lineAfm,
                 drillContext: {
                     type: VisualizationTypes.COMBO,
                     element: "point",
                     elementChartType: SeriesChartTypes.LINE,
                     x: linePoint.x,
                     y: linePoint.y,
-                    intersection: linePoint.drillIntersection,
+                    intersection: expectedLegacyIntersection,
                 },
             });
         });
@@ -800,7 +848,6 @@ describe("Drilldown Eventing", () => {
                 point: columnPoint,
                 points: [columnPoint],
             } as any;
-
             chartClick(drillConfig, pointClickEventData, target as EventTarget, VisualizationTypes.COLUMN);
 
             jest.runAllTimers();
@@ -815,14 +862,14 @@ describe("Drilldown Eventing", () => {
                     {
                         x: columnPoint.x,
                         y: columnPoint.y,
-                        intersection: columnPoint.drillIntersection,
+                        intersection: expectedLegacyIntersection,
                     },
                 ],
             });
         });
 
         it("should NOT add elementChartType on cell click if it is not Combo chart", () => {
-            const drillConfig: IDrillConfig = { afm, onFiredDrillEvent: () => true };
+            const drillConfig: IDrillConfig = { afm: lineAfm, onFiredDrillEvent: () => true };
             const target: any = { dispatchEvent: jest.fn() };
             const pointClickEventData: Highcharts.DrilldownEventObject = {
                 point: linePoint,
@@ -835,7 +882,7 @@ describe("Drilldown Eventing", () => {
 
             expect(target.dispatchEvent).toHaveBeenCalled();
             expect(target.dispatchEvent.mock.calls[0][0].detail).toEqual({
-                executionContext: afm,
+                executionContext: lineAfm,
                 drillContext: {
                     type: VisualizationTypes.LINE,
                     element: "point",
@@ -867,7 +914,7 @@ describe("Drilldown Eventing", () => {
                     },
                 ],
             };
-            const drillIntersectionExteded: IDrillEventIntersectionElementExtended = {
+            const drillIntersectionExtended: IDrillEventIntersectionElementExtended = {
                 header: {
                     measureHeaderItem: {
                         name: "Lost",
@@ -888,7 +935,7 @@ describe("Drilldown Eventing", () => {
                     },
                 },
             ];
-            expect(convertHeadlineDrillIntersectionToLegacy([drillIntersectionExteded], afm)).toEqual(
+            expect(convertHeadlineDrillIntersectionToLegacy([drillIntersectionExtended], afm)).toEqual(
                 expectedIntersection,
             );
         });
@@ -953,7 +1000,7 @@ describe("Drilldown Eventing", () => {
             ]);
         });
 
-        describe(" for table", () => {
+        describe("for table", () => {
             const intl = createIntlMock();
             const { columnDefs, rowData } = executionToAGGridAdapter(
                 {
@@ -969,10 +1016,10 @@ describe("Drilldown Eventing", () => {
                 const intersection = getDrillIntersection(drillItems);
                 expect(intersection).toEqual([
                     {
-                        header: drillItems[0],
-                    },
-                    {
-                        header: drillItems[1],
+                        header: {
+                            ...drillItems[0],
+                            ...drillItems[1],
+                        },
                     },
                 ]);
             });
@@ -982,16 +1029,16 @@ describe("Drilldown Eventing", () => {
                 const intersection = getDrillIntersection(colDef.drillItems);
                 expect(intersection).toEqual([
                     {
-                        header: colDef.drillItems[0],
+                        header: {
+                            ...colDef.drillItems[0],
+                            ...colDef.drillItems[1],
+                        },
                     },
                     {
-                        header: colDef.drillItems[1],
-                    },
-                    {
-                        header: colDef.drillItems[2],
-                    },
-                    {
-                        header: colDef.drillItems[3],
+                        header: {
+                            ...colDef.drillItems[2],
+                            ...colDef.drillItems[3],
+                        },
                     },
                     {
                         header: colDef.drillItems[4],
