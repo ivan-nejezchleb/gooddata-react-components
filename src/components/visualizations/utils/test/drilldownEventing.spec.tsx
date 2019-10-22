@@ -18,6 +18,10 @@ import {
     IDrillEventIntersectionElementExtended,
 } from "../../../../interfaces/DrillEvents";
 import { IMappingHeader } from "../../../../interfaces/MappingHeader";
+import { executionToAGGridAdapter } from "../../../core/pivotTable/agGridDataSource";
+import { pivotTableWithColumnAndRowAttributes } from "../../../../../stories/test_data/fixtures";
+import { createIntlMock } from "../intlUtils";
+import { getTreeLeaves } from "../../../core/pivotTable/agGridUtils";
 
 describe("Drilldown Eventing", () => {
     jest.useFakeTimers();
@@ -657,38 +661,76 @@ describe("Drilldown Eventing", () => {
             series: { type: SeriesChartTypes.COLUMN },
         } as any;
 
-        const linePoint: IHighchartsPointObject = {
+        const drillIntersection: IDrillEventIntersectionElementExtended[] = [
+            {
+                header: {
+                    measureHeaderItem: {
+                        uri: "uri4",
+                        identifier: "identifier4",
+                        localIdentifier: "id4",
+                        name: "title4",
+                        format: "",
+                    },
+                },
+            },
+            {
+                header: {
+                    measureHeaderItem: {
+                        uri: "uri5",
+                        identifier: "identifier5",
+                        localIdentifier: "id5",
+                        name: "title5",
+                        format: "",
+                    },
+                },
+            },
+            {
+                header: {
+                    measureHeaderItem: {
+                        uri: "uri6",
+                        identifier: "identifier6",
+                        localIdentifier: "id6",
+                        name: "title6",
+                        format: "",
+                    },
+                },
+            },
+        ];
+
+        const linePoint: Partial<IHighchartsPointObject> = {
             ...point,
             x: 2,
             y: 3,
             series: { type: SeriesChartTypes.LINE },
-            drillIntersection: [
-                {
-                    id: "id4",
-                    title: "title4",
-                    header: {
-                        identifier: "identifier4",
-                        uri: "uri4",
-                    },
-                },
-                {
-                    id: "id5",
-                    title: "title5",
-                    header: {
-                        identifier: "identifier5",
-                        uri: "uri5",
-                    },
-                },
-                {
-                    id: "id6",
-                    title: "title6",
-                    header: {
-                        identifier: "identifier6",
-                        uri: "uri6",
-                    },
-                },
-            ],
+            drillIntersection,
         } as any;
+
+        const expectedLinePointIntersection = [
+            {
+                id: "id4",
+                title: "title4",
+                header: {
+                    identifier: "identifier4",
+                    uri: "uri4",
+                },
+            },
+            {
+                id: "id5",
+                title: "title5",
+                header: {
+                    identifier: "identifier5",
+                    uri: "uri5",
+                },
+            },
+            {
+                id: "id6",
+                title: "title6",
+                header: {
+                    identifier: "identifier6",
+                    uri: "uri6",
+                },
+            },
+        ];
 
         it("should return chart type for each point", () => {
             const drillConfig: IDrillConfig = { afm, onFiredDrillEvent: jest.fn() };
@@ -799,7 +841,7 @@ describe("Drilldown Eventing", () => {
                     element: "point",
                     x: linePoint.x,
                     y: linePoint.y,
-                    intersection: linePoint.drillIntersection,
+                    intersection: expectedLinePointIntersection,
                 },
             });
         });
@@ -909,6 +951,72 @@ describe("Drilldown Eventing", () => {
                     header: measureHeader2,
                 },
             ]);
+        });
+
+        describe(" for table", () => {
+            const intl = createIntlMock();
+            const { columnDefs, rowData } = executionToAGGridAdapter(
+                {
+                    executionResponse: pivotTableWithColumnAndRowAttributes.executionResponse,
+                    executionResult: pivotTableWithColumnAndRowAttributes.executionResult,
+                },
+                {},
+                intl,
+            );
+            it("should return intersection of row attribute and row attribute value for row header cell", async () => {
+                const rowColDef = columnDefs[0]; // row header
+                const drillItems = [rowData[0].headerItemMap[rowColDef.field], ...rowColDef.drillItems];
+                const intersection = getDrillIntersection(drillItems);
+                expect(intersection).toEqual([
+                    {
+                        header: drillItems[0],
+                    },
+                    {
+                        header: drillItems[1],
+                    },
+                ]);
+            });
+
+            it("should return intersection of all column header attributes and values and a measure for column header cell", async () => {
+                const colDef = getTreeLeaves(columnDefs)[3]; // column leaf header
+                const intersection = getDrillIntersection(colDef.drillItems);
+                expect(intersection).toEqual([
+                    {
+                        header: colDef.drillItems[0],
+                    },
+                    {
+                        header: colDef.drillItems[1],
+                    },
+                    {
+                        header: colDef.drillItems[2],
+                    },
+                    {
+                        header: colDef.drillItems[3],
+                    },
+                    {
+                        header: colDef.drillItems[4],
+                    },
+                ]);
+            });
+
+            // tslint:disable-next-line:max-line-length
+            it("should return intersection without header property when measure has neither uri nor identifier (arithmetic measure)", async () => {
+                const drillItems: IMappingHeader[] = [
+                    {
+                        measureHeaderItem: {
+                            localIdentifier: "am1",
+                            name: "Arithmetic measure",
+                            format: "",
+                        },
+                    },
+                ];
+                const intersection = getDrillIntersection(drillItems);
+                expect(intersection).toEqual([
+                    {
+                        header: drillItems[0],
+                    },
+                ]);
+            });
         });
     });
 });

@@ -96,6 +96,7 @@ import { NORMAL_STACK, PERCENT_STACK } from "./highcharts/getOptionalStackingCon
 import { getCategoriesForTwoAttributes } from "./chartOptions/extendedStackingChartOptions";
 import { setMeasuresToSecondaryAxis } from "../../../helpers/dualAxis";
 import { isCssMultiLineTruncationSupported } from "../../../helpers/domUtils";
+import omit = require("lodash/omit");
 
 const TOOLTIP_PADDING = 10;
 
@@ -174,12 +175,12 @@ export const supportedStackingAttributesChartTypes = [
 
 type UnwrappedAttributeHeader = Execution.IAttributeHeader["attributeHeader"];
 
-export interface IUnwrappedAttributeHeadersWithItems extends UnwrappedAttributeHeader {
+export interface IUnwrappedAttributeHeaderWithItems extends UnwrappedAttributeHeader {
     items: Execution.IResultAttributeHeaderItem[];
 }
 type UnwrappedAttributeHeaderItem = Execution.IResultAttributeHeaderItem["attributeHeaderItem"];
 export interface IAttributeItem extends UnwrappedAttributeHeaderItem {
-    attribute: IUnwrappedAttributeHeadersWithItems;
+    attribute: IUnwrappedAttributeHeaderWithItems;
 }
 
 export type UnwrappedMeasureHeaderItem = Execution.IMeasureHeaderItem["measureHeaderItem"];
@@ -299,8 +300,8 @@ export function getSeriesItemData(
     seriesItem: string[],
     seriesIndex: number,
     measureGroup: Execution.IMeasureGroupHeader["measureGroupHeader"],
-    viewByAttribute: IUnwrappedAttributeHeadersWithItems,
-    stackByAttribute: IUnwrappedAttributeHeadersWithItems,
+    viewByAttribute: IUnwrappedAttributeHeaderWithItems,
+    stackByAttribute: IUnwrappedAttributeHeaderWithItems,
     type: string,
     colorStrategy: IColorStrategy,
 ) {
@@ -532,8 +533,8 @@ function isLastSerie(seriesIndex: number, dataLength: number) {
 export function getTreemapStackedSeriesDataWithViewBy(
     executionResultData: Execution.DataValue[][],
     measureGroup: Execution.IMeasureGroupHeader["measureGroupHeader"],
-    viewByAttribute: IUnwrappedAttributeHeadersWithItems,
-    stackByAttribute: IUnwrappedAttributeHeadersWithItems,
+    viewByAttribute: IUnwrappedAttributeHeaderWithItems,
+    stackByAttribute: IUnwrappedAttributeHeaderWithItems,
     colorStrategy: IColorStrategy,
 ): any[] {
     const roots: any = [];
@@ -626,8 +627,8 @@ export function getTreemapStackedSeriesDataWithMeasures(
 export function getTreemapStackedSeries(
     executionResultData: Execution.DataValue[][],
     measureGroup: Execution.IMeasureGroupHeader["measureGroupHeader"],
-    viewByAttribute: IUnwrappedAttributeHeadersWithItems,
-    stackByAttribute: IUnwrappedAttributeHeadersWithItems,
+    viewByAttribute: IUnwrappedAttributeHeaderWithItems,
+    stackByAttribute: IUnwrappedAttributeHeaderWithItems,
     colorStrategy: IColorStrategy,
 ) {
     let data = [];
@@ -668,8 +669,8 @@ export function getTreemapStackedSeries(
 export function getSeries(
     executionResultData: Execution.DataValue[][],
     measureGroup: Execution.IMeasureGroupHeader["measureGroupHeader"],
-    viewByAttribute: IUnwrappedAttributeHeadersWithItems,
-    stackByAttribute: IUnwrappedAttributeHeadersWithItems,
+    viewByAttribute: IUnwrappedAttributeHeaderWithItems,
+    stackByAttribute: IUnwrappedAttributeHeaderWithItems,
     type: string,
     mdObject: VisualizationObject.IVisualizationObjectContent,
     colorStrategy: IColorStrategy,
@@ -776,7 +777,7 @@ function isPointOnOppositeAxis(point: IPointData): boolean {
 }
 
 export function buildTooltipFactory(
-    viewByAttribute: IUnwrappedAttributeHeadersWithItems,
+    viewByAttribute: IUnwrappedAttributeHeaderWithItems,
     type: string,
     config: IChartConfig = {},
     isDualAxis: boolean = false,
@@ -813,8 +814,8 @@ export function buildTooltipFactory(
 }
 
 export function buildTooltipForTwoAttributesFactory(
-    viewByAttribute: IUnwrappedAttributeHeadersWithItems,
-    viewByParentAttribute: IUnwrappedAttributeHeadersWithItems,
+    viewByAttribute: IUnwrappedAttributeHeaderWithItems,
+    viewByParentAttribute: IUnwrappedAttributeHeaderWithItems,
     config: IChartConfig = {},
     isDualAxis: boolean = false,
 ): ITooltipFactory {
@@ -853,7 +854,7 @@ export function buildTooltipForTwoAttributesFactory(
 
 export function generateTooltipXYFn(
     measures: any,
-    stackByAttribute: IUnwrappedAttributeHeadersWithItems,
+    stackByAttribute: IUnwrappedAttributeHeaderWithItems,
     config: IChartConfig = {},
 ): ITooltipFactory {
     const { separators } = config;
@@ -927,8 +928,8 @@ export function generateTooltipHeatmapFn(
 }
 
 export function buildTooltipTreemapFactory(
-    viewByAttribute: IUnwrappedAttributeHeadersWithItems,
-    stackByAttribute: IUnwrappedAttributeHeadersWithItems,
+    viewByAttribute: IUnwrappedAttributeHeaderWithItems,
+    stackByAttribute: IUnwrappedAttributeHeaderWithItems,
     config: IChartConfig = {},
 ): ITooltipFactory {
     const { separators } = config;
@@ -982,7 +983,7 @@ export function isLegacyAttributeHeader(header: ILegacyHeader): header is ILegac
 }
 
 function getViewBy(
-    viewByAttribute: IUnwrappedAttributeHeadersWithItems,
+    viewByAttribute: IUnwrappedAttributeHeaderWithItems,
     viewByIndex: number,
 ): {
     viewByItemHeader: Execution.IResultAttributeHeaderItem;
@@ -993,7 +994,7 @@ function getViewBy(
 
     if (viewByAttribute) {
         viewByItemHeader = viewByAttribute.items[viewByIndex];
-        viewByAttributeHeader = { attributeHeader: viewByAttribute };
+        viewByAttributeHeader = { attributeHeader: omit(viewByAttribute, "items") };
     }
 
     return {
@@ -1003,7 +1004,7 @@ function getViewBy(
 }
 
 function getStackBy(
-    stackByAttribute: IUnwrappedAttributeHeadersWithItems,
+    stackByAttribute: IUnwrappedAttributeHeaderWithItems,
     stackByIndex: number,
 ): {
     stackByItemHeader: Execution.IResultAttributeHeaderItem;
@@ -1015,7 +1016,7 @@ function getStackBy(
     if (stackByAttribute) {
         // stackBy item index is always equal to seriesIndex
         stackByItemHeader = stackByAttribute.items[stackByIndex];
-        stackByAttributeHeader = { attributeHeader: stackByAttribute };
+        stackByAttributeHeader = { attributeHeader: omit(stackByAttribute, "items") };
     }
 
     return {
@@ -1027,8 +1028,8 @@ function getStackBy(
 export function getDrillableSeries(
     series: any,
     drillableItems: IHeaderPredicate[],
-    viewByAttributes: IUnwrappedAttributeHeadersWithItems[],
-    stackByAttribute: IUnwrappedAttributeHeadersWithItems,
+    viewByAttributes: IUnwrappedAttributeHeaderWithItems[],
+    stackByAttribute: IUnwrappedAttributeHeaderWithItems,
     executionResponse: Execution.IExecutionResponse,
     afm: AFM.IAfm,
     type: VisType,
@@ -1160,8 +1161,8 @@ export function getDrillableSeries(
 function getCategories(
     type: string,
     measureGroup: Execution.IMeasureGroupHeader["measureGroupHeader"],
-    viewByAttribute: IUnwrappedAttributeHeadersWithItems,
-    stackByAttribute: IUnwrappedAttributeHeadersWithItems,
+    viewByAttribute: IUnwrappedAttributeHeaderWithItems,
+    stackByAttribute: IUnwrappedAttributeHeaderWithItems,
 ) {
     if (isHeatmap(type)) {
         return [
@@ -1194,7 +1195,7 @@ function getCategories(
 }
 
 function getStackingConfig(
-    stackByAttribute: IUnwrappedAttributeHeadersWithItems,
+    stackByAttribute: IUnwrappedAttributeHeaderWithItems,
     options: IChartConfig,
 ): string {
     const { type, stackMeasures, stackMeasuresToPercent } = options;
@@ -1238,7 +1239,7 @@ function preprocessMeasureGroupItems(
 function getXAxes(
     config: IChartConfig,
     measureGroup: Execution.IMeasureGroupHeader["measureGroupHeader"],
-    viewByAttribute: IUnwrappedAttributeHeadersWithItems,
+    viewByAttribute: IUnwrappedAttributeHeaderWithItems,
 ): IAxis[] {
     const { type, mdObject } = config;
     const buckets: VisualizationObject.IBucket[] = get(mdObject, "buckets", []);
@@ -1578,9 +1579,9 @@ export function getTreemapAttributes(
 
 function getTooltipFactory(
     isViewByTwoAttributes: boolean,
-    viewByAttribute: IUnwrappedAttributeHeadersWithItems,
-    viewByParentAttribute: IUnwrappedAttributeHeadersWithItems,
-    stackByAttribute: IUnwrappedAttributeHeadersWithItems,
+    viewByAttribute: IUnwrappedAttributeHeaderWithItems,
+    viewByParentAttribute: IUnwrappedAttributeHeaderWithItems,
+    stackByAttribute: IUnwrappedAttributeHeaderWithItems,
     config: IChartConfig = {},
     isDualAxis: boolean = false,
 ): ITooltipFactory {
@@ -1640,9 +1641,9 @@ export function getChartOptions(
     const { dimensions } = executionResponse;
     const isViewByTwoAttributes =
         attributeHeaderItems[VIEW_BY_DIMENSION_INDEX].length === VIEW_BY_ATTRIBUTES_LIMIT;
-    let viewByAttribute: IUnwrappedAttributeHeadersWithItems;
-    let viewByParentAttribute: IUnwrappedAttributeHeadersWithItems;
-    let stackByAttribute: IUnwrappedAttributeHeadersWithItems;
+    let viewByAttribute: IUnwrappedAttributeHeaderWithItems;
+    let viewByParentAttribute: IUnwrappedAttributeHeaderWithItems;
+    let stackByAttribute: IUnwrappedAttributeHeaderWithItems;
 
     if (isTreemap(type)) {
         const {

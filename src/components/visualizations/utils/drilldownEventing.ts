@@ -375,8 +375,21 @@ export function convertHeadlineDrillIntersectionToLegacy(
     return intersectionExtended
         .filter(({ header }) => isMappingMeasureHeaderItem(header))
         .map(intersectionElement => {
-            const { header } = intersectionElement;
-            return convertMeasureHeaderItem(header as Execution.IMeasureHeaderItem, afm);
+            const header = intersectionElement.header as Execution.IMeasureHeaderItem;
+            const { localIdentifier, name } = header.measureHeaderItem;
+
+            const masterMeasureQualifier = getMasterMeasureObjQualifier(afm, localIdentifier);
+
+            if (!masterMeasureQualifier) {
+                throw new Error("The metric ids has not been found in execution request!");
+            }
+
+            return createDrillIntersectionElement(
+                localIdentifier,
+                name,
+                masterMeasureQualifier.uri,
+                masterMeasureQualifier.identifier,
+            );
         });
 }
 
@@ -393,7 +406,7 @@ export const getDrillIntersection = (
         ): IDrillEventIntersectionElementExtended[] => {
             if (isMappingHeaderAttribute(drillItem)) {
                 const attributeItem = drillItems[index - 1]; // attribute item is always before attribute
-                if (isMappingHeaderAttributeItem(attributeItem)) {
+                if (attributeItem && isMappingHeaderAttributeItem(attributeItem)) {
                     drillIntersection.push({
                         header: {
                             ...attributeItem,
