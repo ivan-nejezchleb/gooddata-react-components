@@ -148,8 +148,8 @@ describe("Drilldown Eventing", () => {
         }).toThrowError();
     });
 
-    it("should call point drill context (non-group) when event.points given but null", () => {
-        const drillConfig = { afm, onFiredDrillEvent: () => true };
+    describe("should handle click on point drill context (non-group) when event.points given but null", () => {
+        const drillConfig = { afm, onFiredDrillEvent: () => true, onDrill: jest.fn() };
         const target = { dispatchEvent: jest.fn() };
         const pointClickEventDataWithNullPoints: Highcharts.DrilldownEventObject = {
             ...pointClickEventData,
@@ -166,8 +166,19 @@ describe("Drilldown Eventing", () => {
         jest.runAllTimers();
 
         const drillContext = target.dispatchEvent.mock.calls[0][0].detail.drillContext;
-        expect(drillContext.element).toEqual("point");
-        // TODO INE add expect for onDrill
+        it("by dispatching legacy event", () => {
+            expect(drillContext.element).toEqual("point");
+        });
+
+        it("by dispatching calling onDrill with new event", () => {
+            expect(drillConfig.onDrill.mock.calls[0][0].drillContext).toEqual({
+                element: "point",
+                type: "line",
+                x: 1,
+                y: 2,
+                intersection: point.drillIntersection,
+            });
+        });
     });
 
     it("should call default fire event on point click and fire correct data", () => {
@@ -404,8 +415,8 @@ describe("Drilldown Eventing", () => {
         });
     });
 
-    it("should call user defined callback on point click", () => {
-        const drillConfig = { afm, onFiredDrillEvent: jest.fn() };
+    it("should call user defined callbacks on point click", () => {
+        const drillConfig = { afm, onFiredDrillEvent: jest.fn(), onDrill: jest.fn() };
         const target = { dispatchEvent: () => true };
 
         chartClick(drillConfig, pointClickEventData, (target as any) as EventTarget, VisualizationTypes.LINE);
@@ -413,6 +424,7 @@ describe("Drilldown Eventing", () => {
         jest.runAllTimers();
 
         expect(drillConfig.onFiredDrillEvent).toHaveBeenCalled();
+        expect(drillConfig.onDrill).toHaveBeenCalled();
     });
 
     it("should call both default fire event and user defined callback on point click", () => {

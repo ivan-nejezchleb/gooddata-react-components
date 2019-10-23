@@ -136,6 +136,49 @@ describe("convertDrillIntersectionToLegacy", () => {
         {},
         intl,
     );
+
+    const expectedColumnLegacyIntersection = [
+        {
+            header: {
+                identifier: "",
+                uri: "/gdc/md/xms7ga4tf3g3nzucd8380o2bev8oeknp/obj/2009/elements?id=1",
+            },
+            id: "1",
+            title: "Q1",
+        },
+        {
+            header: {
+                identifier: "date.aam81lMifn6q",
+                uri: "/gdc/md/xms7ga4tf3g3nzucd8380o2bev8oeknp/obj/2011",
+            },
+            id: "year",
+            title: "Quarter (Date)",
+        },
+        {
+            header: {
+                identifier: "",
+                uri: "/gdc/md/xms7ga4tf3g3nzucd8380o2bev8oeknp/obj/2071/elements?id=1",
+            },
+            id: "1",
+            title: "Jan",
+        },
+        {
+            header: {
+                identifier: "date.abm81lMifn6q",
+                uri: "/gdc/md/xms7ga4tf3g3nzucd8380o2bev8oeknp/obj/2073",
+            },
+            id: "month",
+            title: "Month (Date)",
+        },
+        {
+            header: {
+                identifier: "aabHeqImaK0d",
+                uri: "/gdc/md/xms7ga4tf3g3nzucd8380o2bev8oeknp/obj/6694",
+            },
+            id: "franchiseFeesAdRoyaltyIdentifier",
+            title: "$ Franchise Fees (Ad Royalty)",
+        },
+    ];
     it("should return intersection of row attribute and row attribute value for row header cell", async () => {
         const rowColDef = columnDefs[0]; // row header
         const drillItems = [rowData[0].headerItemMap[rowColDef.field], ...rowColDef.drillItems];
@@ -163,48 +206,18 @@ describe("convertDrillIntersectionToLegacy", () => {
     it("should return intersection of all column header attributes and values and a measure for column header cell", async () => {
         const colDef = getTreeLeaves(columnDefs)[3]; // column leaf header
         const intersection = convertDrillIntersectionToLegacy(getDrillIntersection(colDef.drillItems), afm);
-        expect(intersection).toEqual([
-            {
-                header: {
-                    identifier: "",
-                    uri: "/gdc/md/xms7ga4tf3g3nzucd8380o2bev8oeknp/obj/2009/elements?id=1",
-                },
-                id: "1",
-                title: "Q1",
-            },
-            {
-                header: {
-                    identifier: "date.aam81lMifn6q",
-                    uri: "/gdc/md/xms7ga4tf3g3nzucd8380o2bev8oeknp/obj/2011",
-                },
-                id: "year",
-                title: "Quarter (Date)",
-            },
-            {
-                header: {
-                    identifier: "",
-                    uri: "/gdc/md/xms7ga4tf3g3nzucd8380o2bev8oeknp/obj/2071/elements?id=1",
-                },
-                id: "1",
-                title: "Jan",
-            },
-            {
-                header: {
-                    identifier: "date.abm81lMifn6q",
-                    uri: "/gdc/md/xms7ga4tf3g3nzucd8380o2bev8oeknp/obj/2073",
-                },
-                id: "month",
-                title: "Month (Date)",
-            },
-            {
-                header: {
-                    identifier: "aabHeqImaK0d",
-                    uri: "/gdc/md/xms7ga4tf3g3nzucd8380o2bev8oeknp/obj/6694",
-                },
-                id: "franchiseFeesAdRoyaltyIdentifier",
-                title: "$ Franchise Fees (Ad Royalty)",
-            },
-        ]);
+        expect(intersection).toEqual(expectedColumnLegacyIntersection);
+    });
+
+    it("should remove row attributes and values from intersection when converting to legacy", async () => {
+        const rowColDef = columnDefs[0]; // row header
+        const drillItems = [rowData[0].headerItemMap[rowColDef.field], ...rowColDef.drillItems];
+        const colDef = getTreeLeaves(columnDefs)[3]; // column leaf header
+        const intersection = convertDrillIntersectionToLegacy(
+            getDrillIntersection([...colDef.drillItems, ...drillItems]),
+            afm,
+        );
+        expect(intersection).toEqual(expectedColumnLegacyIntersection);
     });
 
     // tslint:disable-next-line:max-line-length

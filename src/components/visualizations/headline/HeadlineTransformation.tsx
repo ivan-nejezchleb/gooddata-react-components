@@ -44,7 +44,7 @@ class HeadlineTransformation extends React.Component<IHeadlineTransformationProp
     public static defaultProps: Partial<IHeadlineTransformationProps> = {
         drillableItems: [],
         onFiredDrillEvent: () => true,
-        onDrill: () => undefined,
+        onDrill: noop,
         onAfterRender: noop,
     };
 
