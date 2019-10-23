@@ -1047,4 +1047,68 @@ storiesOf("Internal/Drilldown", module)
                 300,
             ),
         ),
-    );
+    )
+    .add("Headline drillable with new onDrill callback", () =>
+        screenshotWrap(
+            wrap(
+                <HeadlineTransformation
+                    executionRequest={headlineWithAMMeasure.executionRequest}
+                    executionResponse={headlineWithAMMeasure.executionResponse}
+                    executionResult={headlineWithAMMeasure.executionResult}
+                    drillableItems={[
+                        headerPredicateFactory.composedFromUri(
+                            "/gdc/md/d20eyb3wfs0xe5l0lfscdnrnyhq1t42q/obj/1283",
+                        ),
+                    ]}
+                    onDrill={action("onDrill")}
+                    onAfterRender={action("onAfterRender")}
+                />,
+                "auto",
+                300,
+            ),
+        ),
+    )
+    .add("Pivot table drillable with new onDrill callback", () =>
+        screenshotWrap(
+            <div style={{ width: 600, height: 300 }}>
+                <PivotTable
+                    projectId="storybook"
+                    onDrill={action("onDrill")}
+                    measures={[MEASURE_1, MEASURE_2]}
+                    rows={[ATTRIBUTE_1]}
+                    drillableItems={[
+                        { uri: "/gdc/md/storybook/obj/2" },
+                        headerPredicateFactory.uriMatch("/gdc/md/storybook/obj/1"),
+                    ]}
+                    LoadingComponent={null}
+                    ErrorComponent={null}
+                />
+            </div>,
+        ),
+    )
+    .add("URI Visualization drillable with new onDrill callback", () => {
+        const dataSet = fixtures.barChartWith6PopMeasuresAndViewByAttribute;
+        return screenshotWrap(
+            wrap(
+                <Visualization
+                    drillableItems={[
+                        {
+                            uri: dataSet.executionRequest.afm.attributes[0].displayForm.uri,
+                        },
+                    ]}
+                    onDrill={action("onDrill")}
+                    config={{
+                        type: "column",
+                        legend: {
+                            enabled: true,
+                            position: "top",
+                        },
+                        legendLayout: "vertical",
+                        colorPalette: fixtures.customPalette,
+                    }}
+                    {...dataSet}
+                    onDataTooLarge={noop}
+                />,
+            ),
+        );
+    });
