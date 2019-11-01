@@ -1,4 +1,4 @@
-// (C) 2007-2018 GoodData Corporation
+// (C) 2007-2019 GoodData Corporation
 import * as React from "react";
 import { storiesOf } from "@storybook/react";
 import { action } from "@storybook/addon-actions";
@@ -77,13 +77,20 @@ storiesOf("Core components/PivotTable", module)
     )
     .add("two measures, 2 row attributes", () =>
         screenshotWrap(
-            <div style={wrapperStyle} className="s-table">
+            <div style={{ width: 800, height: 300, background: "pink" }} className="s-table">
                 <PivotTable
                     projectId="storybook"
                     measures={[MEASURE_1, MEASURE_2]}
-                    rows={[ATTRIBUTE_1, ATTRIBUTE_2]}
+                    rows={[ATTRIBUTE_1, ATTRIBUTE_COUNTRY]}
+                    columns={[ATTRIBUTE_2]}
                     LoadingComponent={null}
                     ErrorComponent={null}
+                    config={{
+                        menu: {
+                            aggregations: true,
+                            aggregationsSubMenu: true,
+                        },
+                    }}
                 />
             </div>,
         ),
@@ -306,7 +313,7 @@ storiesOf("Core components/PivotTable", module)
                     config={{
                         menu: {
                             aggregations: true,
-                            aggregationsSubMenu: true,
+                            aggregationsSubMenu: false,
                         },
                     }}
                 />

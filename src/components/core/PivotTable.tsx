@@ -104,6 +104,12 @@ import noop = require("lodash/noop");
 import sumBy = require("lodash/sumBy");
 
 import { getDrillIntersection } from "../visualizations/utils/drilldownEventing";
+import {
+    FirstDataRenderedEvent,
+    GridColumnsChangedEvent,
+    ModelUpdatedEvent,
+    AgGridEvent,
+} from "ag-grid-community/dist/lib/events";
 
 export interface IPivotTableProps extends ICommonChartProps, IDataSourceProviderInjectedProps {
     totals?: VisualizationObject.IVisualizationTotal[];
@@ -164,6 +170,7 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
 
     private watchingIntervalId: number | null;
     private watchingTimeoutId: number | null;
+    private ignoreVirtualColumnsChanged: boolean = false;
 
     constructor(props: IPivotTableInnerProps) {
         super(props);
@@ -420,16 +427,44 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
         }
     }
 
+    private autoresizeColumns = (event: AgGridEvent) => {
+        // event.columnApi.autoSizeAllColumns();
+        // check new width and compare it with container. If smaller call resizeToFit
+        // event.api.sizeColumnsToFit();
+
+        const autoWidthColumnIds: string[] = [];
+        event.columnApi.getAllColumns().reduce((autoWidthColumnIds: string[], column: any) => {
+            if (!column.width) {
+                autoWidthColumnIds.push(column.colId);
+            }
+            return autoWidthColumnIds;
+        }, autoWidthColumnIds);
+        event.columnApi.autoSizeColumns(autoWidthColumnIds);
+    };
+
     //
     // event handlers
     //
 
     private onGridReady = (params: GridReadyEvent) => {
+        console.log("onGridReady");
         this.gridApi = params.api;
         this.setGridDataSource();
 
         if (this.props.groupRows) {
             initializeStickyRow(this.gridApi);
+        }
+    };
+
+    private onGridColumnsChanged = (event: GridColumnsChangedEvent) => {
+        console.log("gridColumnsChanged");
+        this.autoresizeColumns(event);
+    };
+
+    private onVirtualColumnsChanged = (event: GridColumnsChangedEvent) => {
+        console.log("onVirtualColumnsChanged");
+        if (!this.ignoreVirtualColumnsChanged) {
+            this.autoresizeColumns(event);
         }
     };
 
@@ -451,7 +486,7 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
         this.props.afterRender();
     };
 
-    private onFirstDataRendered = () => {
+    private onFirstDataRendered = (_params: FirstDataRenderedEvent) => {
         // Since issue here is not resolved, https://github.com/ag-grid/ag-grid/issues/3263,
         // work-around by using 'setInterval'
         this.watchingIntervalId = window.setInterval(
@@ -466,10 +501,13 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
             this.stopWatchingTableRendered,
             WATCHING_TABLE_RENDERED_MAX_TIME,
         );
+        console.log("onFirstDataRendered");
     };
 
-    private onModelUpdated = () => {
+    private onModelUpdated = (event: ModelUpdatedEvent) => {
+        console.log("onModelUpdated");
         this.updateStickyRow();
+        // this.autoresizeColumns(event);
     };
 
     private getAttributeHeader(colId: string, columnDefs: IGridHeader[]): Execution.IAttributeHeader {
@@ -622,9 +660,13 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
 
     private columnResized = (columnEvent: ColumnResizedEvent) => {
         if (!columnEvent.finished) {
+            this.ignoreVirtualColumnsChanged = true;
             return; // only update the height once the user is done setting the column size
         }
+        this.ignoreVirtualColumnsChanged = false;
         this.updateDesiredHeight(this.state.execution.executionResult);
+        // same handling like sorting change only instead of asc/desc put new width into payload
+        // console.log(columnEvent.column.getActualWidth());
     };
 
     private onMenuAggregationClick = (menuAggregationClickConfig: IMenuAggregationClickConfig) => {
@@ -662,6 +704,8 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
         });
 
         this.updateGrouping();
+        console.log("sort changed");
+        this.autoresizeColumns(event);
     };
 
     private onBodyScroll = (event: BodyScrollEvent) => {
@@ -695,6 +739,12 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
             getColumnTotals: this.getColumnTotals,
             intl: this.props.intl,
         };
+        // const W = 30;
+        // if(columnDefs[1]){
+        //     columnDefs[1].width = W;
+        //     // columnDefs[1].minWidth = W;
+        //     // columnDefs[1].maxWidth = W;
+        // }
 
         return {
             // Initial data
@@ -740,6 +790,8 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
             maxBlocksInCache: 10,
             onGridReady: this.onGridReady,
             onFirstDataRendered: this.onFirstDataRendered,
+            onGridColumnsChanged: this.onGridColumnsChanged,
+            onVirtualColumnsChanged: this.onVirtualColumnsChanged,
             onModelUpdated: this.onModelUpdated,
             onBodyScroll: this.onBodyScroll,
 
@@ -811,6 +863,7 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
             // Custom CSS classes
             rowClass: "gd-table-row",
             rowHeight: DEFAULT_ROW_HEIGHT,
+            autoSizePadding: 0,
         };
     };
 

@@ -258,8 +258,8 @@ const getBaseProjectSchema = (title, identifier) => {
                     identifier: '5',
                     title: 'Popularity',
                     elements: [
-                        'low',
-                        'medium',
+                        'low with very long text',
+                        'medium with very long text',
                         'high'
                     ]
                 }, {
