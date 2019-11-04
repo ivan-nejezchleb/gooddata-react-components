@@ -27,7 +27,7 @@ import { IntlWrapper } from "../../core/base/IntlWrapper";
 import { LoadingComponent, ILoadingProps } from "../../simple/LoadingComponent";
 import { ErrorComponent, IErrorProps } from "../../simple/ErrorComponent";
 import { RuntimeError } from "../../../errors/RuntimeError";
-import { IPushData } from "../../../interfaces/PushData";
+import { IPushData, IDrillableItemPushData } from "../../../interfaces/PushData";
 import { IChartConfig } from "../../../interfaces/Config";
 import { setTelemetryHeaders } from "../../../helpers/utils";
 import { fixEmptyHeaderItems } from "./utils/fixEmptyHeaderItems";
@@ -196,6 +196,7 @@ export function visualizationLoadingHOC<
                         rawExecution.executionResult,
                         emptyHeaderString,
                     );
+                    const drillableItems: IDrillableItemPushData[] = [];
                     const result = {
                         ...rawExecution,
                         executionResult: executionResultWithResolvedEmptyValues,
@@ -205,6 +206,7 @@ export function visualizationLoadingHOC<
                     this.setState({ result, error: null });
                     this.props.pushData({
                         result,
+                        drillableItems,
                     });
                     this.onLoadingChanged({ isLoading: false });
                     this.props.onExportReady(this.createExportFunction(result)); // Pivot tables
