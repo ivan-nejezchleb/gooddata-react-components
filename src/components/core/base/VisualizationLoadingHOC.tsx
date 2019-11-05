@@ -31,6 +31,7 @@ import { IPushData, IDrillableItemPushData } from "../../../interfaces/PushData"
 import { IChartConfig } from "../../../interfaces/Config";
 import { setTelemetryHeaders } from "../../../helpers/utils";
 import { fixEmptyHeaderItems } from "./utils/fixEmptyHeaderItems";
+import flatten = require("lodash/flatten");
 
 const escapeFileName = (str: string) => str && str.replace(/[\/\?<>\\:\*\|":]/g, "");
 
@@ -196,17 +197,17 @@ export function visualizationLoadingHOC<
                         rawExecution.executionResult,
                         emptyHeaderString,
                     );
-                    const drillableItems: IDrillableItemPushData[] = [];
                     const result = {
                         ...rawExecution,
                         executionResult: executionResultWithResolvedEmptyValues,
                     };
+                    const possibleDrillableItems = this.getPossibleDrillableItems(result.executionResponse);
                     // This returns only current page,
                     // gooddata-js mergePages doesn't support discontinuous page ranges yet
                     this.setState({ result, error: null });
                     this.props.pushData({
                         result,
-                        drillableItems,
+                        possibleDrillableItems,
                     });
                     this.onLoadingChanged({ isLoading: false });
                     this.props.onExportReady(this.createExportFunction(result)); // Pivot tables
@@ -282,12 +283,30 @@ export function visualizationLoadingHOC<
                     .concat(this.pagePromises.slice(promiseIndex + 1));
             }
         };
+        private getPossibleDrillableItems(response: Execution.IExecutionResponse): IDrillableItemPushData[] {
+            return flatten(
+                flatten(
+                    flatten(response.dimensions).map(
+                        (dimension: Execution.IResultDimension) => dimension.headers,
+                    ),
+                )
+                    .filter((header: Execution.IHeader) => Execution.isMeasureGroupHeader(header))
+                    .map((header: Execution.IMeasureGroupHeader) => header.measureGroupHeader.items),
+            ).map(
+                (measure: Execution.IMeasureHeaderItem): IDrillableItemPushData => ({
+                    type: "measure",
+                    localIdentifier: measure.measureHeaderItem.localIdentifier,
+                    title: measure.measureHeaderItem.name,
+                }),
+            );
+        }
 
         private initSubject() {
             this.subject = DataLayer.createSubject<Execution.IExecutionResponses>(
                 result => {
                     this.setState({ result });
-                    this.props.pushData({ result });
+                    const possibleDrillableItems = this.getPossibleDrillableItems(result.executionResponse);
+                    this.props.pushData({ result, possibleDrillableItems });
                     this.onLoadingChanged({ isLoading: false });
                     this.props.onExportReady(this.createExportFunction(result)); // Charts / Tables
                 },

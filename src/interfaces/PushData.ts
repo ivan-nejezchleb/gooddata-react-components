@@ -11,7 +11,7 @@ export type DrillableItemType = "measure";
 
 export interface IDrillableItemPushData {
     type: DrillableItemType;
-    identifier: AFM.Identifier;
+    localIdentifier: AFM.Identifier;
     title: string;
 }
 
@@ -23,5 +23,5 @@ export interface IPushData {
     };
     propertiesMeta?: any;
     colors?: IColorsData;
-    drillableItems?: IDrillableItemPushData[];
+    possibleDrillableItems?: IDrillableItemPushData[];
 }
