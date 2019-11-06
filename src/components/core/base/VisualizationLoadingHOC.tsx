@@ -1,9 +1,5 @@
 // (C) 2007-2019 GoodData Corporation
 import * as React from "react";
-import noop = require("lodash/noop");
-import get = require("lodash/get");
-import isEqual = require("lodash/isEqual");
-import omit = require("lodash/omit");
 import {
     factory as createSdk,
     DataLayer,
@@ -31,8 +27,11 @@ import { IPushData, IDrillableItemPushData } from "../../../interfaces/PushData"
 import { IChartConfig } from "../../../interfaces/Config";
 import { setTelemetryHeaders } from "../../../helpers/utils";
 import { fixEmptyHeaderItems } from "./utils/fixEmptyHeaderItems";
+import noop = require("lodash/noop");
+import get = require("lodash/get");
+import isEqual = require("lodash/isEqual");
+import omit = require("lodash/omit");
 import flatten = require("lodash/flatten");
-import * as HttpStatusCodes from "http-status-codes";
 
 const escapeFileName = (str: string) => str && str.replace(/[\/\?<>\\:\*\|":]/g, "");
 

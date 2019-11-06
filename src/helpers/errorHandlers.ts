@@ -132,7 +132,7 @@ export function checkEmptyResult(responses: Execution.IExecutionResponses) {
             response: {
                 status: HttpStatusCodes.NO_CONTENT,
                 json: () => Promise.resolve(responses),
-                text: () => Promise.resolve(responses),
+                text: () => Promise.resolve(null),
             },
         };
     }
