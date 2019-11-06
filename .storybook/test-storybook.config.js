@@ -121,11 +121,6 @@ const configuration = {
             'Combo chart with onFiredDrillEvent': {
                 readySelector: '.screenshot-ready-wrapper-done'
             }
-        },
-        'Internal/PossibleDrillableItems': {
-            'Headline' : {
-                readyEvent: "possibleDrillableItems",
-            }
         }
     }
 };
