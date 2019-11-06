@@ -215,16 +215,11 @@ export function visualizationLoadingHOC<
                     this.props.onExportReady(this.createExportFunction(result)); // Pivot tables
                     return result;
                 })
+                .catch((error: ApiResponseError) => {
+                    this.pushDataForNoContentResponse(error);
+                    throw error;
+                })
                 .catch((error: ApiResponseError | Error) => {
-                    if (error instanceof ApiResponseError && error.message === ErrorStates.NO_DATA) {
-                        const response: Promise<Execution.IExecutionResponses> = error.cause.response.json();
-                        response.then(r => {
-                            const possibleDrillableItems = this.getPossibleDrillableItems(
-                                r.executionResponse,
-                            );
-                            this.props.pushData({ possibleDrillableItems });
-                        });
-                    }
                     // only trigger errors on non-cancelled promises
                     if (error.message !== ErrorStates.CANCELLED) {
                         this.onError(convertErrors(error));
@@ -323,18 +318,22 @@ export function visualizationLoadingHOC<
                     this.props.onExportReady(this.createExportFunction(result)); // Charts / Tables
                 },
                 error => {
-                    if (error.message === ErrorStates.NO_DATA) {
-                        const response: Promise<Execution.IExecutionResponses> = error.cause.response.json();
-                        response.then(r => {
-                            const possibleDrillableItems = this.getPossibleDrillableItems(
-                                r.executionResponse,
-                            );
-                            this.props.pushData({ possibleDrillableItems });
-                        });
-                    }
+                    this.pushDataForNoContentResponse(error);
                     return this.onError(error);
                 },
             );
+        }
+
+        private pushDataForNoContentResponse(error: ApiResponseError) {
+            if (error.message !== ErrorStates.NO_DATA) {
+                return;
+            }
+
+            const response: Promise<Execution.IExecutionResponses> = error.cause.response.json();
+            response.then(r => {
+                const possibleDrillableItems = this.getPossibleDrillableItems(r.executionResponse);
+                this.props.pushData({ possibleDrillableItems });
+            });
         }
 
         private onLoadingChanged(loadingState: ILoadingState) {
