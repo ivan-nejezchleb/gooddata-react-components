@@ -32,6 +32,7 @@ import { IChartConfig } from "../../../interfaces/Config";
 import { setTelemetryHeaders } from "../../../helpers/utils";
 import { fixEmptyHeaderItems } from "./utils/fixEmptyHeaderItems";
 import flatten = require("lodash/flatten");
+import * as HttpStatusCodes from "http-status-codes";
 
 const escapeFileName = (str: string) => str && str.replace(/[\/\?<>\\:\*\|":]/g, "");
 
@@ -62,7 +63,9 @@ export interface ILoadingInjectedProps {
     intl: InjectedIntl;
     // if autoExecuteDataSource is false, this callback is passed to the inner component and handles loading
     getPage?: IGetPage;
+
     onDataTooLarge(): void;
+
     onNegativeValues(): void;
 }
 
@@ -214,6 +217,15 @@ export function visualizationLoadingHOC<
                     return result;
                 })
                 .catch((error: ApiResponseError | Error) => {
+                    if (error instanceof ApiResponseError && error.message === ErrorStates.NO_DATA) {
+                        const response: Promise<Execution.IExecutionResponses> = error.cause.response.json();
+                        response.then(r => {
+                            const possibleDrillableItems = this.getPossibleDrillableItems(
+                                r.executionResponse,
+                            );
+                            this.props.pushData({ possibleDrillableItems });
+                        });
+                    }
                     // only trigger errors on non-cancelled promises
                     if (error.message !== ErrorStates.CANCELLED) {
                         this.onError(convertErrors(error));
@@ -283,6 +295,7 @@ export function visualizationLoadingHOC<
                     .concat(this.pagePromises.slice(promiseIndex + 1));
             }
         };
+
         private getPossibleDrillableItems(response: Execution.IExecutionResponse): IDrillableItemPushData[] {
             return flatten(
                 flatten(
@@ -310,7 +323,18 @@ export function visualizationLoadingHOC<
                     this.onLoadingChanged({ isLoading: false });
                     this.props.onExportReady(this.createExportFunction(result)); // Charts / Tables
                 },
-                error => this.onError(error),
+                error => {
+                    if (error.message === ErrorStates.NO_DATA) {
+                        const response: Promise<Execution.IExecutionResponses> = error.cause.response.json();
+                        response.then(r => {
+                            const possibleDrillableItems = this.getPossibleDrillableItems(
+                                r.executionResponse,
+                            );
+                            this.props.pushData({ possibleDrillableItems });
+                        });
+                    }
+                    return this.onError(error);
+                },
             );
         }
 

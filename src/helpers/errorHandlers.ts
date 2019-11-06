@@ -1,4 +1,4 @@
-// (C) 2007-2018 GoodData Corporation
+// (C) 2007-2019 GoodData Corporation
 import { Execution, VisualizationObject } from "@gooddata/typings";
 import { ApiResponseError } from "@gooddata/gooddata-js";
 import { InjectedIntl } from "react-intl";
@@ -131,8 +131,8 @@ export function checkEmptyResult(responses: Execution.IExecutionResponses) {
             name: "EmptyResultError",
             response: {
                 status: HttpStatusCodes.NO_CONTENT,
-                json: () => Promise.resolve(null),
-                text: () => Promise.resolve(null),
+                json: () => Promise.resolve(responses),
+                text: () => Promise.resolve(responses),
             },
         };
     }
