@@ -14,7 +14,7 @@ import { ErrorStates } from "../../../constants/errorStates";
 import { IEvents, IExportFunction, IExtendedExportConfig, ILoadingState } from "../../../interfaces/Events";
 import { IDrillableItem } from "../../../interfaces/DrillEvents";
 import { ISubject } from "../../../helpers/async";
-import { convertErrors, checkEmptyResult } from "../../../helpers/errorHandlers";
+import { convertErrors, checkEmptyResult, EmptyResultErrorName } from "../../../helpers/errorHandlers";
 import { IHeaderPredicate } from "../../../interfaces/HeaderPredicate";
 import { IDataSourceProviderInjectedProps } from "../../afm/DataSourceProvider";
 import { injectIntl, InjectedIntl } from "react-intl";
@@ -318,18 +318,17 @@ export function visualizationLoadingHOC<
                     this.props.onExportReady(this.createExportFunction(result)); // Charts / Tables
                 },
                 error => {
-                    this.pushDataForNoContentResponse(error);
+                    this.pushDataForNoContentResponse(error.cause);
                     return this.onError(error);
                 },
             );
         }
 
         private pushDataForNoContentResponse(error: ApiResponseError) {
-            if (error.message !== ErrorStates.NO_DATA) {
+            if (error.name != EmptyResultErrorName) {
                 return;
             }
-
-            const response: Promise<Execution.IExecutionResponses> = error.cause.response.json();
+            const response: Promise<Execution.IExecutionResponses> = error.response.json();
             response.then(r => {
                 const possibleDrillableItems = this.getPossibleDrillableItems(r.executionResponse);
                 this.props.pushData({ possibleDrillableItems });

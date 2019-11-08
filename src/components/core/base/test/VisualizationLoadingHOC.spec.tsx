@@ -2,7 +2,6 @@
 import * as React from "react";
 import * as PropTypes from "prop-types";
 import { mount } from "enzyme";
-import noop = require("lodash/noop");
 import { testUtils } from "@gooddata/js-utils";
 import sdk, { IExportConfig } from "@gooddata/gooddata-js";
 import {
@@ -31,6 +30,7 @@ import { IExportFunction, IExtendedExportConfig } from "../../../../interfaces/E
 import { IDataSourceProviderInjectedProps } from "../../../afm/DataSourceProvider";
 import { RuntimeError } from "../../../../errors/RuntimeError";
 import { ErrorStates } from "../../../../constants/errorStates";
+import noop = require("lodash/noop");
 
 const CSV = "csv";
 const XLSX = "xlsx";
@@ -191,6 +191,38 @@ describe("VisualizationLoadingHOC", () => {
             dataSource: emptyDataSource,
             onExportReady,
             onError: noop,
+        });
+    });
+
+    it("should push possibleDrillableItems when exporting NO DATA result", () => {
+        const onExportReady = async (exportResult: IExportFunction) => {
+            try {
+                await exportResult({ format: XLSX });
+            } catch (error) {
+                expect(error.cause.name).toEqual("EmptyResultError");
+                expect(error).toEqual(new RuntimeError(ErrorStates.NO_DATA));
+            }
+        };
+
+        const pushData = jest.fn();
+        createComponent({
+            dataSource: emptyDataSource,
+            onExportReady,
+            onError: noop,
+            pushData,
+        });
+
+        return testUtils.delay().then(() => {
+            expect(pushData).toHaveBeenCalled();
+            expect(pushData.mock.calls[0][0]).toMatchObject({
+                possibleDrillableItems: [
+                    {
+                        localIdentifier: "1st_measure_local_identifier",
+                        title: "Lost",
+                        type: "measure",
+                    },
+                ],
+            });
         });
     });
 
@@ -407,6 +439,41 @@ describe("VisualizationLoadingHOC", () => {
                     result: oneMeasureResponse,
                 });
                 expect(onLoadingChanged).toHaveBeenCalledWith({ isLoading: false });
+            });
+        });
+
+        it("should push possibleDrillableItems with empty result from getPage", () => {
+            const onExportReady = async (exportResult: IExportFunction) => {
+                try {
+                    await exportResult({ format: XLSX });
+                } catch (error) {
+                    expect(error.cause.name).toEqual("EmptyResultError");
+                    expect(error).toEqual(new RuntimeError(ErrorStates.NO_DATA));
+                }
+            };
+            const pushData = jest.fn();
+
+            createComponent(
+                {
+                    pushData,
+                    onExportReady,
+                    onError: noop,
+                    dataSource: emptyDataSource,
+                },
+                false,
+            );
+
+            return testUtils.delay().then(() => {
+                expect(pushData).toHaveBeenCalled();
+                expect(pushData.mock.calls[0][0]).toMatchObject({
+                    possibleDrillableItems: [
+                        {
+                            localIdentifier: "1st_measure_local_identifier",
+                            title: "Lost",
+                            type: "measure",
+                        },
+                    ],
+                });
             });
         });
 

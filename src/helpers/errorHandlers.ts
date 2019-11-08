@@ -125,10 +125,12 @@ export function isEmptyResult(responses: Execution.IExecutionResponses): boolean
     return isNullExecutionResult(responses) || isEmptyDataResult(responses);
 }
 
+export const EmptyResultErrorName = "EmptyResultError";
+
 export function checkEmptyResult(responses: Execution.IExecutionResponses) {
     if (isEmptyResult(responses)) {
         throw {
-            name: "EmptyResultError",
+            name: EmptyResultErrorName,
             response: {
                 status: HttpStatusCodes.NO_CONTENT,
                 json: () => Promise.resolve(responses),
