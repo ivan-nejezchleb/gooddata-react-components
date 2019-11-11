@@ -325,7 +325,7 @@ export function visualizationLoadingHOC<
         }
 
         private pushDataForNoContentResponse(error: ApiResponseError) {
-            if (error.name != EmptyResultErrorName) {
+            if (error.name !== EmptyResultErrorName) {
                 return;
             }
             const response: Promise<Execution.IExecutionResponses> = error.response.json();
