@@ -1,7 +1,7 @@
-const pkg = require('./package.json');
+const jestConfig = require('./jest.config.js');
 
 const config = {
-    ...pkg.jest,
+    ...jestConfig,
     "collectCoverage": true,
     "coverageDirectory": "<rootDir>/ci/results/coverage",
     "coverageReporters": ["json", "cobertura", "lcov"],
