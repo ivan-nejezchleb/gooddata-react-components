@@ -1,3 +1,4 @@
+process.env = Object.assign(process.env, { NODE_ICU_DATA: 'node_modules/full-icu' });
 const jestConfig = require('./jest.config.js');
 
 const config = {
