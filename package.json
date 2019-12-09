@@ -114,7 +114,7 @@
   "dependencies": {
     "@formatjs/intl-pluralrules": "^1.3.6",
     "@gooddata/gooddata-js": "^12.0.0",
-    "@gooddata/goodstrap": "65.0.0-alpha-tomsatgd-tsa-fet-233-upgrade-react-intl-2019-12-02T13-40-19-796Z",
+    "@gooddata/goodstrap": "65.0.0-alpha-bertold8-tsa-fet-233-upgrade-react-intl-2019-12-09T12-46-51-980Z",
     "@gooddata/js-utils": "^3.5.0",
     "@gooddata/numberjs": "^3.2.3",
     "@gooddata/typings": "^2.19.0",
