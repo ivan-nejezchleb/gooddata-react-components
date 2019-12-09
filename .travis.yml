@@ -4,7 +4,6 @@ node_js:
   - "8.12.0"
 before_script:
   - yarn install --pure-lockfile
-  - yarn add full-icu
   - yarn check --integrity
 script:
   - yarn validate-ci
