@@ -23,8 +23,8 @@ import { ISubject } from "../../../helpers/async";
 import { convertErrors, checkEmptyResult, isApiResponseError } from "../../../helpers/errorHandlers";
 import { IHeaderPredicate } from "../../../interfaces/HeaderPredicate";
 import { IDataSourceProviderInjectedProps } from "../../afm/DataSourceProvider";
-import { createIntl, IntlShape } from "react-intl";
-import { messagesMap } from "../../core/base/IntlWrapper";
+import { injectIntl, WrappedComponentProps } from "react-intl";
+import { IntlWrapper } from "../../core/base/IntlWrapper";
 
 import { LoadingComponent, ILoadingProps } from "../../simple/LoadingComponent";
 import { ErrorComponent, IErrorProps } from "../../simple/ErrorComponent";
@@ -56,11 +56,10 @@ export type IGetPage = (
     offset: number[],
 ) => Promise<Execution.IExecutionResponses | null>;
 
-export interface ILoadingInjectedProps {
+export interface ILoadingInjectedProps extends WrappedComponentProps {
     execution: Execution.IExecutionResponses;
     error?: string;
     isLoading: boolean;
-    intl: IntlShape;
     // if autoExecuteDataSource is false, this callback is passed to the inner component and handles loading
     getPage?: IGetPage;
 
@@ -100,10 +99,7 @@ export function visualizationLoadingHOC<
     InnerComponent: React.ComponentClass<T & ILoadingInjectedProps>,
     autoExecuteDataSource: boolean = true,
 ): React.ComponentClass<T> {
-    return class LoadingHOCWrapped extends React.Component<
-        T & ILoadingInjectedProps,
-        IVisualizationLoadingState
-    > {
+    class LoadingHOCWrapped extends React.Component<T & ILoadingInjectedProps, IVisualizationLoadingState> {
         public static defaultProps: Partial<T & ILoadingInjectedProps> = InnerComponent.defaultProps;
 
         protected subject: ISubject<IExecutionDataPromise>;
@@ -111,11 +107,9 @@ export function visualizationLoadingHOC<
         protected hasUnmounted: boolean;
 
         private sdk: SDK;
-        private intl: IntlShape;
 
         constructor(props: T & ILoadingInjectedProps) {
             super(props);
-            const { locale } = this.props;
 
             this.state = {
                 isLoading: false,
@@ -124,7 +118,6 @@ export function visualizationLoadingHOC<
             };
 
             this.sdk = props.sdk ? props.sdk.clone() : createSdk();
-            this.intl = createIntl({ locale, messages: messagesMap[locale] });
 
             setTelemetryHeaders(this.sdk, "LoadingHOCWrapped", props);
 
@@ -154,6 +147,7 @@ export function visualizationLoadingHOC<
 
         public render() {
             const { result, isLoading, error } = this.state;
+            const { intl } = this.props;
 
             const getPageProperty = autoExecuteDataSource
                 ? {}
@@ -174,7 +168,7 @@ export function visualizationLoadingHOC<
                     onNegativeValues={this.onNegativeValues}
                     error={error}
                     isLoading={isLoading}
-                    intl={this.intl}
+                    intl={intl}
                     {...getPageProperty}
                 />
             );
@@ -199,7 +193,7 @@ export function visualizationLoadingHOC<
             return pagePromise
                 .then(checkEmptyResult)
                 .then((rawExecution: Execution.IExecutionResponses) => {
-                    const emptyHeaderString = `(${this.intl.formatMessage({
+                    const emptyHeaderString = `(${this.props.intl.formatMessage({
                         id: "visualization.emptyValue",
                     })})`;
                     const executionResultWithResolvedEmptyValues = fixEmptyHeaderItems(
@@ -431,6 +425,18 @@ export function visualizationLoadingHOC<
             return (_exportConfig: IExtendedExportConfig): Promise<IExportResponse> => {
                 return Promise.reject(error);
             };
+        }
+    }
+
+    const IntlLoadingHOC = injectIntl<"intl", T & ILoadingInjectedProps>(LoadingHOCWrapped);
+
+    return class LoadingHOC extends React.Component<T & ILoadingInjectedProps, null> {
+        public render() {
+            return (
+                <IntlWrapper locale={this.props.locale}>
+                    <IntlLoadingHOC {...this.props} />
+                </IntlWrapper>
+            );
         }
     };
 }
