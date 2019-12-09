@@ -1,5 +1,10 @@
 // (C) 2019 GoodData Corporation
-process.env = Object.assign(process.env, { NODE_ICU_DATA: './node_modules/full-icu' });
+console.log(process.env.NODE_ICU_DATA);
+
+process.env = Object.assign(process.env, { NODE_ICU_DATA: 'node_modules/full-icu' });
+const icu = require('full-icu');
+
+console.log(icu.nodever, icu.icudat, icu.noi18n);
 
 module.exports = {
     "setupFilesAfterEnv": [
