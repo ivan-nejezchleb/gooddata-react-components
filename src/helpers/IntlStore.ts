@@ -1,5 +1,5 @@
 // (C) 2007-2019 GoodData Corporation
-import { IntlShape, createIntl } from "react-intl";
+import { IntlShape, createIntl, createIntlCache } from "react-intl";
 import { Localization } from "@gooddata/typings";
 import { translations } from "@gooddata/js-utils";
 import isEmpty = require("lodash/isEmpty");
@@ -29,6 +29,7 @@ const messagesMap = {
 };
 
 const intlStore = {};
+const cache = createIntlCache();
 
 function getIntl(locale: Localization.ILocale = DEFAULT_LOCALE): IntlShape {
     let usedLocale = locale;
@@ -38,7 +39,7 @@ function getIntl(locale: Localization.ILocale = DEFAULT_LOCALE): IntlShape {
 
     return (
         intlStore[usedLocale] ||
-        (intlStore[usedLocale] = createIntl({ locale, messages: messagesMap[locale] }))
+        (intlStore[usedLocale] = createIntl({ locale, messages: messagesMap[locale] }, cache))
     );
 }
 
