@@ -1,4 +1,4 @@
-// (C) 2007-2019 GoodData Corporation
+// (C) 2007-2020 GoodData Corporation
 import { AFM, Execution, VisualizationObject } from "@gooddata/typings";
 import {
     BodyScrollEvent,
@@ -504,7 +504,7 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
         console.log("onFirstDataRendered");
     };
 
-    private onModelUpdated = (event: ModelUpdatedEvent) => {
+    private onModelUpdated = (_event: ModelUpdatedEvent) => {
         console.log("onModelUpdated");
         this.updateStickyRow();
         // this.autoresizeColumns(event);
