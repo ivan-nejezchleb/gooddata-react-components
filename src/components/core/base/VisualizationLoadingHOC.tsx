@@ -1,4 +1,4 @@
-// (C) 2007-2019 GoodData Corporation
+// (C) 2007-2020 GoodData Corporation
 import * as React from "react";
 import noop = require("lodash/noop");
 import get = require("lodash/get");
@@ -219,6 +219,7 @@ export function visualizationLoadingHOC<
                 .catch((error: ApiResponseError | Error) => {
                     // only trigger errors on non-cancelled promises
                     if (error.message !== ErrorStates.CANCELLED) {
+                        this.pushDataForError(error);
                         this.onError(convertErrors(error));
                     }
                 });
@@ -326,6 +327,13 @@ export function visualizationLoadingHOC<
             );
         }
 
+        private pushDataForError(error: any) {
+            if (error.executionResponse) {
+                const supportedDrillableItems = this.getSupportedDrillableItems(error.executionResponse);
+                this.props.pushData({ supportedDrillableItems });
+            }
+        }
+
         private pushDataForNoContentResponse(error: RuntimeError) {
             if (!isApiResponseError(error.cause) || error.getMessage() !== ErrorStates.NO_DATA) {
                 return;
@@ -381,6 +389,7 @@ export function visualizationLoadingHOC<
                 .getData(resultSpec)
                 .then(checkEmptyResult)
                 .catch((error: ApiResponseError) => {
+                    this.pushDataForError(error);
                     throw convertErrors(error);
                 });
 
