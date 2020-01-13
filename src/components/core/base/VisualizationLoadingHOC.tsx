@@ -10,9 +10,11 @@ import {
     factory as createSdk,
     DataLayer,
     ApiResponseError,
+    ApiResponseExecutionError,
     IExportConfig,
     IExportResponse,
     SDK,
+    TypeGuards,
 } from "@gooddata/gooddata-js";
 import { AFM, Execution } from "@gooddata/typings";
 
@@ -216,7 +218,7 @@ export function visualizationLoadingHOC<
                     this.props.onExportReady(this.createExportFunction(result)); // Pivot tables
                     return result;
                 })
-                .catch((error: ApiResponseError | Error) => {
+                .catch((error: ApiResponseError | ApiResponseExecutionError | Error) => {
                     // only trigger errors on non-cancelled promises
                     if (error.message !== ErrorStates.CANCELLED) {
                         this.pushDataForError(error);
@@ -327,8 +329,8 @@ export function visualizationLoadingHOC<
             );
         }
 
-        private pushDataForError(error: any) {
-            if (error.executionResponse) {
+        private pushDataForError(error: ApiResponseError | ApiResponseExecutionError | Error) {
+            if (TypeGuards.isApiResponseExecutionError(error)) {
                 const supportedDrillableItems = this.getSupportedDrillableItems(error.executionResponse);
                 this.props.pushData({ supportedDrillableItems });
             }
@@ -388,7 +390,7 @@ export function visualizationLoadingHOC<
             const promise = dataSource
                 .getData(resultSpec)
                 .then(checkEmptyResult)
-                .catch((error: ApiResponseError) => {
+                .catch((error: ApiResponseError | ApiResponseExecutionError) => {
                     this.pushDataForError(error);
                     throw convertErrors(error);
                 });

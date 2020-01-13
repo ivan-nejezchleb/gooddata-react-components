@@ -1201,10 +1201,10 @@
     firstline "^2.0.2"
     line-replace "^1.0.2"
 
-"@gooddata/gooddata-js@12.0.0-alpha-pbenes-pb-drill-error-widget-2020-01-10T13-40-10-371Z":
-  version "12.0.0-alpha-pbenes-pb-drill-error-widget-2020-01-10T13-40-10-371Z"
-  resolved "https://registry.yarnpkg.com/@gooddata/gooddata-js/-/gooddata-js-12.0.0-alpha-pbenes-pb-drill-error-widget-2020-01-10T13-40-10-371Z.tgz#e2385c9caa3475c12f0ef891ec0484503c9dddd8"
-  integrity sha512-7wyWWdLoqH+nqz0vxTHj2SBCn5c55bbAFPeahMPGSXdJyWkUsgCXr1xYXFHkZUG1kkJfwubsbnRLBYnZoUPBYA==
+"@gooddata/gooddata-js@12.0.0-alpha-pbenes-pb-drill-error-widget-2020-01-13T14-00-51-760Z":
+  version "12.0.0-alpha-pbenes-pb-drill-error-widget-2020-01-13T14-00-51-760Z"
+  resolved "https://registry.yarnpkg.com/@gooddata/gooddata-js/-/gooddata-js-12.0.0-alpha-pbenes-pb-drill-error-widget-2020-01-13T14-00-51-760Z.tgz#01eedf4aa2bfebcf84b953b3cbbdfc7e9f80a885"
+  integrity sha512-59qTMHJNbFSM9XcdUCpjGlBqh3ARN+I+r744GnnsdmY/+VL1SD/XCFELqk84JetBnxF48D188PdXa+apsf653Q==
   dependencies:
     "@gooddata/typings" "^2.19.0"
     es6-promise "^3.0.2"
