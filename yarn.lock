@@ -1201,10 +1201,10 @@
     firstline "^2.0.2"
     line-replace "^1.0.2"
 
-"@gooddata/gooddata-js@12.0.0-alpha-pbenes-pb-drill-error-widget-2020-01-13T14-38-13-388Z":
-  version "12.0.0-alpha-pbenes-pb-drill-error-widget-2020-01-13T14-38-13-388Z"
-  resolved "https://registry.yarnpkg.com/@gooddata/gooddata-js/-/gooddata-js-12.0.0-alpha-pbenes-pb-drill-error-widget-2020-01-13T14-38-13-388Z.tgz#d22a2b8acddc66a8e5088edcf8b6ed193853b273"
-  integrity sha512-E+j2XYkEwtIJKRlHuo656jnHbHpdZQfh4GEgketuDppBaxnh+yScd5Fz2U2Oq7F5ZYpk8AriE4w7eokLGmFBPg==
+"@gooddata/gooddata-js@^12.1.0":
+  version "12.1.0"
+  resolved "https://registry.yarnpkg.com/@gooddata/gooddata-js/-/gooddata-js-12.1.0.tgz#310984cb4a2c04041468d05adb384e02ef7a7f30"
+  integrity sha512-W7jqEU7GNovzvPVzAdkjVqHt7lQTNYI5AK5bexqjWOA+nBIivX0plOULE0/Mmrmv4CUF/VOhBIHGy584WknxDw==
   dependencies:
     "@gooddata/typings" "^2.19.0"
     es6-promise "^3.0.2"
@@ -1258,10 +1258,10 @@
     js-cookie "^2.1.4"
     lodash "^4.17.15"
 
-"@gooddata/mock-js@2.3.1":
-  version "2.3.1"
-  resolved "https://registry.yarnpkg.com/@gooddata/mock-js/-/mock-js-2.3.1.tgz#bc24a1b549df687b0753980a96f8dd8a28cf3e89"
-  integrity sha512-8y02ReJL/vCmqbcaQoRZ/VwOxJKIMG+Gmz1cPta3x0yHEiKiiBfyXu9x2YSmIkbMT1kDK9PpP7jiwLcQgYlR8Q==
+"@gooddata/mock-js@2.6.0":
+  version "2.6.0"
+  resolved "https://registry.yarnpkg.com/@gooddata/mock-js/-/mock-js-2.6.0.tgz#b6ef4a49535d30fdc3f7a2ef86d79a718f1c41bf"
+  integrity sha512-f6XFyt7vvUVBYqedhzxYXwkhWSY4uybpWMDhdcUT/t6rKPdit/fZ0gmt2SzrdWdFkI6hLnO0ORzmDxtn5UxzWA==
   dependencies:
     "@gooddata/typings" "^2.18.0"
     "@types/seedrandom" "2.4.27"
