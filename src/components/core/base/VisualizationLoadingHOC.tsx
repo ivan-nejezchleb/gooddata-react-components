@@ -330,7 +330,7 @@ export function visualizationLoadingHOC<
         }
 
         private pushDataForError(error: ApiResponseError | ApiExecutionResponseError | Error) {
-            if (TypeGuards.isApiResponseExecutionError(error)) {
+            if (TypeGuards.isApiExecutionResponseError(error)) {
                 const supportedDrillableItems = this.getSupportedDrillableItems(error.executionResponse);
                 this.props.pushData({ supportedDrillableItems });
             }
