@@ -10,7 +10,7 @@ import {
     factory as createSdk,
     DataLayer,
     ApiResponseError,
-    ApiResponseExecutionError,
+    ApiExecutionResponseError,
     IExportConfig,
     IExportResponse,
     SDK,
@@ -218,7 +218,7 @@ export function visualizationLoadingHOC<
                     this.props.onExportReady(this.createExportFunction(result)); // Pivot tables
                     return result;
                 })
-                .catch((error: ApiResponseError | ApiResponseExecutionError | Error) => {
+                .catch((error: ApiResponseError | ApiExecutionResponseError | Error) => {
                     // only trigger errors on non-cancelled promises
                     if (error.message !== ErrorStates.CANCELLED) {
                         this.pushDataForError(error);
@@ -329,7 +329,7 @@ export function visualizationLoadingHOC<
             );
         }
 
-        private pushDataForError(error: ApiResponseError | ApiResponseExecutionError | Error) {
+        private pushDataForError(error: ApiResponseError | ApiExecutionResponseError | Error) {
             if (TypeGuards.isApiResponseExecutionError(error)) {
                 const supportedDrillableItems = this.getSupportedDrillableItems(error.executionResponse);
                 this.props.pushData({ supportedDrillableItems });
@@ -390,7 +390,7 @@ export function visualizationLoadingHOC<
             const promise = dataSource
                 .getData(resultSpec)
                 .then(checkEmptyResult)
-                .catch((error: ApiResponseError | ApiResponseExecutionError) => {
+                .catch((error: ApiResponseError | ApiExecutionResponseError) => {
                     this.pushDataForError(error);
                     throw convertErrors(error);
                 });

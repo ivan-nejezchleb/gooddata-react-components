@@ -15,7 +15,7 @@ import {
     executionObjectWithTotalsDataSource,
     LoadingComponent,
     ErrorComponent,
-    errorDataSource,
+    apiExecutionResponseErrorDataSource,
 } from "../../../tests/mocks";
 
 import "jest";
@@ -318,7 +318,7 @@ describe("VisualizationLoadingHOC", () => {
         const pushData = jest.fn();
         createComponent({
             pushData,
-            dataSource: errorDataSource,
+            dataSource: apiExecutionResponseErrorDataSource,
         });
 
         return testUtils.delay().then(() => {

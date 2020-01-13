@@ -115,11 +115,11 @@ export const tooLargeDataSource: IDataSource = {
     getFingerprint: () => JSON.stringify(tooLargeDataSource),
 };
 
-export const errorDataSource: IDataSource = {
+export const apiExecutionResponseErrorDataSource: IDataSource = {
     getData: () => Promise.reject(enrichedErrorResponse),
     getPage: () => Promise.reject(enrichedErrorResponse),
     getAfm: () => ({}),
-    getFingerprint: () => JSON.stringify(errorDataSource),
+    getFingerprint: () => JSON.stringify(apiExecutionResponseErrorDataSource),
 };
 
 export const delayedTooLargeDataSource: IDataSource = {

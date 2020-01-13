@@ -1,5 +1,5 @@
 // (C) 2007-2020 GoodData Corporation
-import { ApiResponseError } from "@gooddata/gooddata-js";
+import { ApiResponseError, ApiExecutionResponseError } from "@gooddata/gooddata-js";
 import { AFM, Execution } from "@gooddata/typings";
 import { MEASUREGROUP } from "../../constants/dimensions";
 
@@ -222,7 +222,7 @@ const tooLargeResponse: ApiResponseError = {
     responseBody: "",
 };
 
-const enrichedErrorResponse = {
+const enrichedErrorResponse: ApiExecutionResponseError = {
     ...tooLargeResponse,
     executionResponse: {
         dimensions: [
