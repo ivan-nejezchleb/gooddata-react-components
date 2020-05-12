@@ -46,6 +46,7 @@ export const headerToGrid = (header: Execution.IResultHeaderItem, fieldPrefix = 
     return {
         headerName: internalHeader.name,
         field: fieldPrefix + identifyHeader(header),
+        colId: fieldPrefix + identifyHeader(header),
     };
 };
 
@@ -153,6 +154,7 @@ export const getRowHeaders = (
             type: ROW_ATTRIBUTE_COLUMN,
             // Row dimension must contain only attribute headers.
             field,
+            colId: field,
             drillItems: [attributeHeader],
             ...rowGroupProps,
             ...columnDefOptions,
