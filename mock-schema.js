@@ -2551,7 +2551,17 @@ const getBaseProjectSchema = (title, identifier) => {
                         localIdentifier: '3',
                         displayForm: '3.df'
                     }]
-                }]
+                }],
+                properties: JSON.stringify({
+                    widthDefs: [
+                        {
+                            attributeColumnWidthItem: {
+                                width: 100,
+                                attributeIdentifier: "3",
+                            },
+                        },
+                    ],
+                }),
             },
             {
                 identifier: '1002',

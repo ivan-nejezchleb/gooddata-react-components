@@ -57,12 +57,17 @@ import { IPivotTableProps, PivotTable } from "../../../../components/core/PivotT
 import { generateDimensions } from "../../../../helpers/dimensions";
 import { DEFAULT_LOCALE } from "../../../../constants/localization";
 import { DASHBOARDS_ENVIRONMENT } from "../../../constants/properties";
-import { ColumnWidthItem, IColumnSizing, IMenu, IPivotTableConfig,
-    IMeasureColumnWidthItem,
-
-    isMeasureColumnWidthItem, } from "../../../../interfaces/PivotTable";
 import { adaptReferencePointWidthItemsToPivotTable } from "./widthItemsHelpers";
 import { PIVOT_TABLE_SUPPORTED_PROPERTIES } from "../../../constants/supportedProperties";
+import {
+    ColumnWidthItem,
+    IMeasureColumnWidthItem,
+    IMenu,
+    IPivotTableConfig,
+    isMeasureColumnWidthItem,
+} from "../../../../interfaces/PivotTable";
+
+import { getTableConfigFromFeatureFlags } from "../../../../helpers/featureFlags";
 
 export const getColumnAttributes = (buckets: IBucket[]): IBucketItem[] => {
     return getItemsFromBuckets(
@@ -547,8 +552,10 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
             );
             const totals: VisualizationObject.IVisualizationTotal[] = (rowsBucket && rowsBucket.totals) || [];
 
-            const updatedConfig = this.enrichConfigWithColumnSizing(
+            const updatedConfig = getTableConfigFromFeatureFlags(
                 this.enrichConfigWithMenu(config),
+                this.featureFlags,
+                this.environment === DASHBOARDS_ENVIRONMENT,
                 columnWidths,
             );
             const pivotTableProps = {
@@ -696,44 +703,6 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
             aggregationsSubMenu: true,
         };
         return merge({ menu }, config);
-    }
-
-    private enrichConfigWithColumnSizing(
-        config: IPivotTableConfig,
-        columnWidths: ColumnWidthItem[],
-    ): IPivotTableConfig {
-        const result = this.enrichConfigWithAutosize(config);
-        return this.enrichConfigWithManualResize(this.enrichConfigWithGrowToFit(result), columnWidths);
-    }
-
-    private enrichConfigWithAutosize(config: IPivotTableConfig): IPivotTableConfig {
-        if (!this.featureFlags.enableTableColumnsAutoResizing) {
-            return config;
-        }
-
-        const columnSizing: IColumnSizing = { defaultWidth: "viewport" };
-        return merge(config, { columnSizing });
-    }
-
-    private enrichConfigWithGrowToFit(config: IPivotTableConfig): IPivotTableConfig {
-        if (this.environment === DASHBOARDS_ENVIRONMENT) {
-            if (!this.featureFlags.enableTableColumnsGrowToFit) {
-                return config;
-            }
-            return merge(config, { columnSizing: { growToFit: true } });
-        }
-
-        return config;
-    }
-
-    private enrichConfigWithManualResize(
-        config: IPivotTableConfig,
-        columnWidths: ColumnWidthItem[],
-    ): IPivotTableConfig {
-        if (!this.featureFlags.enableTableColumnsManualResizing) {
-            return config;
-        }
-        return merge(config, { columnSizing: { columnWidths } });
     }
 
     private onColumnResized(columnWidths: ColumnWidthItem[]) {
