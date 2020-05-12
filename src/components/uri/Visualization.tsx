@@ -227,7 +227,6 @@ export class VisualizationWrapped extends React.Component<
 
         this.sdk = props.sdk ? props.sdk.clone() : createSdk();
         setTelemetryHeaders(this.sdk, "Visualization", props);
-
         this.isUnmounted = false;
         this.visualizationUri = props.uri;
 
@@ -374,14 +373,18 @@ export class VisualizationWrapped extends React.Component<
                     processedVisualizationObject,
                     filtersFromProps,
                 );
-
+                // TODO ONE-4407 here could be function to get widthDefs from mdObject.content
+                const mdObjectContentProperties =
+                    mdObject.content &&
+                    mdObject.content.properties &&
+                    JSON.parse(mdObject.content.properties);
+                const widthDefs =
+                    mdObjectContentProperties && mdObjectContentProperties.widthDefs
+                        ? mdObjectContentProperties.widthDefs
+                        : undefined;
                 const pivotTableColumnProps = {
-                    config: {
-                        ...config,
-                        ...getTableConfigFromFeatureFlags(this.state.featureFlags),
-                    },
+                    config: getTableConfigFromFeatureFlags(config, this.state.featureFlags, false, widthDefs),
                 };
-
                 // we do not need to pass totals={totals} because BucketPivotTable deals with changes in totals itself
                 return (
                     <PivotTableComponent {...commonProps} {...pivotBucketProps} {...pivotTableColumnProps} />
@@ -419,6 +422,7 @@ export class VisualizationWrapped extends React.Component<
                 );
         }
     }
+
     public async prepareDataSources(
         projectId: string,
         identifier: string,

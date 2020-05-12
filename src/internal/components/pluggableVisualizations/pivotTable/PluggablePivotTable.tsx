@@ -66,6 +66,7 @@ import {
     isMeasureColumnWidthItem,
 } from "../../../../interfaces/PivotTable";
 import { isWidthItemVisible } from "./widthItemsHelpers";
+import { getTableConfigFromFeatureFlags } from "../../../../helpers/featureFlags";
 
 export const getColumnAttributes = (buckets: IBucket[]): IBucketItem[] => {
     return getItemsFromBuckets(
@@ -556,8 +557,10 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
             );
             const totals: VisualizationObject.IVisualizationTotal[] = (rowsBucket && rowsBucket.totals) || [];
 
-            const updatedConfig = this.enrichConfigWithColumnSizing(
+            const updatedConfig = getTableConfigFromFeatureFlags(
                 this.enrichConfigWithMenu(config),
+                this.featureFlags,
+                this.environment === DASHBOARDS_ENVIRONMENT,
                 columnWidths,
             );
             const pivotTableProps = {
@@ -707,43 +710,43 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
         return merge({ menu }, config);
     }
 
-    private enrichConfigWithColumnSizing(
-        config: IPivotTableConfig,
-        columnWidths: ColumnWidthItem[],
-    ): IPivotTableConfig {
-        const result = this.enrichConfigWithAutosize(config);
-        return this.enrichConfigWithManualResize(this.enrichConfigWithGrowToFit(result), columnWidths);
-    }
+    // private enrichConfigWithColumnSizing(
+    //     config: IPivotTableConfig,
+    //     columnWidths: ColumnWidthItem[],
+    // ): IPivotTableConfig {
+    //     const result = this.enrichConfigWithAutosize(config);
+    //     return this.enrichConfigWithManualResize(this.enrichConfigWithGrowToFit(result), columnWidths);
+    // }
 
-    private enrichConfigWithAutosize(config: IPivotTableConfig): IPivotTableConfig {
-        if (!this.featureFlags.enableTableColumnsAutoResizing) {
-            return config;
-        }
+    // private enrichConfigWithAutosize(config: IPivotTableConfig): IPivotTableConfig {
+    //     if (!this.featureFlags.enableTableColumnsAutoResizing) {
+    //         return config;
+    //     }
 
-        const columnSizing: IColumnSizing = { defaultWidth: "viewport" };
-        return merge(config, { columnSizing });
-    }
+    //     const columnSizing: IColumnSizing = { defaultWidth: "viewport" };
+    //     return merge(config, { columnSizing });
+    // }
 
-    private enrichConfigWithGrowToFit(config: IPivotTableConfig): IPivotTableConfig {
-        if (this.environment === DASHBOARDS_ENVIRONMENT) {
-            if (!this.featureFlags.enableTableColumnsGrowToFit) {
-                return config;
-            }
-            return merge(config, { columnSizing: { growToFit: true } });
-        }
+    // private enrichConfigWithGrowToFit(config: IPivotTableConfig): IPivotTableConfig {
+    //     if (this.environment === DASHBOARDS_ENVIRONMENT) {
+    //         if (!this.featureFlags.enableTableColumnsGrowToFit) {
+    //             return config;
+    //         }
+    //         return merge(config, { columnSizing: { growToFit: true } });
+    //     }
 
-        return config;
-    }
+    //     return config;
+    // }
 
-    private enrichConfigWithManualResize(
-        config: IPivotTableConfig,
-        columnWidths: ColumnWidthItem[],
-    ): IPivotTableConfig {
-        if (!this.featureFlags.enableTableColumnsManualResizing) {
-            return config;
-        }
-        return merge(config, { columnSizing: { columnWidths } });
-    }
+    // private enrichConfigWithManualResize(
+    //     config: IPivotTableConfig,
+    //     columnWidths: ColumnWidthItem[],
+    // ): IPivotTableConfig {
+    //     if (!this.featureFlags.enableTableColumnsManualResizing) {
+    //         return config;
+    //     }
+    //     return merge(config, { columnSizing: { columnWidths } });
+    // }
 
     private onColumnResized(columnWidths: ColumnWidthItem[]) {
         const { pushData } = this.callbacks;

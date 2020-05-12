@@ -33,22 +33,53 @@ export function setConfigFromFeatureFlags(config: IChartConfig, featureFlags: IF
     return result;
 }
 
-export function getTableConfigFromFeatureFlags(featureFlags: IFeatureFlags): IPivotTableConfig {
-    let columnSizing: IColumnSizing = {};
+// export function getTableConfigFromFeatureFlags(featureFlags: IFeatureFlags): IPivotTableConfig {
+//     let columnSizing: IColumnSizing = {};
+
+//     if (featureFlags.enableTableColumnsAutoResizing) {
+//         columnSizing = merge(columnSizing, {
+//             defaultWidth: "viewport",
+//         });
+//     }
+
+//     if (featureFlags.enableTableColumnsGrowToFit) {
+//         columnSizing = merge(columnSizing, {
+//             growToFit: true,
+//         });
+//     }
+
+//     return {
+//         columnSizing,
+//     };
+// }
+// TODO: ONE-4407 refactor - here should be only feature flag logic
+export function getTableConfigFromFeatureFlags(
+    config: IPivotTableConfig,
+    featureFlags: IFeatureFlags,
+    predicateEnvironment: boolean = true,
+    widthDefs?: any,
+): IPivotTableConfig {
+    let result: IPivotTableConfig = {
+        ...config,
+    };
+    let columnSizing: IColumnSizing = { defaultWidth: "unset" };
 
     if (featureFlags.enableTableColumnsAutoResizing) {
-        columnSizing = merge(columnSizing, {
-            defaultWidth: "viewport",
-        });
+        columnSizing = { defaultWidth: "viewport" };
+        result = merge(result, { columnSizing });
     }
 
-    if (featureFlags.enableTableColumnsGrowToFit) {
-        columnSizing = merge(columnSizing, {
-            growToFit: true,
-        });
+    if (featureFlags.enableTableColumnsManualResizing && widthDefs) {
+        columnSizing = {
+            ...columnSizing,
+            columnWidths: widthDefs,
+        };
+        result = merge(result, { columnSizing });
     }
 
-    return {
-        columnSizing,
-    };
+    if (featureFlags.enableTableColumnsGrowToFit && predicateEnvironment) {
+        result = merge(result, { growToFit: true });
+    }
+
+    return result;
 }
