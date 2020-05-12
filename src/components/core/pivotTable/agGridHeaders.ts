@@ -1,4 +1,4 @@
-// (C) 2007-2019 GoodData Corporation
+// (C) 2007-2020 GoodData Corporation
 
 import { Execution } from "@gooddata/typings";
 import { getMappingHeaderName } from "../../../helpers/mappingHeader";
@@ -46,6 +46,7 @@ export const headerToGrid = (header: Execution.IResultHeaderItem, fieldPrefix = 
     return {
         headerName: internalHeader.name,
         field: fieldPrefix + identifyHeader(header),
+        colId: fieldPrefix + identifyHeader(header),
     };
 };
 
@@ -153,6 +154,7 @@ export const getRowHeaders = (
             type: ROW_ATTRIBUTE_COLUMN,
             // Row dimension must contain only attribute headers.
             field,
+            colId: field,
             drillItems: [attributeHeader],
             ...rowGroupProps,
             ...columnDefOptions,
