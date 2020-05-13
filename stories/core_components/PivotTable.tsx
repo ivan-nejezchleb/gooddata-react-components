@@ -728,18 +728,30 @@ storiesOf("Core components/PivotTable", module)
                         rows={[ATTRIBUTE_1]}
                         config={{
                             columnSizing: {
-                                defaultWidth: "viewport",
+                                defaultWidth: "unset",
                                 columnWidths: [
                                     {
+                                        measureColumnWidthItem: {
+                                            width: 60,
+                                            locators: [
+                                                {
+                                                    measureLocatorItem: {
+                                                        measureIdentifier: "m1",
+                                                    },
+                                                },
+                                            ],
+                                        },
+                                    },
+                                    {
                                         attributeColumnWidthItem: {
-                                            width: 156,
+                                            width: 400,
                                             attributeIdentifier:
                                                 ATTRIBUTE_1.visualizationAttribute.localIdentifier,
                                         },
                                     },
                                 ],
                             },
-                            growToFit: true,
+                            growToFit: false,
                         }}
                         onError={onErrorHandler}
                         LoadingComponent={null}
