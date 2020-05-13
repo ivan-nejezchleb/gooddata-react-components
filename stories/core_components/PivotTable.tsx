@@ -717,4 +717,35 @@ storiesOf("Core components/PivotTable", module)
                 </div>
             </ScreenshotReadyWrapper>,
         ),
+    )
+    .add("manualy resized attribute column + autoresize + grow to fit", () =>
+        screenshotWrap(
+            <ScreenshotReadyWrapper resolver={visualizationNotLoadingResolver()}>
+                <div style={wrapperStyle} className="s-table">
+                    <PivotTable
+                        projectId="storybook"
+                        measures={[MEASURE_1, MEASURE_2]}
+                        rows={[ATTRIBUTE_1]}
+                        config={{
+                            columnSizing: {
+                                defaultWidth: "viewport",
+                                columnWidths: [
+                                    {
+                                        attributeColumnWidthItem: {
+                                            width: 156,
+                                            attributeIdentifier:
+                                                ATTRIBUTE_1.visualizationAttribute.localIdentifier,
+                                        },
+                                    },
+                                ],
+                            },
+                            growToFit: true,
+                        }}
+                        onError={onErrorHandler}
+                        LoadingComponent={null}
+                        ErrorComponent={null}
+                    />
+                </div>
+            </ScreenshotReadyWrapper>,
+        ),
     );
