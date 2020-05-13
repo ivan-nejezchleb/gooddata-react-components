@@ -718,10 +718,13 @@ storiesOf("Core components/PivotTable", module)
             </ScreenshotReadyWrapper>,
         ),
     )
-    .add("manualy resized attribute column + autoresize + grow to fit", () =>
-        screenshotWrap(
-            <ScreenshotReadyWrapper resolver={visualizationNotLoadingResolver()}>
-                <div style={wrapperStyle} className="s-table">
+    .add("manualy resized attribute column + autoresize + grow to fit", () => {
+        const PivotTableWrapper = () => {
+            const [attributeColumnWidth, setAttributeColumnWidth] = React.useState<number>(400);
+            const [measureColumnWidth, setMeasureColumnWidth] = React.useState<number>(60);
+
+            return (
+                <>
                     <PivotTable
                         projectId="storybook"
                         measures={[MEASURE_1, MEASURE_2]}
@@ -732,7 +735,7 @@ storiesOf("Core components/PivotTable", module)
                                 columnWidths: [
                                     {
                                         measureColumnWidthItem: {
-                                            width: 60,
+                                            width: measureColumnWidth,
                                             locators: [
                                                 {
                                                     measureLocatorItem: {
@@ -744,7 +747,7 @@ storiesOf("Core components/PivotTable", module)
                                     },
                                     {
                                         attributeColumnWidthItem: {
-                                            width: 400,
+                                            width: attributeColumnWidth,
                                             attributeIdentifier:
                                                 ATTRIBUTE_1.visualizationAttribute.localIdentifier,
                                         },
@@ -757,7 +760,24 @@ storiesOf("Core components/PivotTable", module)
                         LoadingComponent={null}
                         ErrorComponent={null}
                     />
+                    <button onClick={() => setAttributeColumnWidth(400)}>
+                        Set attributes column to width 400
+                    </button>
+                    <button onClick={() => setAttributeColumnWidth(50)}>
+                        Set attributes column to width 50
+                    </button>
+                    <button onClick={() => setMeasureColumnWidth(200)}>
+                        Set measure columns to width 200
+                    </button>
+                    <button onClick={() => setMeasureColumnWidth(50)}>Set measure columns to width 50</button>
+                </>
+            );
+        };
+        return screenshotWrap(
+            <ScreenshotReadyWrapper resolver={visualizationNotLoadingResolver()}>
+                <div style={wrapperStyle} className="s-table">
+                    <PivotTableWrapper />
                 </div>
             </ScreenshotReadyWrapper>,
-        ),
-    );
+        );
+    });

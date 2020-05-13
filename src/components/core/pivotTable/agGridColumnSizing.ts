@@ -1,10 +1,10 @@
 // (C) 2007-2020 GoodData Corporation
-import { AFM, Execution } from "@gooddata/typings";
-import { getIdsFromUri, getParsedFields } from "./agGridUtils";
-import { FIELD_SEPARATOR, FIELD_TYPE_ATTRIBUTE, FIELD_TYPE_MEASURE, ID_SEPARATOR } from "./agGridConst";
+import { /*AFM,*/ Execution } from "@gooddata/typings";
+import { getIdsFromUri /*getParsedFields*/ } from "./agGridUtils";
+import { FIELD_SEPARATOR, /*FIELD_TYPE_ATTRIBUTE, FIELD_TYPE_MEASURE,*/ ID_SEPARATOR } from "./agGridConst";
 import { assortDimensionHeaders, identifyResponseHeader } from "./agGridHeaders";
 import invariant = require("invariant");
-import { ColDef } from "ag-grid-community";
+// import { ColDef } from "ag-grid-community";
 import {
     IAttributeColumnWidthItem,
     ColumnWidth,
