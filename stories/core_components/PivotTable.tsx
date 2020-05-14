@@ -732,6 +732,7 @@ storiesOf("Core components/PivotTable", module)
                         config={{
                             columnSizing: {
                                 defaultWidth: "unset",
+                                growToFit: false,
                                 columnWidths: [
                                     {
                                         measureColumnWidthItem: {
@@ -754,7 +755,6 @@ storiesOf("Core components/PivotTable", module)
                                     },
                                 ],
                             },
-                            growToFit: false,
                         }}
                         onError={onErrorHandler}
                         LoadingComponent={null}
@@ -796,11 +796,18 @@ storiesOf("Core components/PivotTable", module)
                         config={{
                             columnSizing: {
                                 defaultWidth: "unset",
+                                growToFit: false,
                                 columnWidths: [
                                     {
                                         measureColumnWidthItem: {
                                             width: measureColumnWidth,
                                             locators: [
+                                                {
+                                                    attributeLocatorItem: {
+                                                        attributeIdentifier: "a2",
+                                                        element: "/gdc/md/storybook/obj/5/elements?id=1",
+                                                    },
+                                                },
                                                 {
                                                     measureLocatorItem: {
                                                         measureIdentifier: "m1",
@@ -818,7 +825,6 @@ storiesOf("Core components/PivotTable", module)
                                     },
                                 ],
                             },
-                            growToFit: false,
                         }}
                         onError={onErrorHandler}
                         LoadingComponent={null}

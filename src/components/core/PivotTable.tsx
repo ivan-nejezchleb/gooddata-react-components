@@ -1030,7 +1030,6 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
             intl: this.props.intl,
         };
 
-        let maxWidthProp = {};
         let enrichedColumnDefs = columnDefs;
         const columnWidths =
             (this.props.config &&
@@ -1043,7 +1042,6 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
                 ...columnWidthsByField,
                 ...this.resizedColumns,
             });
-            maxWidthProp = { maxWidth: AUTO_SIZED_MAX_WIDTH };
         }
 
         if (this.isGrowToFitEnabled()) {
