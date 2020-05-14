@@ -1,7 +1,7 @@
 // (C) 2007-2020 GoodData Corporation
 import { /*AFM,*/ Execution } from "@gooddata/typings";
-import { getIdsFromUri /*getParsedFields*/ } from "./agGridUtils";
-import { FIELD_SEPARATOR, /*FIELD_TYPE_ATTRIBUTE, FIELD_TYPE_MEASURE,*/ ID_SEPARATOR } from "./agGridConst";
+import { getIdsFromUri, getParsedFields /*getParsedFields*/ } from "./agGridUtils";
+import { FIELD_SEPARATOR, FIELD_TYPE_ATTRIBUTE, FIELD_TYPE_MEASURE, ID_SEPARATOR } from "./agGridConst";
 import { assortDimensionHeaders, identifyResponseHeader } from "./agGridHeaders";
 import invariant = require("invariant");
 // import { ColDef } from "ag-grid-community";
@@ -16,6 +16,7 @@ import {
     ColumnEventSourceType,
     IResizedColumns,
 } from "../../../interfaces/PivotTable";
+import { Column } from "ag-grid-community";
 
 /*
  * All code related to column resizing the ag-grid backed Pivot Table is concentrated here
@@ -187,3 +188,82 @@ export const getMeasureColumnWidthItemFieldAndWidth = (
 //         colDef.sort = direction;
 //     }
 // };
+
+export const getSizeItemByColId = (
+    execution: Execution.IExecutionResponses,
+    colId: string,
+    width: number,
+) => {
+    const { dimensions } = execution.executionResponse;
+
+    // TODO ONE-4404 same code is also in getSortItemByColId function
+    const fields = getParsedFields(colId);
+    const [lastFieldType, lastFieldId] = fields[fields.length - 1];
+
+    // TODO ONE-4404 same code is also in getSortItemByColId function
+    const searchDimensionIndex = lastFieldType === FIELD_TYPE_MEASURE ? 1 : 0;
+    const { attributeHeaders, measureHeaderItems } = assortDimensionHeaders([
+        dimensions[searchDimensionIndex],
+    ]);
+
+    if (lastFieldType === FIELD_TYPE_ATTRIBUTE) {
+        for (const header of attributeHeaders) {
+            if (getIdsFromUri(header.attributeHeader.uri)[0] === lastFieldId) {
+                const attributeIdentifier = header.attributeHeader.localIdentifier;
+
+                return {
+                    attributeSizeItem: {
+                        width,
+                        attributeIdentifier,
+                    },
+                };
+            }
+        }
+        invariant(false, `could not find attribute header matching ${colId}`);
+    } else if (lastFieldType === FIELD_TYPE_MEASURE) {
+        const headerItem = measureHeaderItems[parseInt(lastFieldId, 10)];
+        const attributeLocators = fields.slice(0, -1).map((field: string[]) => {
+            // first item is type which should be always 'a'
+            const [, fieldId, fieldValueId] = field;
+            const attributeHeaderMatch = attributeHeaders.find(
+                (attributeHeader: Execution.IAttributeHeader) => {
+                    return getIdsFromUri(attributeHeader.attributeHeader.formOf.uri)[0] === fieldId;
+                },
+            );
+            invariant(
+                attributeHeaderMatch,
+                `Could not find matching attribute header to field ${field.join(ID_SEPARATOR)}`,
+            );
+            return {
+                attributeLocatorItem: {
+                    attributeIdentifier: attributeHeaderMatch.attributeHeader.localIdentifier,
+                    element: `${attributeHeaderMatch.attributeHeader.formOf.uri}/elements?id=${fieldValueId}`,
+                },
+            };
+        });
+        return {
+            measureSizeItem: {
+                width,
+                locators: [
+                    ...attributeLocators,
+                    {
+                        measureLocatorItem: {
+                            measureIdentifier: headerItem.measureHeaderItem.localIdentifier,
+                        },
+                    },
+                ],
+            },
+        };
+    }
+    invariant(false, `could not find header matching ${colId}`);
+};
+
+export const getColumnFromModel = (columns: Column[], execution: Execution.IExecutionResponses) => {
+    return columns.map((column: Column) => {
+        const colId = column.getColId();
+        const width = column.getActualWidth();
+        const sizeItem = getSizeItemByColId(execution, colId, width);
+        invariant(sizeItem, `unable to find size item by filed ${colId}`);
+        return sizeItem;
+    });
+};
