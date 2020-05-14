@@ -483,6 +483,9 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
         }
 
         const displayedVirtualColumns = columnApi.getAllDisplayedVirtualColumns();
+        // TODO INE - filter out columns which match some of columnWidthItems
+        // be aware of difference between 'field' and 'colId'
+        // in future matching function will be more complex than comparison of strings
         const autoWidthColumnIds: string[] = this.getColumnIds(displayedVirtualColumns);
 
         const newColumnIds = difference(autoWidthColumnIds, previouslyResizedColumnIds);
@@ -1036,7 +1039,7 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
             [];
         const columnWidthsByField = convertColumnWidthsToMap(columnWidths, this.getExecutionResponse());
         if (Object.keys(this.resizedColumns).length || Object.keys(columnWidthsByField).length) {
-            enrichedColumnDefs = this.enrichColumnDefinitionsWithWidths(getTreeLeaves(columnDefs), {
+            enrichedColumnDefs = this.enrichColumnDefinitionsWithWidths(columnDefs, {
                 ...columnWidthsByField,
                 ...this.resizedColumns,
             });
@@ -1344,7 +1347,9 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
         columnDefinitions: IGridHeader[],
         resizedColumns: IResizedColumns,
     ) {
-        return columnDefinitions.map((columnDefinition: IGridHeader) => {
+        const result = cloneDeep(columnDefinitions);
+        const leaves = getTreeLeaves(result);
+        leaves.forEach((columnDefinition: IGridHeader) => {
             if (columnDefinition) {
                 const resizedColumn = resizedColumns[this.getColumnIdentifier(columnDefinition)];
 
@@ -1355,10 +1360,8 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
                     }
                 }
             }
-            return {
-                ...columnDefinition,
-            };
         });
+        return result;
     }
 
     private enrichColumnDefinitionsWithGrowToFitWidths(

@@ -718,7 +718,7 @@ storiesOf("Core components/PivotTable", module)
             </ScreenshotReadyWrapper>,
         ),
     )
-    .add("manualy resized attribute column + autoresize + grow to fit", () => {
+    .add("manualy resized simple table + autoresize + grow to fit", () => {
         const PivotTableWrapper = () => {
             const [attributeColumnWidth, setAttributeColumnWidth] = React.useState<number>(400);
             const [measureColumnWidth, setMeasureColumnWidth] = React.useState<number>(60);
@@ -729,6 +729,70 @@ storiesOf("Core components/PivotTable", module)
                         projectId="storybook"
                         measures={[MEASURE_1, MEASURE_2]}
                         rows={[ATTRIBUTE_1]}
+                        config={{
+                            columnSizing: {
+                                defaultWidth: "unset",
+                                columnWidths: [
+                                    {
+                                        measureColumnWidthItem: {
+                                            width: measureColumnWidth,
+                                            locators: [
+                                                {
+                                                    measureLocatorItem: {
+                                                        measureIdentifier: "m1",
+                                                    },
+                                                },
+                                            ],
+                                        },
+                                    },
+                                    {
+                                        attributeColumnWidthItem: {
+                                            width: attributeColumnWidth,
+                                            attributeIdentifier:
+                                                ATTRIBUTE_1.visualizationAttribute.localIdentifier,
+                                        },
+                                    },
+                                ],
+                            },
+                            growToFit: false,
+                        }}
+                        onError={onErrorHandler}
+                        LoadingComponent={null}
+                        ErrorComponent={null}
+                    />
+                    <button onClick={() => setAttributeColumnWidth(400)}>
+                        Set attributes column to width 400
+                    </button>
+                    <button onClick={() => setAttributeColumnWidth(150)}>
+                        Set attributes column to width 150
+                    </button>
+                    <button onClick={() => setMeasureColumnWidth(200)}>
+                        Set measure columns to width 200
+                    </button>
+                    <button onClick={() => setMeasureColumnWidth(50)}>Set measure columns to width 50</button>
+                </>
+            );
+        };
+        return screenshotWrap(
+            <ScreenshotReadyWrapper resolver={visualizationNotLoadingResolver()}>
+                <div style={wrapperStyle} className="s-table">
+                    <PivotTableWrapper />
+                </div>
+            </ScreenshotReadyWrapper>,
+        );
+    })
+    .add("manualy resized table with column attr + autoresize + grow to fit", () => {
+        const PivotTableWrapper = () => {
+            const [attributeColumnWidth, setAttributeColumnWidth] = React.useState<number>(400);
+            const [measureColumnWidth, setMeasureColumnWidth] = React.useState<number>(60);
+
+            return (
+                <>
+                    <PivotTable
+                        projectId="storybook"
+                        measures={[MEASURE_1, MEASURE_2]}
+                        rows={[ATTRIBUTE_1]}
+                        columns={[ATTRIBUTE_2]}
                         config={{
                             columnSizing: {
                                 defaultWidth: "unset",
