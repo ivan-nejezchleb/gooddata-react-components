@@ -12,7 +12,7 @@ export type DefaultColumnWidth = "viewport" | "unset"; // | "auto"  | number; ca
 export interface IColumnSizing {
     defaultWidth?: DefaultColumnWidth;
     growToFit?: boolean;
-	columnWidths?: ColumnWidthItem[];
+    columnWidths?: ColumnWidthItem[];
 }
 
 export interface IPivotTableConfig {
@@ -37,10 +37,6 @@ export enum ColumnEventSourceType {
 
 export interface IResizedColumns {
     [columnIdentifier: string]: { width: number; source: ColumnEventSourceType };
-}
-
-export interface IGrowToFittedColumns {
-    [columnIdentifier: string]: { width: number };
 }
 
 export type ColumnWidthItem = IAttributeColumnWidthItem | IMeasureColumnWidthItem;

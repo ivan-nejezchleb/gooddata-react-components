@@ -33,7 +33,7 @@ function logTotalsChange(data: any) {
     }
 }
 
-const wrapperStyle = { width: 1200, height: 300 };
+const wrapperStyle = { width: 1200, height: 300, border: "1px solid green" };
 
 storiesOf("Core components/PivotTable", module)
     .add("two measures, one attribute", () =>
@@ -786,6 +786,38 @@ storiesOf("Core components/PivotTable", module)
             const [attributeColumnWidth, setAttributeColumnWidth] = React.useState<number>(400);
             const [measureColumnWidth, setMeasureColumnWidth] = React.useState<number>(60);
 
+            const attributeWidth = attributeColumnWidth
+                ? {
+                      attributeColumnWidthItem: {
+                          width: attributeColumnWidth,
+                          attributeIdentifier: ATTRIBUTE_1.visualizationAttribute.localIdentifier,
+                      },
+                  }
+                : undefined;
+
+            const measureWidth = measureColumnWidth
+                ? {
+                      measureColumnWidthItem: {
+                          width: measureColumnWidth,
+                          locators: [
+                              {
+                                  attributeLocatorItem: {
+                                      attributeIdentifier: "a2",
+                                      element: "/gdc/md/storybook/obj/5/elements?id=1",
+                                  },
+                              },
+                              {
+                                  measureLocatorItem: {
+                                      measureIdentifier: "m1",
+                                  },
+                              },
+                          ],
+                      },
+                  }
+                : undefined;
+
+            const columnWidths = [measureWidth, attributeWidth].filter(Boolean);
+
             return (
                 <>
                     <PivotTable
@@ -795,35 +827,9 @@ storiesOf("Core components/PivotTable", module)
                         columns={[ATTRIBUTE_2]}
                         config={{
                             columnSizing: {
-                                defaultWidth: "unset",
-                                growToFit: false,
-                                columnWidths: [
-                                    {
-                                        measureColumnWidthItem: {
-                                            width: measureColumnWidth,
-                                            locators: [
-                                                {
-                                                    attributeLocatorItem: {
-                                                        attributeIdentifier: "a2",
-                                                        element: "/gdc/md/storybook/obj/5/elements?id=1",
-                                                    },
-                                                },
-                                                {
-                                                    measureLocatorItem: {
-                                                        measureIdentifier: "m1",
-                                                    },
-                                                },
-                                            ],
-                                        },
-                                    },
-                                    {
-                                        attributeColumnWidthItem: {
-                                            width: attributeColumnWidth,
-                                            attributeIdentifier:
-                                                ATTRIBUTE_1.visualizationAttribute.localIdentifier,
-                                        },
-                                    },
-                                ],
+                                defaultWidth: "viewport",
+                                growToFit: true,
+                                columnWidths,
                             },
                         }}
                         onError={onErrorHandler}
@@ -836,10 +842,16 @@ storiesOf("Core components/PivotTable", module)
                     <button onClick={() => setAttributeColumnWidth(50)}>
                         Set attributes column to width 50
                     </button>
+                    <button onClick={() => setAttributeColumnWidth(0)}>
+                        Remove width from attributes column
+                    </button>
                     <button onClick={() => setMeasureColumnWidth(200)}>
                         Set measure columns to width 200
                     </button>
                     <button onClick={() => setMeasureColumnWidth(50)}>Set measure columns to width 50</button>
+                    <button onClick={() => setMeasureColumnWidth(0)}>
+                        Remove width from measure columns
+                    </button>
                 </>
             );
         };

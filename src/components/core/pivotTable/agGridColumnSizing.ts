@@ -26,7 +26,7 @@ export const convertColumnWidthsToMap = (
     columnWidths: ColumnWidthItem[],
     executionResponse: Execution.IExecutionResponse,
 ): IResizedColumns => {
-    if (!executionResponse) {
+    if (!columnWidths || !executionResponse) {
         return {};
     }
     const { dimensions } = executionResponse;
@@ -193,7 +193,7 @@ export const getSizeItemByColId = (
     execution: Execution.IExecutionResponses,
     colId: string,
     width: number,
-) => {
+): ColumnWidthItem => {
     const { dimensions } = execution.executionResponse;
 
     // TODO ONE-4404 same code is also in getSortItemByColId function
@@ -212,7 +212,7 @@ export const getSizeItemByColId = (
                 const attributeIdentifier = header.attributeHeader.localIdentifier;
 
                 return {
-                    attributeSizeItem: {
+                    attributeColumnWidthItem: {
                         width,
                         attributeIdentifier,
                     },
@@ -242,7 +242,7 @@ export const getSizeItemByColId = (
             };
         });
         return {
-            measureSizeItem: {
+            measureColumnWidthItem: {
                 width,
                 locators: [
                     ...attributeLocators,
@@ -258,10 +258,25 @@ export const getSizeItemByColId = (
     invariant(false, `could not find header matching ${colId}`);
 };
 
-export const getColumnFromModel = (columns: Column[], execution: Execution.IExecutionResponses) => {
+export const getColumnWidthsFromColumn = (
+    columns: Column[],
+    execution: Execution.IExecutionResponses,
+): ColumnWidthItem[] => {
     return columns.map((column: Column) => {
         const colId = column.getColId();
         const width = column.getActualWidth();
+        const sizeItem = getSizeItemByColId(execution, colId, width);
+        invariant(sizeItem, `unable to find size item by filed ${colId}`);
+        return sizeItem;
+    });
+};
+
+export const getColumnWidthsFromMap = (
+    map: IResizedColumns,
+    execution: Execution.IExecutionResponses,
+): ColumnWidthItem[] => {
+    return Object.keys(map).map((colId: string) => {
+        const { width } = map[colId];
         const sizeItem = getSizeItemByColId(execution, colId, width);
         invariant(sizeItem, `unable to find size item by filed ${colId}`);
         return sizeItem;
