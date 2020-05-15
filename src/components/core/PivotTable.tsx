@@ -122,7 +122,7 @@ import sumBy = require("lodash/sumBy");
 import difference = require("lodash/difference");
 import {
     convertColumnWidthsToMap,
-    getColumnWidthsFromColumn,
+    // getColumnWidthsFromColumn,
     getColumnWidthsFromMap,
 } from "./pivotTable/agGridColumnSizing";
 import { setColumnMaxWidth } from "./pivotTable/agColumnWrapper";

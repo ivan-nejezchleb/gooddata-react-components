@@ -1,6 +1,11 @@
 // (C) 2007-2020 GoodData Corporation
 import { /*AFM,*/ Execution } from "@gooddata/typings";
-import { getIdsFromUri, getParsedFields /*getParsedFields*/ } from "./agGridUtils";
+import {
+    getIdsFromUri,
+    getLastFieldId,
+    getLastFieldType,
+    getParsedFields /*getParsedFields*/,
+} from "./agGridUtils";
 import { FIELD_SEPARATOR, FIELD_TYPE_ATTRIBUTE, FIELD_TYPE_MEASURE, ID_SEPARATOR } from "./agGridConst";
 import { assortDimensionHeaders, identifyResponseHeader } from "./agGridHeaders";
 import invariant = require("invariant");
@@ -195,12 +200,9 @@ export const getSizeItemByColId = (
     width: number,
 ): ColumnWidthItem => {
     const { dimensions } = execution.executionResponse;
-
-    // TODO ONE-4404 same code is also in getSortItemByColId function
     const fields = getParsedFields(colId);
-    const [lastFieldType, lastFieldId] = fields[fields.length - 1];
-
-    // TODO ONE-4404 same code is also in getSortItemByColId function
+    const lastFieldType = getLastFieldType(fields);
+    const lastFieldId = getLastFieldId(fields);
     const searchDimensionIndex = lastFieldType === FIELD_TYPE_MEASURE ? 1 : 0;
     const { attributeHeaders, measureHeaderItems } = assortDimensionHeaders([
         dimensions[searchDimensionIndex],

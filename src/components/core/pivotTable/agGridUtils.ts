@@ -1,4 +1,4 @@
-// (C) 2007-2019 GoodData Corporation
+// (C) 2007-2020 GoodData Corporation
 import { ICellRendererParams } from "ag-grid-community";
 import omit = require("lodash/omit");
 import escape = require("lodash/escape");
@@ -175,4 +175,14 @@ export function getSubtotalStyles(dimension: AFM.IDimension): string[] {
 export function generateAgGridComponentKey(afm: AFM.IAfm, rendererId: number): string {
     const afmWithoutTotals: Partial<AFM.IAfm> = omit<AFM.IAfm>(afm, ["nativeTotals"]);
     return `agGridKey-${stringify(afmWithoutTotals)}-${rendererId}`;
+}
+
+export function getLastFieldType(parsedFields: string[][]): string {
+    const [lastFieldType] = parsedFields[parsedFields.length - 1];
+    return lastFieldType;
+}
+
+export function getLastFieldId(parsedFields: string[][]): string {
+    const [lastFieldId] = parsedFields[parsedFields.length - 1];
+    return lastFieldId;
 }

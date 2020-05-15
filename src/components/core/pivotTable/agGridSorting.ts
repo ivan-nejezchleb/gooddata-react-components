@@ -1,6 +1,6 @@
 // (C) 2007-2020 GoodData Corporation
 import { AFM, Execution } from "@gooddata/typings";
-import { getIdsFromUri, getParsedFields } from "./agGridUtils";
+import { getIdsFromUri, getLastFieldId, getLastFieldType, getParsedFields } from "./agGridUtils";
 import {
     FIELD_SEPARATOR,
     FIELD_TYPE_ATTRIBUTE,
@@ -64,10 +64,9 @@ export const getSortItemByColId = (
     originalSortItems: AFM.SortItem[],
 ): AFM.IMeasureSortItem | AFM.IAttributeSortItem => {
     const { dimensions } = execution.executionResponse;
-
     const fields = getParsedFields(colId);
-    const [lastFieldType, lastFieldId] = fields[fields.length - 1];
-
+    const lastFieldType = getLastFieldType(fields);
+    const lastFieldId = getLastFieldId(fields);
     // search columns first when sorting in columns to use the proper header
     // in case the same attribute is in both rows and columns
     const searchDimensionIndex = lastFieldType === FIELD_TYPE_MEASURE ? 1 : 0;
