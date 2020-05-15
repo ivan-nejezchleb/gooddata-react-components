@@ -3,6 +3,7 @@ import { ICellRendererParams } from "ag-grid-community";
 import omit = require("lodash/omit");
 import escape = require("lodash/escape");
 import stringify = require("json-stable-stringify");
+import invariant = require("invariant");
 import { AFM, Execution } from "@gooddata/typings";
 import { getMappingHeaderUri } from "../../../helpers/mappingHeader";
 import { IMappingHeader, isMappingHeaderTotal } from "../../../interfaces/MappingHeader";
@@ -177,12 +178,32 @@ export function generateAgGridComponentKey(afm: AFM.IAfm, rendererId: number): s
     return `agGridKey-${stringify(afmWithoutTotals)}-${rendererId}`;
 }
 
-export function getLastFieldType(parsedFields: string[][]): string {
-    const [lastFieldType] = parsedFields[parsedFields.length - 1];
+export function getLastFieldType(fields: string[][]): string {
+    const [lastFieldType] = fields[fields.length - 1];
     return lastFieldType;
 }
 
-export function getLastFieldId(parsedFields: string[][]): string {
-    const [lastFieldId] = parsedFields[parsedFields.length - 1];
+export function getLastFieldId(fields: string[][]): string {
+    const [lastFieldId] = fields[fields.length - 1];
     return lastFieldId;
+}
+
+export function getAttributeLocators(fields: string[][], attributeHeaders: Execution.IAttributeHeader[]) {
+    return fields.slice(0, -1).map((field: string[]) => {
+        // first item is type which should be always 'a'
+        const [, fieldId, fieldValueId] = field;
+        const attributeHeaderMatch = attributeHeaders.find((attributeHeader: Execution.IAttributeHeader) => {
+            return getIdsFromUri(attributeHeader.attributeHeader.formOf.uri)[0] === fieldId;
+        });
+        invariant(
+            attributeHeaderMatch,
+            `Could not find matching attribute header to field ${field.join(ID_SEPARATOR)}`,
+        );
+        return {
+            attributeLocatorItem: {
+                attributeIdentifier: attributeHeaderMatch.attributeHeader.localIdentifier,
+                element: `${attributeHeaderMatch.attributeHeader.formOf.uri}/elements?id=${fieldValueId}`,
+            },
+        };
+    });
 }

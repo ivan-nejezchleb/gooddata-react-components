@@ -1,6 +1,7 @@
 // (C) 2007-2020 GoodData Corporation
 import { /*AFM,*/ Execution } from "@gooddata/typings";
 import {
+    getAttributeLocators,
     getIdsFromUri,
     getLastFieldId,
     getLastFieldType,
@@ -224,25 +225,8 @@ export const getSizeItemByColId = (
         invariant(false, `could not find attribute header matching ${colId}`);
     } else if (lastFieldType === FIELD_TYPE_MEASURE) {
         const headerItem = measureHeaderItems[parseInt(lastFieldId, 10)];
-        const attributeLocators = fields.slice(0, -1).map((field: string[]) => {
-            // first item is type which should be always 'a'
-            const [, fieldId, fieldValueId] = field;
-            const attributeHeaderMatch = attributeHeaders.find(
-                (attributeHeader: Execution.IAttributeHeader) => {
-                    return getIdsFromUri(attributeHeader.attributeHeader.formOf.uri)[0] === fieldId;
-                },
-            );
-            invariant(
-                attributeHeaderMatch,
-                `Could not find matching attribute header to field ${field.join(ID_SEPARATOR)}`,
-            );
-            return {
-                attributeLocatorItem: {
-                    attributeIdentifier: attributeHeaderMatch.attributeHeader.localIdentifier,
-                    element: `${attributeHeaderMatch.attributeHeader.formOf.uri}/elements?id=${fieldValueId}`,
-                },
-            };
-        });
+        const attributeLocators = getAttributeLocators(fields, attributeHeaders);
+
         return {
             measureColumnWidthItem: {
                 width,
