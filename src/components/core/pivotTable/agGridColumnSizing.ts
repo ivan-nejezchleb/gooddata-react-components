@@ -244,6 +244,7 @@ export const getSizeItemByColId = (
     invariant(false, `could not find header matching ${colId}`);
 };
 
+// TODO INE not used anywhere
 export const getColumnWidthsFromColumn = (
     columns: Column[],
     execution: Execution.IExecutionResponses,

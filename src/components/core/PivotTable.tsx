@@ -122,7 +122,6 @@ import sumBy = require("lodash/sumBy");
 import difference = require("lodash/difference");
 import {
     convertColumnWidthsToMap,
-    // getColumnWidthsFromColumn,
     getColumnWidthsFromMap,
 } from "./pivotTable/agGridColumnSizing";
 import { setColumnMaxWidth } from "./pivotTable/agColumnWrapper";
@@ -734,16 +733,20 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
                 const sortedByFirstAttribute = isSortedByFirstAttibute(columnDefs, resultSpec);
 
                 // TODO INE - this solves only first render, not change of columnWidths during lifetime
+                // first render cant be in componentWillMount, because we need execution finished and first valid columnDefs
                 const columnWidths = this.getColumnWidths(this.props);
                 const columnWidthsByField = convertColumnWidthsToMap(
                     columnWidths,
                     execution.executionResponse,
                 );
-                const enrichedColumnDefs = columnWidths
-                    ? this.enrichColumnDefinitionsWithWidths(columnDefs, columnWidthsByField)
-                    : columnDefs;
+                let enrichedColumnDefs = columnDefs;
+
                 if (columnWidths && Object.keys(this.manuallyResizedColumns).length === 0) {
                     this.manuallyResizedColumns = columnWidthsByField;
+                    enrichedColumnDefs = this.enrichColumnDefinitionsWithWidths(
+                        columnDefs,
+                        columnWidthsByField,
+                    );
                 }
 
                 this.setState({
@@ -991,6 +994,8 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
             const columns = columnEvent.columns;
             const execution = this.getExecution();
 
+            invariant(execution !== undefined, "changing column width prior execution cannot work");
+
             columns.forEach(column => {
                 this.addToManuallyResizedColumn(column);
                 column.getColDef().suppressSizeToFit = true;
@@ -1074,12 +1079,12 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
         };
 
         let enrichedColumnDefs = columnDefs;
-        const columnWidths = this.getColumnWidths(this.props);
-        const columnWidthsByField = convertColumnWidthsToMap(columnWidths, this.getExecutionResponse());
-        if (Object.keys(this.autoResizedColumns).length || columnWidths) {
+        // const columnWidths = this.getColumnWidths(this.props);
+        // const columnWidthsByField = convertColumnWidthsToMap(columnWidths, this.getExecutionResponse());
+        if (Object.keys(this.autoResizedColumns).length || Object.keys(this.manuallyResizedColumns).length) {
             enrichedColumnDefs = this.enrichColumnDefinitionsWithWidths(
                 columnDefs,
-                columnWidthsByField,
+                this.manuallyResizedColumns,
                 this.autoResizedColumns,
             );
         }
