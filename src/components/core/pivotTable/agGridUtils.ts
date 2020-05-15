@@ -184,7 +184,7 @@ export function getLastFieldType(fields: string[][]): string {
 }
 
 export function getLastFieldId(fields: string[][]): string {
-    const [lastFieldId] = fields[fields.length - 1];
+    const [, lastFieldId] = fields[fields.length - 1];
     return lastFieldId;
 }
 
