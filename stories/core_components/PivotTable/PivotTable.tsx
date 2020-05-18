@@ -4,9 +4,9 @@ import { storiesOf } from "@storybook/react";
 import { action } from "@storybook/addon-actions";
 import { screenshotWrap } from "@gooddata/test-storybook";
 
-import { Model, PivotTable } from "../../src";
-import { onErrorHandler } from "../mocks";
-import { GERMAN_SEPARATORS } from "../data/numberFormat";
+import { Model, PivotTable } from "../../../src";
+import { onErrorHandler } from "../../mocks";
+import { GERMAN_SEPARATORS } from "../../data/numberFormat";
 import {
     ARITHMETIC_MEASURE_SIMPLE_OPERANDS,
     ARITHMETIC_MEASURE_USING_ARITHMETIC,
@@ -23,7 +23,7 @@ import {
     MEASURE_WITH_NULLS,
     TOTAL_M1_A1,
     TOTAL_M2_A1,
-} from "../data/componentProps";
+} from "../../data/componentProps";
 import { VisualizationInput } from "@gooddata/typings";
 
 function logTotalsChange(data: any) {
@@ -34,7 +34,7 @@ function logTotalsChange(data: any) {
 
 const wrapperStyle = { width: 1200, height: 300 };
 
-storiesOf("Core components/PivotTable", module)
+storiesOf("Core components/PivotTable/PivotTable", module)
     .add("two measures, one attribute", () =>
         screenshotWrap(
             <div style={wrapperStyle} className="s-table">

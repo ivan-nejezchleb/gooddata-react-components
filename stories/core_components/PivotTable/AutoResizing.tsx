@@ -2,15 +2,15 @@
 import * as React from "react";
 import { storiesOf } from "@storybook/react";
 import { screenshotWrap } from "@gooddata/test-storybook";
-import { Model, PivotTable } from "../../src";
-import { onErrorHandler } from "../mocks";
-import { ATTRIBUTE_1, ATTRIBUTE_COUNTRY, MEASURE_1, MEASURE_2 } from "../data/componentProps";
-import { ScreenshotReadyWrapper, visualizationNotLoadingResolver } from "../utils/ScreenshotReadyWrapper";
+import { Model, PivotTable } from "../../../src";
+import { onErrorHandler } from "../../mocks";
+import { ATTRIBUTE_1, ATTRIBUTE_COUNTRY, MEASURE_1, MEASURE_2 } from "../../data/componentProps";
+import { ScreenshotReadyWrapper, visualizationNotLoadingResolver } from "../../utils/ScreenshotReadyWrapper";
 import { VisualizationInput } from "@gooddata/typings";
 
 const wrapperStyle = { width: 1200, height: 300 };
 
-storiesOf("Core components/PivotTableAutoResizing", module)
+storiesOf("Core components/PivotTable/AutoResizing", module)
     .add("auto resize columns in the viewport - simple table", () =>
         screenshotWrap(
             <ScreenshotReadyWrapper resolver={visualizationNotLoadingResolver()}>
