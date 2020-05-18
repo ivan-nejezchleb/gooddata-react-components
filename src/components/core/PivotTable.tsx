@@ -20,7 +20,6 @@ import * as CustomEvent from "custom-event";
 import * as invariant from "invariant";
 import * as React from "react";
 import { WrappedComponentProps } from "react-intl";
-import { debounce } from "lodash";
 
 import "../../../styles/css/pivotTable.css";
 
@@ -55,6 +54,7 @@ import {
     ColumnEventSourceType,
     ColumnWidthItem,
     DefaultColumnWidth,
+    ColumnDragOperation,
 } from "../../interfaces/PivotTable";
 import { IDataSourceProviderInjectedProps } from "../afm/DataSourceProvider";
 import { LoadingComponent } from "../simple/LoadingComponent";
@@ -121,6 +121,9 @@ import isEqual = require("lodash/isEqual");
 import noop = require("lodash/noop");
 import sumBy = require("lodash/sumBy");
 import difference = require("lodash/difference");
+import debounce = require("lodash/debounce");
+import omit = require("lodash/omit");
+
 import { convertColumnWidthsToMap, getColumnWidthsFromMap } from "./pivotTable/agGridColumnSizing";
 import { setColumnMaxWidth } from "./pivotTable/agColumnWrapper";
 
@@ -164,6 +167,7 @@ const AGGRID_BEFORE_RESIZE_TIMEOUT = 100;
 const AGGRID_ON_RESIZE_TIMEOUT = 300;
 const DEFAULT_COLUMN_WIDTH = 200;
 const AUTO_SIZED_MAX_WIDTH = 500;
+const COLUMN_RESIZE_TIMEOUT = 100;
 
 /**
  * Pivot Table react component
@@ -199,6 +203,7 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
     private resizing: boolean = false;
     private lastResizedWidth = 0;
     private lastResizedHeight = 0;
+    private lastDragColumnsIds: string[] = [];
 
     constructor(props: IPivotTableInnerProps) {
         super(props);
@@ -221,6 +226,7 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
 
         this.setGroupingProvider(props.groupRows);
         this.gridSizeChanged = debounce(this.gridSizeChanged, AGGRID_ON_RESIZE_TIMEOUT);
+        this.columnResized = debounce(this.columnResized, COLUMN_RESIZE_TIMEOUT);
     }
 
     public componentWillMount() {
@@ -488,6 +494,14 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
             width: column.getActualWidth(),
             source: ColumnEventSourceType.UI_DRAGGED,
         };
+    };
+
+    private removeFromManuallyResizedColumn = (column: Column): void => {
+        const colId = this.getColumnIdentifier(column);
+
+        if (this.manuallyResizedColumns[colId]) {
+            omit(this.manuallyResizedColumns, colId);
+        }
     };
 
     private getManualWidth = (columnIdentifier: string): number =>
@@ -982,20 +996,73 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
         return false;
     };
 
+    private isSupportedColumnResizeOperation(columnEvent: ColumnResizedEvent) {
+        return columnEvent && columnEvent.source === ColumnEventSourceType.UI_DRAGGED && columnEvent.columns;
+    }
+
+    private setLastDragColumnId(columnEvent: ColumnResizedEvent) {
+        if (this.isSupportedColumnResizeOperation(columnEvent)) {
+            if (!columnEvent.finished) {
+                const ids = this.getColumnIds(columnEvent.columns);
+                this.lastDragColumnsIds = ids.sort();
+            }
+        }
+    }
+
+    private getColumnDraggedOperation(columnEvent: ColumnResizedEvent): ColumnDragOperation {
+        const ids = this.getColumnIds(columnEvent.columns);
+
+        if (isEqual(this.lastDragColumnsIds, ids.sort())) {
+            this.lastDragColumnsIds = [];
+            return ColumnDragOperation.RESIZE;
+        }
+        this.lastDragColumnsIds = [];
+        return ColumnDragOperation.RESET;
+    }
+
+    private resetResizedColumn(columnApi: ColumnApi, column: Column) {
+        const id = this.getColumnIdentifier(column);
+
+        if (this.isColumnManuallyResized(id)) {
+            this.removeFromManuallyResizedColumn(column);
+            columnApi.setColumnWidth(column, DEFAULT_COLUMN_WIDTH);
+            column.getColDef().suppressSizeToFit = false;
+        } else if (this.isColumnAutoResized(id)) {
+            columnApi.setColumnWidth(column, this.autoResizedColumns[id].width);
+        } else {
+            columnApi.setColumnWidth(column, DEFAULT_COLUMN_WIDTH);
+        }
+    }
+
     private columnResized = (columnEvent: ColumnResizedEvent) => {
+        this.setLastDragColumnId(columnEvent);
+
         if (!columnEvent.finished) {
             return; // only update the height once the user is done setting the column size
         }
         this.updateDesiredHeight(this.state.execution.executionResult);
-        if (columnEvent && columnEvent.source === ColumnEventSourceType.UI_DRAGGED && columnEvent.columns) {
+
+        if (this.isSupportedColumnResizeOperation(columnEvent)) {
+            const operation = this.getColumnDraggedOperation(columnEvent);
+
+            if (operation === ColumnDragOperation.RESIZE) {
+                console.log("RESIZE");
+            } else {
+                console.log("RESET");
+            }
+
             const columns = columnEvent.columns;
             const execution = this.getExecution();
 
             invariant(execution !== undefined, "changing column width prior execution cannot work");
 
             columns.forEach(column => {
-                this.addToManuallyResizedColumn(column);
-                column.getColDef().suppressSizeToFit = true;
+                if (operation === ColumnDragOperation.RESIZE) {
+                    this.addToManuallyResizedColumn(column);
+                    column.getColDef().suppressSizeToFit = true;
+                } else {
+                    this.resetResizedColumn(this.columnApi, column);
+                }
             });
 
             this.growToFit(columnEvent.columnApi);

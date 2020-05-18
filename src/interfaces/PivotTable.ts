@@ -35,6 +35,11 @@ export enum ColumnEventSourceType {
     FIT_GROW = "growToFit",
 }
 
+export enum ColumnDragOperation {
+    RESIZE = "resize",
+    RESET = "reset",
+}
+
 export interface IResizedColumns {
     [columnIdentifier: string]: { width: number; source: ColumnEventSourceType };
 }
