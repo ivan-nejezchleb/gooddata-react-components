@@ -719,7 +719,7 @@ storiesOf("Core components/PivotTable", module)
             </ScreenshotReadyWrapper>,
         ),
     )
-    .add("manualy resized simple table + autoresize + grow to fit", () => {
+    .add("manualy resized simple table without autoresize and grow to fit", () => {
         const PivotTableWrapper = () => {
             const [attributeColumnWidth, setAttributeColumnWidth] = React.useState<number>(400);
             const [measureColumnWidth, setMeasureColumnWidth] = React.useState<number>(60);
@@ -782,7 +782,7 @@ storiesOf("Core components/PivotTable", module)
             </ScreenshotReadyWrapper>,
         );
     })
-    .add("manualy resized table with column attr + autoresize + grow to fit", () => {
+    .add("manualy resized table with column attr and with autoresize and grow to fit", () => {
         const PivotTableWrapper = () => {
             const [attributeColumnWidth, setAttributeColumnWidth] = React.useState<number>(400);
             const [measureColumnWidth, setMeasureColumnWidth] = React.useState<number>(60);
@@ -860,6 +860,242 @@ storiesOf("Core components/PivotTable", module)
             <ScreenshotReadyWrapper resolver={visualizationNotLoadingResolver()}>
                 <div style={wrapperStyle} className="s-table">
                     <PivotTableWrapper />
+                </div>
+            </ScreenshotReadyWrapper>,
+        );
+    })
+    .add("manualy resized simple table with grow to fit and without autoresize", () =>
+        screenshotWrap(
+            <ScreenshotReadyWrapper resolver={visualizationNotLoadingResolver()}>
+                <div style={wrapperStyle} className="s-table">
+                    <PivotTable
+                        projectId="storybook"
+                        measures={[MEASURE_1, MEASURE_2]}
+                        rows={[ATTRIBUTE_1]}
+                        config={{
+                            columnSizing: {
+                                defaultWidth: "unset",
+                                growToFit: true,
+                                columnWidths: [
+                                    {
+                                        measureColumnWidthItem: {
+                                            width: 100,
+                                            locators: [
+                                                {
+                                                    measureLocatorItem: {
+                                                        measureIdentifier: "m1",
+                                                    },
+                                                },
+                                            ],
+                                        },
+                                    },
+                                    {
+                                        attributeColumnWidthItem: {
+                                            width: 400,
+                                            attributeIdentifier:
+                                                ATTRIBUTE_1.visualizationAttribute.localIdentifier,
+                                        },
+                                    },
+                                ],
+                            },
+                        }}
+                        onError={onErrorHandler}
+                        LoadingComponent={null}
+                        ErrorComponent={null}
+                    />
+                </div>
+            </ScreenshotReadyWrapper>,
+        ),
+    )
+    .add("manualy resized simple table without grow to fit and with autoresize", () =>
+        screenshotWrap(
+            <ScreenshotReadyWrapper resolver={visualizationNotLoadingResolver()}>
+                <div style={wrapperStyle} className="s-table">
+                    <PivotTable
+                        projectId="storybook"
+                        measures={[MEASURE_1, MEASURE_2]}
+                        rows={[ATTRIBUTE_1]}
+                        config={{
+                            columnSizing: {
+                                defaultWidth: "viewport",
+                                growToFit: false,
+                                columnWidths: [
+                                    {
+                                        measureColumnWidthItem: {
+                                            width: 100,
+                                            locators: [
+                                                {
+                                                    measureLocatorItem: {
+                                                        measureIdentifier: "m1",
+                                                    },
+                                                },
+                                            ],
+                                        },
+                                    },
+                                    {
+                                        attributeColumnWidthItem: {
+                                            width: 400,
+                                            attributeIdentifier:
+                                                ATTRIBUTE_1.visualizationAttribute.localIdentifier,
+                                        },
+                                    },
+                                ],
+                            },
+                        }}
+                        onError={onErrorHandler}
+                        LoadingComponent={null}
+                        ErrorComponent={null}
+                    />
+                </div>
+            </ScreenshotReadyWrapper>,
+        ),
+    )
+    .add("manualy resized table with column attr without autoresize and grow to fit", () => {
+        const attributeWidth = {
+            attributeColumnWidthItem: {
+                width: 100,
+                attributeIdentifier: ATTRIBUTE_1.visualizationAttribute.localIdentifier,
+            },
+        };
+        const measureWidth = {
+            measureColumnWidthItem: {
+                width: 60,
+                locators: [
+                    {
+                        attributeLocatorItem: {
+                            attributeIdentifier: "a2",
+                            element: "/gdc/md/storybook/obj/5/elements?id=1",
+                        },
+                    },
+                    {
+                        measureLocatorItem: {
+                            measureIdentifier: "m1",
+                        },
+                    },
+                ],
+            },
+        };
+        const columnWidths = [measureWidth, attributeWidth];
+
+        return screenshotWrap(
+            <ScreenshotReadyWrapper resolver={visualizationNotLoadingResolver()}>
+                <div style={wrapperStyle} className="s-table">
+                    <PivotTable
+                        projectId="storybook"
+                        measures={[MEASURE_1, MEASURE_2]}
+                        rows={[ATTRIBUTE_1]}
+                        columns={[ATTRIBUTE_2]}
+                        config={{
+                            columnSizing: {
+                                defaultWidth: "unset",
+                                growToFit: false,
+                                columnWidths,
+                            },
+                        }}
+                        onError={onErrorHandler}
+                        LoadingComponent={null}
+                        ErrorComponent={null}
+                    />
+                </div>
+            </ScreenshotReadyWrapper>,
+        );
+    })
+    .add("manualy resized table with column attr with autoresize and without grow to fit", () => {
+        const attributeWidth = {
+            attributeColumnWidthItem: {
+                width: 400,
+                attributeIdentifier: ATTRIBUTE_1.visualizationAttribute.localIdentifier,
+            },
+        };
+        const measureWidth = {
+            measureColumnWidthItem: {
+                width: 60,
+                locators: [
+                    {
+                        attributeLocatorItem: {
+                            attributeIdentifier: "a2",
+                            element: "/gdc/md/storybook/obj/5/elements?id=1",
+                        },
+                    },
+                    {
+                        measureLocatorItem: {
+                            measureIdentifier: "m1",
+                        },
+                    },
+                ],
+            },
+        };
+        const columnWidths = [measureWidth, attributeWidth];
+
+        return screenshotWrap(
+            <ScreenshotReadyWrapper resolver={visualizationNotLoadingResolver()}>
+                <div style={wrapperStyle} className="s-table">
+                    <PivotTable
+                        projectId="storybook"
+                        measures={[MEASURE_1, MEASURE_2]}
+                        rows={[ATTRIBUTE_1]}
+                        columns={[ATTRIBUTE_2]}
+                        config={{
+                            columnSizing: {
+                                defaultWidth: "viewport",
+                                growToFit: false,
+                                columnWidths,
+                            },
+                        }}
+                        onError={onErrorHandler}
+                        LoadingComponent={null}
+                        ErrorComponent={null}
+                    />
+                </div>
+            </ScreenshotReadyWrapper>,
+        );
+    })
+    .add("manualy resized table with column attr without autoresize and with grow to fit", () => {
+        const attributeWidth = {
+            attributeColumnWidthItem: {
+                width: 60,
+                attributeIdentifier: ATTRIBUTE_1.visualizationAttribute.localIdentifier,
+            },
+        };
+        const measureWidth = {
+            measureColumnWidthItem: {
+                width: 60,
+                locators: [
+                    {
+                        attributeLocatorItem: {
+                            attributeIdentifier: "a2",
+                            element: "/gdc/md/storybook/obj/5/elements?id=1",
+                        },
+                    },
+                    {
+                        measureLocatorItem: {
+                            measureIdentifier: "m1",
+                        },
+                    },
+                ],
+            },
+        };
+        const columnWidths = [measureWidth, attributeWidth];
+
+        return screenshotWrap(
+            <ScreenshotReadyWrapper resolver={visualizationNotLoadingResolver()}>
+                <div style={wrapperStyle} className="s-table">
+                    <PivotTable
+                        projectId="storybook"
+                        measures={[MEASURE_1, MEASURE_2]}
+                        rows={[ATTRIBUTE_1]}
+                        columns={[ATTRIBUTE_2]}
+                        config={{
+                            columnSizing: {
+                                defaultWidth: "unset",
+                                growToFit: true,
+                                columnWidths,
+                            },
+                        }}
+                        onError={onErrorHandler}
+                        LoadingComponent={null}
+                        ErrorComponent={null}
+                    />
                 </div>
             </ScreenshotReadyWrapper>,
         );
