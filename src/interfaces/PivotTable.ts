@@ -45,7 +45,7 @@ export interface IAttributeColumnWidthItem {
     attributeColumnWidthItem: {
         width: ColumnWidth;
         attributeIdentifier: AFM.Identifier;
-        aggregation?: "sum"; // TODO INE do we need this?
+        aggregation?: "sum";
     };
 }
 

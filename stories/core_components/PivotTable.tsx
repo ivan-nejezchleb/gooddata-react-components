@@ -33,8 +33,7 @@ function logTotalsChange(data: any) {
     }
 }
 
-// TODO INE remove border
-const wrapperStyle = { width: 1200, height: 300, border: "1px solid green" };
+const wrapperStyle = { width: 1200, height: 300 };
 
 storiesOf("Core components/PivotTable", module)
     .add("two measures, one attribute", () =>
