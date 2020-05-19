@@ -70,7 +70,7 @@ export class PivotTableManualResizingExample extends Component {
 
     render() {
         return (
-            <>
+            <div>
                 <div>
                     <button
                         className="gd-button gd-button-secondary gd-button gd-button-secondary"
@@ -103,7 +103,7 @@ export class PivotTableManualResizingExample extends Component {
                         onColumnResized={this.onColumnResized}
                     />
                 </div>
-            </>
+            </div>
         );
     }
 }

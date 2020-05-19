@@ -693,12 +693,12 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
     };
 
     private onModelUpdated = (event: ModelUpdatedEvent) => {
-        this.updateStickyRow();
         const shouldAutoresizeColumns = this.isColumnAutoresizeEnabled() && this.getExecution();
         const growToFit = this.isGrowToFitEnabled() && this.getExecution();
         if (shouldAutoresizeColumns || growToFit) {
             this.autoresizeColumns(event);
         }
+        this.updateStickyRow();
     };
 
     private sortChanged = async (event: SortChangedEvent): Promise<void> => {
