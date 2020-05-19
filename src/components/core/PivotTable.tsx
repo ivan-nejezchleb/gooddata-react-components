@@ -1006,10 +1006,6 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
             } else {
                 columnApi.setColumnWidth(column, DEFAULT_COLUMN_WIDTH);
             }
-        } else if (this.isColumnAutoResized(id)) {
-            columnApi.setColumnWidth(column, this.autoResizedColumns[id].width);
-        } else {
-            columnApi.setColumnWidth(column, this.getDefaultWidth());
         }
     }
 
