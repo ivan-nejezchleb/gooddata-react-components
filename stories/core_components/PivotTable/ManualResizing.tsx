@@ -195,21 +195,50 @@ storiesOf("Core components/PivotTable/ManualResizing/Simple table", module)
                                 columnWidths: [
                                     {
                                         measureColumnWidthItem: {
+                                            ...measureColumnWidthItemSimple.measureColumnWidthItem,
                                             width: 30, // Will be ignored and replaced by MIN_WIDTH limit
-                                            locators: [
-                                                {
-                                                    measureLocatorItem: {
-                                                        measureIdentifier: MEASURE_1.measure.localIdentifier,
-                                                    },
-                                                },
-                                            ],
                                         },
                                     },
                                     {
                                         attributeColumnWidthItem: {
+                                            ...attributeColumnWidthItem.attributeColumnWidthItem,
                                             width: 3000, // Will be ignored and replaced by MAX_WIDTH limit
-                                            attributeIdentifier:
-                                                ATTRIBUTE_1.visualizationAttribute.localIdentifier,
+                                        },
+                                    },
+                                ],
+                            },
+                        }}
+                        onError={onErrorHandler}
+                        LoadingComponent={null}
+                        ErrorComponent={null}
+                    />
+                </div>
+            </ScreenshotReadyWrapper>,
+        ),
+    )
+    .add("'auto' value in width definition", () =>
+        screenshotWrap(
+            <ScreenshotReadyWrapper resolver={visualizationNotLoadingResolver()}>
+                <div style={wrapperStyle} className="s-table">
+                    <PivotTable
+                        projectId="storybook"
+                        measures={[MEASURE_1, MEASURE_2]}
+                        rows={[ATTRIBUTE_1]}
+                        config={{
+                            columnSizing: {
+                                defaultWidth: "viewport",
+                                growToFit: true,
+                                columnWidths: [
+                                    {
+                                        measureColumnWidthItem: {
+                                            ...measureColumnWidthItemSimple.measureColumnWidthItem,
+                                            width: "auto",
+                                        },
+                                    },
+                                    {
+                                        attributeColumnWidthItem: {
+                                            ...attributeColumnWidthItem.attributeColumnWidthItem,
+                                            width: "auto",
                                         },
                                     },
                                 ],

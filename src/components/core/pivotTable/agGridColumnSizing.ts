@@ -42,17 +42,21 @@ export const convertColumnWidthsToMap = (
     columnWidths.forEach((columnWidth: ColumnWidthItem) => {
         if (isAttributeColumnWidthItem(columnWidth)) {
             const [field, width] = getAttributeColumnWidthItemFieldAndWidth(columnWidth, attributeHeaders);
-            columnWidthsMap[field] = {
-                width: widthValidator(width),
-                source: ColumnEventSourceType.UI_DRAGGED,
-            };
+            if (typeof width === "number") {
+                columnWidthsMap[field] = {
+                    width: widthValidator(width),
+                    source: ColumnEventSourceType.UI_DRAGGED,
+                };
+            }
         }
         if (isMeasureColumnWidthItem(columnWidth)) {
             const [field, width] = getMeasureColumnWidthItemFieldAndWidth(columnWidth, measureHeaderItems);
-            columnWidthsMap[field] = {
-                width: widthValidator(width),
-                source: ColumnEventSourceType.UI_DRAGGED,
-            };
+            if (typeof width === "number") {
+                columnWidthsMap[field] = {
+                    width: widthValidator(width),
+                    source: ColumnEventSourceType.UI_DRAGGED,
+                };
+            }
         }
     });
     return columnWidthsMap;
