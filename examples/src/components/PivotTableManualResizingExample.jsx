@@ -52,13 +52,15 @@ export class PivotTableManualResizingExample extends Component {
         columnWidths: [measureWidth(200), attributeWidth(200)],
     };
 
-    onButtonClick = columnWidth => {
-        const filteredColumnWidths = [...this.state.columnWidths].filter(
-            item => Object.keys(item)[0] !== Object.keys(columnWidth)[0],
+    shouldFilterColumnWidthItem = (item, newItem) => Object.keys(item)[0] !== Object.keys(newItem)[0];
+
+    onButtonClick = columnWidthItem => {
+        const filteredColumnWidths = [...this.state.columnWidths].filter(item =>
+            this.shouldFilterColumnWidthItem(item, columnWidthItem),
         );
 
         this.setState({
-            columnWidths: [...filteredColumnWidths, columnWidth],
+            columnWidths: [...filteredColumnWidths, columnWidthItem],
         });
     };
 
