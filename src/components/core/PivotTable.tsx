@@ -54,7 +54,6 @@ import {
     ColumnEventSourceType,
     ColumnWidthItem,
     DefaultColumnWidth,
-    ColumnDragOperation,
 } from "../../interfaces/PivotTable";
 import { IDataSourceProviderInjectedProps } from "../afm/DataSourceProvider";
 import { LoadingComponent } from "../simple/LoadingComponent";
@@ -989,13 +988,7 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
     };
 
     private isManualResizing(columnEvent: ColumnResizedEvent) {
-        return (
-            (columnEvent && columnEvent.source === ColumnEventSourceType.UI_DRAGGED && columnEvent.columns) ||
-            (columnEvent &&
-                columnEvent.source === ColumnEventSourceType.AUTOSIZE_COLUMNS &&
-                columnEvent.columns &&
-                this.resizing === true)
-        );
+        return columnEvent && columnEvent.source === ColumnEventSourceType.UI_DRAGGED && columnEvent.columns;
     }
 
     private getDefaultWidth = () => {
@@ -1007,11 +1000,11 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
 
         if (this.isColumnManuallyResized(id)) {
             this.removeFromManuallyResizedColumn(column);
+            column.getColDef().suppressSizeToFit = false;
             if (this.isColumnAutoResized(id)) {
                 columnApi.setColumnWidth(column, this.autoResizedColumns[id].width);
             } else {
                 columnApi.setColumnWidth(column, DEFAULT_COLUMN_WIDTH);
-                column.getColDef().suppressSizeToFit = false;
             }
         } else if (this.isColumnAutoResized(id)) {
             columnApi.setColumnWidth(column, this.autoResizedColumns[id].width);
@@ -1049,7 +1042,6 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
 
         columns.forEach(column => {
             this.resetResizedColumn(columnEvent.columnApi, column);
-            column.getColDef().suppressSizeToFit = true;
         });
 
         this.afterResizeColumns(columnEvent, execution);
