@@ -30,6 +30,7 @@ import {
 export const convertColumnWidthsToMap = (
     columnWidths: ColumnWidthItem[],
     executionResponse: Execution.IExecutionResponse,
+    widthValidator: (width: ColumnWidth) => ColumnWidth = (width: ColumnWidth) => width,
 ): IResizedColumns => {
     if (!columnWidths || !executionResponse) {
         return {};
@@ -41,11 +42,17 @@ export const convertColumnWidthsToMap = (
     columnWidths.forEach((columnWidth: ColumnWidthItem) => {
         if (isAttributeColumnWidthItem(columnWidth)) {
             const [field, width] = getAttributeColumnWidthItemFieldAndWidth(columnWidth, attributeHeaders);
-            columnWidthsMap[field] = { width, source: ColumnEventSourceType.UI_DRAGGED };
+            columnWidthsMap[field] = {
+                width: widthValidator(width),
+                source: ColumnEventSourceType.UI_DRAGGED,
+            };
         }
         if (isMeasureColumnWidthItem(columnWidth)) {
             const [field, width] = getMeasureColumnWidthItemFieldAndWidth(columnWidth, measureHeaderItems);
-            columnWidthsMap[field] = { width, source: ColumnEventSourceType.UI_DRAGGED };
+            columnWidthsMap[field] = {
+                width: widthValidator(width),
+                source: ColumnEventSourceType.UI_DRAGGED,
+            };
         }
     });
     return columnWidthsMap;

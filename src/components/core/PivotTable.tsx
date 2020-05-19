@@ -54,6 +54,7 @@ import {
     ColumnEventSourceType,
     ColumnWidthItem,
     DefaultColumnWidth,
+    ColumnWidth,
 } from "../../interfaces/PivotTable";
 import { IDataSourceProviderInjectedProps } from "../afm/DataSourceProvider";
 import { LoadingComponent } from "../simple/LoadingComponent";
@@ -124,7 +125,7 @@ import debounce = require("lodash/debounce");
 import omit = require("lodash/omit");
 
 import { convertColumnWidthsToMap, getColumnWidthsFromMap } from "./pivotTable/agGridColumnSizing";
-import { setColumnMaxWidth } from "./pivotTable/agColumnWrapper";
+import { setColumnMaxWidth, setColumnMaxWidthIf } from "./pivotTable/agColumnWrapper";
 
 export interface IPivotTableProps extends ICommonChartProps, IDataSourceProviderInjectedProps {
     totals?: VisualizationObject.IVisualizationTotal[];
@@ -164,9 +165,12 @@ export const WATCHING_TABLE_RENDERED_MAX_TIME = 15000;
 const AGGRID_RENDER_NEW_COLUMNS_TIMEOUT = 100;
 const AGGRID_BEFORE_RESIZE_TIMEOUT = 100;
 const AGGRID_ON_RESIZE_TIMEOUT = 300;
-const DEFAULT_COLUMN_WIDTH = 200;
-const AUTO_SIZED_MAX_WIDTH = 500;
 const COLUMN_RESIZE_TIMEOUT = 300;
+
+const DEFAULT_COLUMN_WIDTH = 200;
+const MIN_WIDTH = 60;
+const AUTO_SIZED_MAX_WIDTH = 500;
+const MANUALLY_SIZED_MAX_WIDTH = 2000;
 
 /**
  * Pivot Table react component
@@ -253,10 +257,10 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
         const nextColumnWidths = this.getColumnWidths(nextProps);
         const columnWidths = this.getColumnWidths(this.props);
         if (columnWidths && !isEqual(nextColumnWidths, columnWidths)) {
-            console.log("columnWidths will change to:", nextColumnWidths);
             const columnWidthsByField = convertColumnWidthsToMap(
                 nextColumnWidths,
                 this.getExecutionResponse(),
+                this.widthValidator,
             );
             this.manuallyResizedColumns = columnWidthsByField;
         }
@@ -309,7 +313,6 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
             const prevColumnWidths = this.getColumnWidths(prevProps);
             const columnWidths = this.getColumnWidths(this.props);
             if (columnWidths && !isEqual(prevColumnWidths, columnWidths)) {
-                console.log("columnWidths was changed to:", columnWidths);
                 if (this.columnApi) {
                     this.growToFit(this.columnApi);
                 }
@@ -367,7 +370,6 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
                             this.props.dataSource.getAfm(),
                             this.state.agGridRerenderNumber,
                         )}
-                        debug={true}
                     />
                     {tableLoadingOverlay}
                 </div>
@@ -540,7 +542,7 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
         columnApi.autoSizeColumns(columnIds);
         await sleep(AGGRID_RENDER_NEW_COLUMNS_TIMEOUT);
 
-        setColumnMaxWidth(columnApi, columnIds, undefined);
+        setColumnMaxWidth(columnApi, columnIds, MANUALLY_SIZED_MAX_WIDTH);
     }
 
     private shouldPerformAutoresize() {
@@ -660,7 +662,15 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
         const sumOfWidths = widths.reduce((a, b) => a + b, 0);
 
         if (sumOfWidths < clientWidth) {
+            const columnIds = this.getColumnIds(columns);
+            setColumnMaxWidth(columnApi, columnIds, undefined);
             this.gridApi.sizeColumnsToFit();
+            setColumnMaxWidthIf(
+                columnApi,
+                columnIds,
+                MANUALLY_SIZED_MAX_WIDTH,
+                (column: Column) => column.getActualWidth() <= MANUALLY_SIZED_MAX_WIDTH,
+            );
             this.setFittedColumns(columnApi);
         }
     }
@@ -740,6 +750,7 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
                 const columnWidthsByField = convertColumnWidthsToMap(
                     columnWidths,
                     execution.executionResponse,
+                    this.widthValidator,
                 );
                 let enrichedColumnDefs = columnDefs;
 
@@ -1159,7 +1170,7 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
                     enableSorting: true,
                     ...commonHeaderComponentParams,
                 },
-                minWidth: 60,
+                minWidth: MIN_WIDTH,
                 sortable: true,
                 resizable: true,
             },
@@ -1454,6 +1465,8 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
                 const manualSize = manuallyResizedColumns[this.getColumnIdentifierFromDef(columnDefinition)];
                 const autoResizeSize = autoResizedColumns[this.getColumnIdentifierFromDef(columnDefinition)];
 
+                columnDefinition.maxWidth = MANUALLY_SIZED_MAX_WIDTH;
+
                 if (manualSize) {
                     columnDefinition.width = manualSize.width;
                     columnDefinition.suppressSizeToFit = true;
@@ -1467,6 +1480,9 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
 
                         if (growToFittedColumn) {
                             columnDefinition.width = growToFittedColumn.width;
+                            if (growToFittedColumn.width > MANUALLY_SIZED_MAX_WIDTH) {
+                                columnDefinition.maxWidth = undefined;
+                            }
                         }
                     }
                 }
@@ -1474,6 +1490,13 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
         });
         return result;
     }
+
+    private widthValidator = (width: ColumnWidth): ColumnWidth => {
+        if (typeof width === "number") {
+            return Math.min(Math.max(width, MIN_WIDTH), MANUALLY_SIZED_MAX_WIDTH);
+        }
+        return width;
+    };
 }
 
 export const PivotTable = visualizationLoadingHOC<IPivotTableProps>(PivotTableInner, false);

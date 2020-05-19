@@ -24,7 +24,7 @@ const measureColumnWidthItemSimple = {
 };
 const measureColumnWidthItemWithAttr = {
     measureColumnWidthItem: {
-        width: 60,
+        width: MEASURE_WIDTH,
         locators: [
             {
                 attributeLocatorItem: {
@@ -43,8 +43,7 @@ const measureColumnWidthItemWithAttr = {
 const attributeColumnWidthItem = {
     attributeColumnWidthItem: {
         width: ATTRIBUTE_WIDTH,
-        attributeIdentifier:
-            ATTRIBUTE_1.visualizationAttribute.localIdentifier,
+        attributeIdentifier: ATTRIBUTE_1.visualizationAttribute.localIdentifier,
     },
 };
 
@@ -124,10 +123,7 @@ storiesOf("Core components/PivotTable/ManualResizing/Simple table", module)
                             columnSizing: {
                                 defaultWidth: "unset",
                                 growToFit: true,
-                                columnWidths: [
-                                    measureColumnWidthItemSimple,
-                                    attributeColumnWidthItem
-                                ],
+                                columnWidths: [measureColumnWidthItemSimple, attributeColumnWidthItem],
                             },
                         }}
                         onError={onErrorHandler}
@@ -150,10 +146,7 @@ storiesOf("Core components/PivotTable/ManualResizing/Simple table", module)
                             columnSizing: {
                                 defaultWidth: "viewport",
                                 growToFit: false,
-                                columnWidths: [
-                                    measureColumnWidthItemSimple,
-                                    attributeColumnWidthItem
-                                ],
+                                columnWidths: [measureColumnWidthItemSimple, attributeColumnWidthItem],
                             },
                         }}
                         onError={onErrorHandler}
@@ -176,9 +169,49 @@ storiesOf("Core components/PivotTable/ManualResizing/Simple table", module)
                             columnSizing: {
                                 defaultWidth: "viewport",
                                 growToFit: true,
+                                columnWidths: [measureColumnWidthItemSimple, attributeColumnWidthItem],
+                            },
+                        }}
+                        onError={onErrorHandler}
+                        LoadingComponent={null}
+                        ErrorComponent={null}
+                    />
+                </div>
+            </ScreenshotReadyWrapper>,
+        ),
+    )
+    .add("manual size limits", () =>
+        screenshotWrap(
+            <ScreenshotReadyWrapper resolver={visualizationNotLoadingResolver()}>
+                <div style={wrapperStyle} className="s-table">
+                    <PivotTable
+                        projectId="storybook"
+                        measures={[MEASURE_1, MEASURE_2]}
+                        rows={[ATTRIBUTE_1]}
+                        config={{
+                            columnSizing: {
+                                defaultWidth: "viewport",
+                                growToFit: true,
                                 columnWidths: [
-                                    measureColumnWidthItemSimple,
-                                    attributeColumnWidthItem,
+                                    {
+                                        measureColumnWidthItem: {
+                                            width: 30, // Will be ignored and replaced by MIN_WIDTH limit
+                                            locators: [
+                                                {
+                                                    measureLocatorItem: {
+                                                        measureIdentifier: MEASURE_1.measure.localIdentifier,
+                                                    },
+                                                },
+                                            ],
+                                        },
+                                    },
+                                    {
+                                        attributeColumnWidthItem: {
+                                            width: 3000, // Will be ignored and replaced by MAX_WIDTH limit
+                                            attributeIdentifier:
+                                                ATTRIBUTE_1.visualizationAttribute.localIdentifier,
+                                        },
+                                    },
                                 ],
                             },
                         }}
