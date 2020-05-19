@@ -48,25 +48,23 @@ const measureWidth = width => ({
 });
 
 export class PivotTableManualResizingExample extends Component {
-    constructor(props) {
-        super(props);
+    state = {
+        columnWidths: [measureWidth(200), attributeWidth(200)],
+    };
 
-        this.state = {
-            columnWidths: [measureWidth(200), attributeWidth(200)],
-        };
-        this.onButtonClick = this.onButtonClick.bind(this);
-        this.onColumnResized = this.onColumnResized.bind(this);
-    }
+    onButtonClick = columnWidth => {
+        const filteredColumnWidths = [...this.state.columnWidths].filter(
+            item => Object.keys(item)[0] !== Object.keys(columnWidth)[0],
+        );
 
-    onButtonClick() {
         this.setState({
-            columnWidths: [measureWidth(200), attributeWidth(400)],
+            columnWidths: [...filteredColumnWidths, columnWidth],
         });
-    }
+    };
 
-    onColumnResized(columnWidths) {
+    onColumnResized = columnWidths => {
         this.setState({ columnWidths });
-    }
+    };
 
     render() {
         return (
@@ -74,9 +72,15 @@ export class PivotTableManualResizingExample extends Component {
                 <div>
                     <button
                         className="gd-button gd-button-secondary gd-button gd-button-secondary"
-                        onClick={this.onButtonClick}
+                        onClick={() => this.onButtonClick(attributeWidth(400))}
                     >
                         Change "Location State" column width to 400
+                    </button>
+                    <button
+                        className="gd-button gd-button-secondary gd-button gd-button-secondary"
+                        onClick={() => this.onButtonClick(measureWidth(60))}
+                    >
+                        Change "Q1" column width to 60
                     </button>
                 </div>
                 <div
