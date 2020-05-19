@@ -498,7 +498,7 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
         const colId = this.getColumnIdentifier(column);
 
         if (this.manuallyResizedColumns[colId]) {
-            omit(this.manuallyResizedColumns, colId);
+            this.manuallyResizedColumns = omit(this.manuallyResizedColumns, colId);
         }
     };
 
