@@ -1,11 +1,11 @@
 // (C) 2020 GoodData Corporation
-import { IAttributeColumnWidthItem, IMeasureColumnWidthItem } from "../../interfaces/PivotTable";
+import { ColumnWidth, IAttributeColumnWidthItem, IMeasureColumnWidthItem } from "../../interfaces/PivotTable";
 import { AFM } from "@gooddata/typings";
 
 export class AttributeColumnWidthItemBuilder implements IAttributeColumnWidthItem {
     public attributeColumnWidthItem: IAttributeColumnWidthItem["attributeColumnWidthItem"];
 
-    constructor(attributeIdentifier: string, width: number) {
+    constructor(attributeIdentifier: string, width: ColumnWidth) {
         this.attributeColumnWidthItem = {
             attributeIdentifier,
             width,
@@ -21,7 +21,7 @@ export class AttributeColumnWidthItemBuilder implements IAttributeColumnWidthIte
 export class MeasureColumnWidthItemBuilder implements IMeasureColumnWidthItem {
     public measureColumnWidthItem: IMeasureColumnWidthItem["measureColumnWidthItem"];
 
-    constructor(measureIdentifier: AFM.Identifier, width: number) {
+    constructor(measureIdentifier: AFM.Identifier, width: ColumnWidth) {
         this.measureColumnWidthItem = {
             width,
             locators: [
@@ -48,8 +48,8 @@ export class MeasureColumnWidthItemBuilder implements IMeasureColumnWidthItem {
     };
 }
 
-export const attributeColumnWidthItem = (attributeIdentifier: string, width: number) =>
+export const attributeColumnWidthItem = (attributeIdentifier: string, width: ColumnWidth) =>
     new AttributeColumnWidthItemBuilder(attributeIdentifier, width);
 
-export const measureColumnWidthItem = (measureIdentifier: AFM.Identifier, width: number) =>
+export const measureColumnWidthItem = (measureIdentifier: AFM.Identifier, width: ColumnWidth) =>
     new MeasureColumnWidthItemBuilder(measureIdentifier, width);
