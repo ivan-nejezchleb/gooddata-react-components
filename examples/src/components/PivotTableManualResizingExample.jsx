@@ -73,13 +73,13 @@ export class PivotTableManualResizingExample extends Component {
             <div>
                 <div>
                     <button
-                        className="gd-button gd-button-secondary gd-button gd-button-secondary"
+                        className="gd-button gd-button-secondary gd-button gd-button-secondary s-change-width-button-attribute"
                         onClick={() => this.onButtonClick(attributeWidth(400))}
                     >
                         Change "Location State" column width to 400
                     </button>
                     <button
-                        className="gd-button gd-button-secondary gd-button gd-button-secondary"
+                        className="gd-button gd-button-secondary gd-button gd-button-secondary s-change-width-button-measure"
                         onClick={() => this.onButtonClick(measureWidth(60))}
                     >
                         Change "Q1" column width to 60

@@ -702,12 +702,14 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
         this.updateStickyRow();
     };
 
-    private onModelUpdated = (event: ModelUpdatedEvent) => {
+    private onModelUpdated = async (event: ModelUpdatedEvent) => {
         const shouldAutoresizeColumns = this.isColumnAutoresizeEnabled() && this.getExecution();
         const growToFit = this.isGrowToFitEnabled() && this.getExecution();
         if (shouldAutoresizeColumns || growToFit) {
             this.autoresizeColumns(event);
         }
+        // TODO ONE-4404 - naive solution how to solve problem with missing first cell
+        await sleep(300);
         this.updateStickyRow();
     };
 
