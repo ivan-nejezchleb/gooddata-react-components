@@ -1027,7 +1027,7 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
         }
     }
 
-    private onColumnGridResized = async (columnEvent: ColumnResizedEvent) => {
+    private onGridColumnResized = async (columnEvent: ColumnResizedEvent) => {
         if (!columnEvent.finished) {
             return; // only update the height once the user is done setting the column size
         }
@@ -1200,7 +1200,7 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
             },
             onCellClicked: this.cellClicked,
             onSortChanged: this.sortChanged,
-            onColumnResized: this.onColumnGridResized,
+            onColumnResized: this.onGridColumnResized,
             onGridSizeChanged: this.gridSizeChanged,
             onGridColumnsChanged: this.gridColumnsChanged,
 
