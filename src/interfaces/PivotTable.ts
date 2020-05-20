@@ -35,6 +35,11 @@ export enum ColumnEventSourceType {
     FIT_GROW = "growToFit",
 }
 
+export enum UIClick {
+    CLICK = 1,
+    DOUBLE_CLICK = 2,
+}
+
 export interface IResizedColumns {
     [columnIdentifier: string]: { width: number; source: ColumnEventSourceType };
 }

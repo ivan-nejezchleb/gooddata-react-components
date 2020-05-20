@@ -55,6 +55,7 @@ import {
     ColumnWidthItem,
     DefaultColumnWidth,
     ColumnWidth,
+    UIClick,
 } from "../../interfaces/PivotTable";
 import { IDataSourceProviderInjectedProps } from "../afm/DataSourceProvider";
 import { LoadingComponent } from "../simple/LoadingComponent";
@@ -494,6 +495,8 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
             width: column.getActualWidth(),
             source: ColumnEventSourceType.UI_DRAGGED,
         };
+
+        column.getColDef().suppressSizeToFit = true;
     };
 
     private removeFromManuallyResizedColumn = (column: Column): void => {
@@ -501,6 +504,7 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
 
         if (this.manuallyResizedColumns[colId]) {
             this.manuallyResizedColumns = omit(this.manuallyResizedColumns, colId);
+            column.getColDef().suppressSizeToFit = false;
         }
     };
 
@@ -1008,21 +1012,22 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
         return DEFAULT_COLUMN_WIDTH; // TODO INE add support for custom default width from getDefaultWidthFromProps
     };
 
-    private resetResizedColumn(columnApi: ColumnApi, column: Column) {
+    private async resetResizedColumn(column: Column) {
         const id = this.getColumnIdentifier(column);
 
         if (this.isColumnManuallyResized(id)) {
             this.removeFromManuallyResizedColumn(column);
-            column.getColDef().suppressSizeToFit = false;
-            if (this.isColumnAutoResized(id)) {
-                columnApi.setColumnWidth(column, this.autoResizedColumns[id].width);
-            } else {
-                columnApi.setColumnWidth(column, DEFAULT_COLUMN_WIDTH);
-            }
+        }
+
+        if (this.isColumnAutoResized(id)) {
+            this.columnApi.setColumnWidth(column, this.autoResizedColumns[id].width);
+        } else {
+            await this.autoresizeColumnsByColumnId(this.columnApi, this.getColumnIds([column]));
+            this.addToManuallyResizedColumn(column);
         }
     }
 
-    private columnResized = async (columnEvent: ColumnResizedEvent) => {
+    private onColumnGridResized = async (columnEvent: ColumnResizedEvent) => {
         if (!columnEvent.finished) {
             return; // only update the height once the user is done setting the column size
         }
@@ -1034,48 +1039,49 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
                 this.numberOfColumnResizedCalls++;
                 await sleep(COLUMN_RESIZE_TIMEOUT);
 
-                if (this.numberOfColumnResizedCalls === 2) {
+                if (this.numberOfColumnResizedCalls === UIClick.DOUBLE_CLICK) {
                     this.numberOfColumnResizedCalls = 0;
-                    this.columnsManualReset(columnEvent);
-                } else if (this.numberOfColumnResizedCalls === 1) {
+                    await this.onColumnsManualReset(columnEvent.columns);
+                } else if (this.numberOfColumnResizedCalls === UIClick.CLICK) {
                     this.numberOfColumnResizedCalls = 0;
-                    this.columnsManualResized(columnEvent);
+                    this.onColumnsManualResized(columnEvent.columns);
                 }
             } else {
-                this.columnsManualResized(columnEvent);
+                this.onColumnsManualResized(columnEvent.columns);
             }
         }
     };
 
-    private columnsManualReset = (columnEvent: ColumnResizedEvent) => {
-        const columns = columnEvent.columns;
+    private onColumnsManualReset = async (columns: Column[]) => {
         const execution = this.getExecution();
 
         invariant(execution !== undefined, "changing column width prior execution cannot work");
 
-        columns.forEach(column => {
-            this.resetResizedColumn(columnEvent.columnApi, column);
+        columns.forEach(async column => {
+            await this.resetResizedColumn(column);
         });
 
-        this.afterResizeColumns(columnEvent, execution);
+        this.afterOnResizeColumns();
     };
 
-    private columnsManualResized = (columnEvent: ColumnResizedEvent) => {
-        const columns = columnEvent.columns;
+    private onColumnsManualResized = (columns: Column[]) => {
         const execution = this.getExecution();
 
         invariant(execution !== undefined, "changing column width prior execution cannot work");
 
         columns.forEach(column => {
             this.addToManuallyResizedColumn(column);
-            column.getColDef().suppressSizeToFit = true;
         });
 
-        this.afterResizeColumns(columnEvent, execution);
+        this.afterOnResizeColumns();
     };
 
-    private afterResizeColumns(columnEvent: ColumnResizedEvent, execution: Execution.IExecutionResponses) {
-        this.growToFit(columnEvent.columnApi);
+    private afterOnResizeColumns() {
+        const execution = this.getExecution();
+
+        invariant(execution !== undefined, "changing column width prior execution cannot work");
+
+        this.growToFit(this.columnApi);
         const columnWidths = getColumnWidthsFromMap(this.manuallyResizedColumns, execution);
         this.props.onColumnResized(columnWidths);
     }
@@ -1194,7 +1200,7 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
             },
             onCellClicked: this.cellClicked,
             onSortChanged: this.sortChanged,
-            onColumnResized: this.columnResized,
+            onColumnResized: this.onColumnGridResized,
             onGridSizeChanged: this.gridSizeChanged,
             onGridColumnsChanged: this.gridColumnsChanged,
 
