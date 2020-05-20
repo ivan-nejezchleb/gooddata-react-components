@@ -21,31 +21,13 @@ const attributes = [Model.attribute(locationStateDisplayFormIdentifier).localIde
 
 const columns = [Model.attribute(quarterDateIdentifier).localIdentifier("quarterDate")];
 
-const attributeWidth = width => ({
-    attributeColumnWidthItem: {
-        width,
-        attributeIdentifier: "state",
-    },
-});
+const attributeWidth = width => Model.attributeColumnWidthItem("state", width);
 
-const measureWidth = width => ({
-    measureColumnWidthItem: {
-        width,
-        locators: [
-            {
-                attributeLocatorItem: {
-                    attributeIdentifier: "quarterDate",
-                    element: `/gdc/md/${projectId}/obj/2009/elements?id=1`,
-                },
-            },
-            {
-                measureLocatorItem: {
-                    measureIdentifier: "franchiseFees",
-                },
-            },
-        ],
-    },
-});
+const measureWidth = width =>
+    Model.measureColumnWidthItem("franchiseFees", width).attributeLocators({
+        attributeIdentifier: "quarterDate",
+        element: `/gdc/md/${projectId}/obj/2009/elements?id=1`,
+    });
 
 export class PivotTableManualResizingExample extends Component {
     state = {

@@ -1,5 +1,5 @@
 // (C) 2007-2020 GoodData Corporation
-import { Selector, ClientFunction } from "testcafe";
+import { Selector } from "testcafe";
 import { config } from "./utils/config";
 import { checkCellValue, loginUserAndNavigate } from "./utils/helpers";
 
