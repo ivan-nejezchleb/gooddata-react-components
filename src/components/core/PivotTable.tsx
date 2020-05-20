@@ -1030,14 +1030,18 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
         this.updateDesiredHeight(this.state.execution.executionResult);
 
         if (this.isManualResizing(columnEvent)) {
-            this.numberOfColumnResizedCalls++;
-            await sleep(COLUMN_RESIZE_TIMEOUT);
+            if (this.hasColumnWidths()) {
+                this.numberOfColumnResizedCalls++;
+                await sleep(COLUMN_RESIZE_TIMEOUT);
 
-            if (this.numberOfColumnResizedCalls === 2) {
-                this.numberOfColumnResizedCalls = 0;
-                this.columnsManualReset(columnEvent);
-            } else if (this.numberOfColumnResizedCalls === 1) {
-                this.numberOfColumnResizedCalls = 0;
+                if (this.numberOfColumnResizedCalls === 2) {
+                    this.numberOfColumnResizedCalls = 0;
+                    this.columnsManualReset(columnEvent);
+                } else if (this.numberOfColumnResizedCalls === 1) {
+                    this.numberOfColumnResizedCalls = 0;
+                    this.columnsManualResized(columnEvent);
+                }
+            } else {
                 this.columnsManualResized(columnEvent);
             }
         }
@@ -1126,6 +1130,10 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
         return props.config && props.config.columnSizing && props.config.columnSizing.columnWidths;
     };
 
+    private hasColumnWidths = () => {
+        return !!this.getColumnWidths(this.props);
+    };
+
     private getDefaultWidthFromProps = (props: IPivotTableProps): DefaultColumnWidth => {
         return (
             (props.config && props.config.columnSizing && props.config.columnSizing.defaultWidth) || "unset"
@@ -1159,7 +1167,6 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
             );
         }
 
-        const rowCount = this.getInfiniteInitialRowCountRowCount();
         return {
             // Initial data
             columnDefs: enrichedColumnDefs,
@@ -1194,7 +1201,7 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
             // Basic options
             suppressMovableColumns: true,
             suppressCellSelection: true,
-            suppressAutoSize: true,
+            suppressAutoSize: this.hasColumnWidths(),
             enableFilter: false,
 
             // infinite scrolling model
@@ -1203,7 +1210,7 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
             cacheOverflowSize: pageSize,
             cacheBlockSize: pageSize,
             maxConcurrentDatasourceRequests: 1,
-            infiniteInitialRowCount: rowCount,
+            infiniteInitialRowCount: this.getInfiniteInitialRowCountRowCount(),
             maxBlocksInCache: 10,
             onGridReady: this.onGridReady,
             onFirstDataRendered: this.onFirstDataRendered,
