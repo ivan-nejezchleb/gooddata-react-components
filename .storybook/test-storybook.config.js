@@ -8,8 +8,9 @@ const configuration = {
             'readySelector': '.screenshot-target, .screenshot-wrapper .highcharts-container, ' +
                 '.screenshot-wrapper .s-headline-value, .screenshot-wrapper .viz-table-wrap, ' +
                 '.screenshot-wrapper .gdc-kpi, .screenshot-wrapper .gdc-kpi-error, ' +
-                '.screenshot-wrapper .s-error, .screenshot-wrapper .s-pivot-table .s-loading-done, ' +
-                '.screenshot-wrapper .s-gd-geo-chart-renderer .mapboxgl-canvas'
+                '.screenshot-wrapper .s-error, :not(.screenshot-ready-wrapper-processing) .screenshot-wrapper .s-pivot-table .s-loading-done, ' +
+                '.screenshot-wrapper .s-gd-geo-chart-renderer .mapboxgl-canvas, ' +
+                '.screenshot-ready-wrapper-done'
         },
         'Core components/AreaChart': {
             'data labels config': {
@@ -122,7 +123,7 @@ const configuration = {
                 readySelector: '.screenshot-ready-wrapper-done'
             }
         },
-        'Core components/PivotTable': {
+        /*'Core components/PivotTable': {
             'auto resize columns in the viewport - with grand total and subtotal': {
                 readySelector: '.screenshot-ready-wrapper-done'
             },
@@ -147,7 +148,7 @@ const configuration = {
             'columns grow to fit viewport - simple table': {
                 readySelector: '.screenshot-ready-wrapper-done'
             }
-        },
+        },*/
         'Internal/Drilldown': {
             'Combo chart with onFiredDrillEvent': {
                 readySelector: '.screenshot-ready-wrapper-done'
