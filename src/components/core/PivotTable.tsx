@@ -263,7 +263,7 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
                 this.getExecutionResponse(),
                 this.widthValidator,
             );
-            this.manuallyResizedColumns = columnWidthsByField;
+            this.setNewManuallyResizedColumns(this.manuallyResizedColumns, columnWidthsByField);
         }
     }
 
@@ -394,6 +394,33 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
             agGridRerenderNumber: state.agGridRerenderNumber + 1,
         }));
     }
+
+    private setNewManuallyResizedColumns = (
+        oldManuallyResizedColumns: IResizedColumns,
+        newManuallyResizedColumns: IResizedColumns,
+    ) => {
+        this.manuallyResizedColumns = newManuallyResizedColumns;
+
+        if (!this.columnApi) {
+            return;
+        }
+
+        const oldColumnIds = Object.keys(oldManuallyResizedColumns);
+        const newColumnIds = Object.keys(newManuallyResizedColumns);
+        const removedColumnIds = difference(oldColumnIds, newColumnIds);
+        const addedColumnIds = difference(newColumnIds, oldColumnIds);
+
+        removedColumnIds.forEach(
+            (columnId: string) => (this.columnApi.getColumn(columnId).getColDef().suppressSizeToFit = false),
+        );
+        addedColumnIds.forEach(
+            (columnId: string) => (this.columnApi.getColumn(columnId).getColDef().suppressSizeToFit = true),
+        );
+
+        newColumnIds.forEach((columnId: string) =>
+            this.columnApi.setColumnWidth(columnId, newManuallyResizedColumns[columnId].width),
+        );
+    };
 
     //
     // getters / setters / manipulators
@@ -600,8 +627,14 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
             (!alreadyResized() || (alreadyResized() && force))
         ) {
             this.resizing = true;
+            // we need to know autosize width for each column, even manually resized ones
             await this.autoresizeVisibleColumns(event.columnApi, previouslyResizedColumnIds);
-            this.growToFit(event.columnApi);
+            // ater that we need to reset manually resized columns back to its manually set width by growToFit or by helper
+            if (this.isGrowToFitEnabled()) {
+                this.growToFit(event.columnApi);
+            } else if (this.shouldPerformAutoresize() && this.isColumnAutoresizeEnabled()) {
+                this.setNewManuallyResizedColumns(this.manuallyResizedColumns, this.manuallyResizedColumns);
+            }
             this.resizing = false;
             this.setState({
                 resized: true,
@@ -710,11 +743,11 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
         const shouldAutoresizeColumns = this.isColumnAutoresizeEnabled() && this.getExecution();
         const growToFit = this.isGrowToFitEnabled() && this.getExecution();
         if (shouldAutoresizeColumns || growToFit) {
-            this.autoresizeColumns(event);
+            await this.autoresizeColumns(event);
+            this.updateStickyRow();
+        } else {
+            this.updateStickyRow();
         }
-        // TODO ONE-4404 - naive solution how to solve problem with missing first cell
-        await sleep(300);
-        this.updateStickyRow();
     };
 
     private sortChanged = async (event: SortChangedEvent): Promise<void> => {
@@ -1164,18 +1197,9 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
             intl: this.props.intl,
         };
 
-        let enrichedColumnDefs = columnDefs;
-        if (Object.keys(this.autoResizedColumns).length || Object.keys(this.manuallyResizedColumns).length) {
-            enrichedColumnDefs = this.enrichColumnDefinitionsWithWidths(
-                columnDefs,
-                this.manuallyResizedColumns,
-                this.autoResizedColumns,
-            );
-        }
-
         return {
             // Initial data
-            columnDefs: enrichedColumnDefs,
+            columnDefs,
             rowData,
             defaultColDef: {
                 cellClass: this.getCellClass(null),
