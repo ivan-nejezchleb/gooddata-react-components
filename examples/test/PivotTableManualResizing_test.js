@@ -3,7 +3,7 @@ import { Selector } from "testcafe";
 import { config } from "./utils/config";
 import { checkCellValue, loginUserAndNavigate } from "./utils/helpers";
 
-fixture.only("Pivot Table Manual Resizing").beforeEach(loginUserAndNavigate(`${config.url}/pivot-table`));
+fixture("Pivot Table Manual Resizing").beforeEach(loginUserAndNavigate(`${config.url}/pivot-table`));
 
 async function getCell(t, tableSelectorStr, cellSelectorStr) {
     const tableSelector = Selector(tableSelectorStr);

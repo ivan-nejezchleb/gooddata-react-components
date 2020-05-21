@@ -17,7 +17,7 @@ import PivotTableSortingAggregationExampleSRC from "!raw-loader!../components/Pi
 import PivotTableSizingExample from "../components/PivotTableSizingExample";
 import PivotTableSizingExampleSRC from "!raw-loader!../components/PivotTableSizingExample"; // eslint-disable-line import/no-webpack-loader-syntax, import/no-unresolved, import/extensions, import/first
 import PivotTableColumnsGrowToFitExample from "../components/PivotTableColumnsGrowToFitExample";
-import PivotTableColumnsGrowToFitExampleSRC from "!raw-loader!../components/PivotTableColumnsGrowToFitExample";
+import PivotTableColumnsGrowToFitExampleSRC from "!raw-loader!../components/PivotTableColumnsGrowToFitExample"; // eslint-disable-line import/no-webpack-loader-syntax, import/no-unresolved, import/extensions, import/first
 import PivotTableManualResizingExample from "../components/PivotTableManualResizingExample";
 import PivotTableManualResizingExampleSRC from "!raw-loader!../components/PivotTableManualResizingExample"; // eslint-disable-line import/no-webpack-loader-syntax, import/no-unresolved, import/extensions, import/first
 

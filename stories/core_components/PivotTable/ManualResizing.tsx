@@ -52,9 +52,15 @@ storiesOf("Core components/PivotTable/ManualResizing/Simple table", module)
         const PivotTableWrapper = () => {
             const [attributeColumnWidth, setAttributeColumnWidth] = React.useState<number>(ATTRIBUTE_WIDTH);
             const [measureColumnWidth, setMeasureColumnWidth] = React.useState<number>(MEASURE_WIDTH);
+            const handleAttributeButtonClick = (event: any) => {
+                setAttributeColumnWidth(event.target.value);
+            };
+            const handleMeasureButtonClick = (event: any) => {
+                setMeasureColumnWidth(event.target.value);
+            };
 
             return (
-                <>
+                <React.Fragment>
                     <PivotTable
                         projectId="storybook"
                         measures={[MEASURE_1, MEASURE_2]}
@@ -90,17 +96,19 @@ storiesOf("Core components/PivotTable/ManualResizing/Simple table", module)
                         LoadingComponent={null}
                         ErrorComponent={null}
                     />
-                    <button onClick={() => setAttributeColumnWidth(400)}>
+                    <button onClick={handleAttributeButtonClick} value={400}>
                         Set attributes column to width 400
                     </button>
-                    <button onClick={() => setAttributeColumnWidth(150)}>
+                    <button onClick={handleAttributeButtonClick} value={150}>
                         Set attributes column to width 150
                     </button>
-                    <button onClick={() => setMeasureColumnWidth(200)}>
+                    <button onClick={handleMeasureButtonClick} value={200}>
                         Set measure columns to width 200
                     </button>
-                    <button onClick={() => setMeasureColumnWidth(50)}>Set measure columns to width 50</button>
-                </>
+                    <button onClick={handleMeasureButtonClick} value={50}>
+                        Set measure columns to width 50
+                    </button>
+                </React.Fragment>
             );
         };
         return screenshotWrap(
@@ -257,6 +265,12 @@ storiesOf("Core components/PivotTable/ManualResizing/Table with column attr", mo
         const PivotTableWrapper = () => {
             const [attributeColumnWidth, setAttributeColumnWidth] = React.useState<number>(400);
             const [measureColumnWidth, setMeasureColumnWidth] = React.useState<number>(60);
+            const handleAttributeButtonClick = (event: any) => {
+                setAttributeColumnWidth(event.target.value);
+            };
+            const handleMeasureButtonClick = (event: any) => {
+                setMeasureColumnWidth(event.target.value);
+            };
 
             const attributeWidth = attributeColumnWidth
                 ? {
@@ -291,7 +305,7 @@ storiesOf("Core components/PivotTable/ManualResizing/Table with column attr", mo
             const columnWidths = [measureWidth, attributeWidth].filter(Boolean);
 
             return (
-                <>
+                <React.Fragment>
                     <PivotTable
                         projectId="storybook"
                         measures={[MEASURE_1, MEASURE_2]}
@@ -308,23 +322,25 @@ storiesOf("Core components/PivotTable/ManualResizing/Table with column attr", mo
                         LoadingComponent={null}
                         ErrorComponent={null}
                     />
-                    <button onClick={() => setAttributeColumnWidth(400)}>
+                    <button onClick={handleAttributeButtonClick} value={400}>
                         Set attributes column to width 400
                     </button>
-                    <button onClick={() => setAttributeColumnWidth(50)}>
+                    <button onClick={handleAttributeButtonClick} value={50}>
                         Set attributes column to width 50
                     </button>
-                    <button onClick={() => setAttributeColumnWidth(0)}>
+                    <button onClick={handleAttributeButtonClick} value={0}>
                         Remove width from attributes column
                     </button>
-                    <button onClick={() => setMeasureColumnWidth(200)}>
+                    <button onClick={handleMeasureButtonClick} value={200}>
                         Set measure columns to width 200
                     </button>
-                    <button onClick={() => setMeasureColumnWidth(50)}>Set measure columns to width 50</button>
-                    <button onClick={() => setMeasureColumnWidth(0)}>
+                    <button onClick={handleMeasureButtonClick} value={50}>
+                        Set measure columns to width 50
+                    </button>
+                    <button onClick={handleMeasureButtonClick} value={0}>
                         Remove width from measure columns
                     </button>
-                </>
+                </React.Fragment>
             );
         };
         return screenshotWrap(
