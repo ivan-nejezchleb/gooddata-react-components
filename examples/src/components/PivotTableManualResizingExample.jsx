@@ -34,8 +34,6 @@ export class PivotTableManualResizingExample extends Component {
         columnWidths: [measureWidth(200), attributeWidth(200)],
     };
 
-    shouldFilterColumnWidthItem = (item, newItem) => Object.keys(item)[0] !== Object.keys(newItem)[0];
-
     onButtonClick = columnWidthItem => {
         const filteredColumnWidths = [...this.state.columnWidths].filter(item =>
             this.shouldFilterColumnWidthItem(item, columnWidthItem),
@@ -50,6 +48,8 @@ export class PivotTableManualResizingExample extends Component {
         this.setState({ columnWidths });
     };
 
+    shouldFilterColumnWidthItem = (item, newItem) => Object.keys(item)[0] !== Object.keys(newItem)[0];
+
     render() {
         return (
             <div>
@@ -58,13 +58,13 @@ export class PivotTableManualResizingExample extends Component {
                         className="gd-button gd-button-secondary gd-button gd-button-secondary s-change-width-button-attribute"
                         onClick={() => this.onButtonClick(attributeWidth(400))}
                     >
-                        Change "Location State" column width to 400
+                        Change Location State column width to 400
                     </button>
                     <button
                         className="gd-button gd-button-secondary gd-button gd-button-secondary s-change-width-button-measure"
                         onClick={() => this.onButtonClick(measureWidth(60))}
                     >
-                        Change "Q1" column width to 60
+                        Change Q1 column width to 60
                     </button>
                 </div>
                 <div
