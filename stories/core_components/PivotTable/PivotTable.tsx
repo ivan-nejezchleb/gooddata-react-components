@@ -457,8 +457,16 @@ storiesOf("Core components/PivotTable/PivotTable", module)
             },
         ];
 
+        const tableReadyResolver = () => {
+            return (_element: HTMLElement) => {
+                return (
+                    document.querySelectorAll(".screenshot-wrapper .s-pivot-table .s-loading-done").length > 0
+                );
+            };
+        };
+
         return screenshotWrap(
-            <ScreenshotReadyWrapper resolver={visualizationNotLoadingResolver()}>
+            <ScreenshotReadyWrapper resolver={tableReadyResolver()}>
                 <div style={{ ...wrapperStyle, height: 230 }} className="s-table">
                     <PivotTable
                         projectId="storybook"
