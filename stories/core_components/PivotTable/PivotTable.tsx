@@ -457,16 +457,17 @@ storiesOf("Core components/PivotTable/PivotTable", module)
             },
         ];
 
-        const tableReadyResolver = () => {
+        const tableCustomReadyResolver = () => {
             return (_element: HTMLElement) => {
                 return (
+                    // table has rows in loading state so its not possible use visualizationNotLoadingResolver
                     document.querySelectorAll(".screenshot-wrapper .s-pivot-table .s-loading-done").length > 0
                 );
             };
         };
 
         return screenshotWrap(
-            <ScreenshotReadyWrapper resolver={tableReadyResolver()}>
+            <ScreenshotReadyWrapper resolver={tableCustomReadyResolver()}>
                 <div style={{ ...wrapperStyle, height: 230 }} className="s-table">
                     <PivotTable
                         projectId="storybook"
