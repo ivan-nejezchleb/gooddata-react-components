@@ -208,6 +208,7 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
     private lastResizedWidth = 0;
     private lastResizedHeight = 0;
     private numberOfColumnResizedCalls = 0;
+    private waitingForFirstExecution = true;
 
     constructor(props: IPivotTableInnerProps) {
         super(props);
@@ -791,24 +792,32 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
             columnDefs: IGridHeader[],
             resultSpec: AFM.IResultSpec,
         ) => {
-            if (!isEqual(columnDefs, this.state.columnDefs)) {
+            let enrichedColumnDefs = this.enrichColumnDefinitionsWithWidths(
+                columnDefs,
+                this.manuallyResizedColumns,
+                this.autoResizedColumns,
+            );
+            if (!isEqual(enrichedColumnDefs, this.state.columnDefs)) {
+                if (this.state.columnDefs.length !== 0) {
+                    this.gridApi.setColumnDefs([]); // force usage of new columnDefs because of bug https://github.com/ag-grid/ag-grid/issues/2771
+                }
                 const sortedByFirstAttribute = isSortedByFirstAttibute(columnDefs, resultSpec);
 
                 // this solves only first render, not change of columnWidths during lifetime
                 // first render cant be in componentWillMount, because we need execution finished and first valid columnDefs
-                const columnWidths = this.getColumnWidths(this.props);
-                const columnWidthsByField = convertColumnWidthsToMap(
-                    columnWidths,
-                    execution.executionResponse,
-                    this.widthValidator,
-                );
-                let enrichedColumnDefs = columnDefs;
-
-                if (columnWidths && Object.keys(this.manuallyResizedColumns).length === 0) {
+                if (this.waitingForFirstExecution) {
+                    this.waitingForFirstExecution = false;
+                    const columnWidths = this.getColumnWidths(this.props);
+                    const columnWidthsByField = convertColumnWidthsToMap(
+                        columnWidths,
+                        execution.executionResponse,
+                        this.widthValidator,
+                    );
                     this.manuallyResizedColumns = columnWidthsByField;
                     enrichedColumnDefs = this.enrichColumnDefinitionsWithWidths(
                         columnDefs,
                         columnWidthsByField,
+                        this.autoResizedColumns,
                     );
                 }
 
@@ -1053,7 +1062,7 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
     }
 
     private getDefaultWidth = () => {
-        return DEFAULT_COLUMN_WIDTH; // TODO INE add support for custom default width from getDefaultWidthFromProps
+        return DEFAULT_COLUMN_WIDTH;
     };
 
     private async resetResizedColumn(column: Column) {
@@ -1506,7 +1515,7 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
     private enrichColumnDefinitionsWithWidths(
         columnDefinitions: IGridHeader[],
         manuallyResizedColumns: IResizedColumns,
-        autoResizedColumns: IResizedColumns = {},
+        autoResizedColumns: IResizedColumns,
     ) {
         const result = cloneDeep(columnDefinitions);
         const leaves = getTreeLeaves(result);
