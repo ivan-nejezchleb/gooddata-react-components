@@ -54,7 +54,7 @@ import { IPivotTableProps, PivotTable } from "../../../../components/core/PivotT
 import { generateDimensions } from "../../../../helpers/dimensions";
 import { DEFAULT_LOCALE } from "../../../../constants/localization";
 import { DASHBOARDS_ENVIRONMENT } from "../../../constants/properties";
-import { IColumnSizing, IMenu, IPivotTableConfig } from "../../../../interfaces/PivotTable";
+import { ColumnWidthItem, IColumnSizing, IMenu, IPivotTableConfig } from "../../../../interfaces/PivotTable";
 
 export const getColumnAttributes = (buckets: IBucket[]): IBucketItem[] => {
     return getItemsFromBuckets(
@@ -283,6 +283,7 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
         this.onExportReady = props.callbacks.onExportReady && this.onExportReady.bind(this);
         this.environment = props.environment;
         this.featureFlags = props.featureFlags || {};
+        this.onColumnResized = this.onColumnResized.bind(this);
     }
 
     public unmount() {
@@ -419,13 +420,23 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                       ...resultSpecWithDimensions,
                       sorts,
                   };
+            // TODO: ONE-4405 - is this a correct way how to get widthDefs?
+            // TODO: ONE-4405 - should it be named widthDefs?
+            const widthDefs: ColumnWidthItem[] = get(
+                visualizationProperties,
+                "properties.widthDefs",
+                undefined,
+            );
 
             const rowsBucket = mdObject.buckets.find(
                 bucket => bucket.localIdentifier === BucketNames.ATTRIBUTE,
             );
             const totals: VisualizationObject.IVisualizationTotal[] = (rowsBucket && rowsBucket.totals) || [];
 
-            const updatedConfig = this.enrichConfigWithColumnSizing(this.enrichConfigWithMenu(config));
+            const updatedConfig = this.enrichConfigWithColumnSizing(
+                this.enrichConfigWithMenu(config),
+                widthDefs,
+            );
             const pivotTableProps = {
                 projectId: this.projectId,
                 drillableItems,
@@ -445,6 +456,7 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                 LoadingComponent: null as any,
                 ErrorComponent: null as any,
                 intl: this.intl,
+                onColumnResized: this.onColumnResized,
             };
 
             if (this.environment === DASHBOARDS_ENVIRONMENT) {
@@ -560,9 +572,13 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
         return merge({ menu }, config);
     }
 
-    private enrichConfigWithColumnSizing(config: IPivotTableConfig): IPivotTableConfig {
+    // TODO: ONE-4405 - here is a lot of "enrichSizing", what about some better way how to do it?
+    private enrichConfigWithColumnSizing(
+        config: IPivotTableConfig,
+        columnWidths: ColumnWidthItem[],
+    ): IPivotTableConfig {
         const result = this.enrichConfigWithAutosize(config);
-        return this.enrichConfigWithGrowToFit(result);
+        return this.enrichConfigWithManualResize(this.enrichConfigWithGrowToFit(result), columnWidths);
     }
 
     private enrichConfigWithAutosize(config: IPivotTableConfig): IPivotTableConfig {
@@ -584,5 +600,25 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
         }
 
         return config;
+    }
+
+    private enrichConfigWithManualResize(
+        config: IPivotTableConfig,
+        columnWidths: ColumnWidthItem[],
+    ): IPivotTableConfig {
+        const columnSizing: IColumnSizing = merge(config.columnSizing, { columnWidths });
+        return merge(config, columnSizing);
+    }
+
+    // TODO: ONE-4405 - should be send as properties?
+    private onColumnResized(columnWidths: ColumnWidthItem[]) {
+        const { pushData } = this.callbacks;
+        if (pushData && this.featureFlags.enableTableColumnsManualResizing) {
+            pushData({
+                properties: {
+                    widthDefs: columnWidths,
+                },
+            });
+        }
     }
 }
