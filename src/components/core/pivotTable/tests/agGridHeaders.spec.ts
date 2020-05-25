@@ -49,7 +49,7 @@ describe("headerToGrid", () => {
                 fixtures.pivotTableWithColumnAndRowAttributes.executionResult.headerItems[0][0][0],
                 "prefix_",
             ),
-        ).toEqual({ field: "prefix_a_2210_6340109", headerName: "Alabama" });
+        ).toEqual({ colId: "prefix_a_2210_6340109", field: "prefix_a_2210_6340109", headerName: "Alabama" });
     });
 
     it("should return correct grid header for a measure header with correct prefix", () => {
@@ -58,7 +58,7 @@ describe("headerToGrid", () => {
                 fixtures.pivotTableWithColumnAndRowAttributes.executionResult.headerItems[1][2][0],
                 "prefix_",
             ),
-        ).toEqual({ field: "prefix_m_0", headerName: "$ Franchise Fees" });
+        ).toEqual({ colId: "prefix_m_0", field: "prefix_m_0", headerName: "$ Franchise Fees" });
     });
 });
 
@@ -84,6 +84,7 @@ describe("getRowHeaders", () => {
         ).toEqual([
             {
                 field: "a_2211",
+                colId: "a_2211",
                 headerName: "Location State",
                 type: "ROW_ATTRIBUTE_COLUMN",
                 drillItems: [
@@ -104,6 +105,7 @@ describe("getRowHeaders", () => {
             },
             {
                 field: "a_2205",
+                colId: "a_2205",
                 headerName: "Location Name",
                 type: "ROW_ATTRIBUTE_COLUMN",
                 drillItems: [
@@ -134,6 +136,7 @@ describe("getRowHeaders", () => {
         ).toEqual([
             {
                 field: "a_2211",
+                colId: "a_2211",
                 headerName: "Location State",
                 hide: true,
                 rowGroup: true,
@@ -156,6 +159,7 @@ describe("getRowHeaders", () => {
             },
             {
                 field: "a_2205",
+                colId: "a_2205",
                 headerName: "Location Name",
                 hide: true,
                 rowGroup: true,
