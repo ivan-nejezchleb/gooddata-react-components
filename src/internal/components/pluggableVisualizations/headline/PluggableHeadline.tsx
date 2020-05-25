@@ -44,6 +44,7 @@ import { VisualizationTypes } from "../../../../constants/visualizationTypes";
 import { generateDimensions } from "../../../../helpers/dimensions";
 import { setConfigFromFeatureFlags } from "../../../../helpers/featureFlags";
 import { PluggableBaseHeadline } from "../baseHeadline/PluggableBaseHeadline";
+import { removeColumnWidths } from "../../../utils/columnWidths";
 
 export class PluggableHeadline extends PluggableBaseHeadline {
     public getExtendedReferencePoint(referencePoint: Readonly<IReferencePoint>) {
@@ -86,6 +87,7 @@ export class PluggableHeadline extends PluggableBaseHeadline {
             this.supportedPropertiesList,
         );
         newReferencePoint = removeSort(newReferencePoint);
+        newReferencePoint = removeColumnWidths(newReferencePoint);
 
         return Promise.resolve(sanitizeFilters(newReferencePoint));
     }

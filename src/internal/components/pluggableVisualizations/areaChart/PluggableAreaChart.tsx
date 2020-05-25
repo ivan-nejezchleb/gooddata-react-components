@@ -50,6 +50,7 @@ import {
 } from "../../../constants/supportedProperties";
 import { VisualizationObject } from "@gooddata/typings";
 import { haveManyViewItems } from "../../../utils/mdObjectHelper";
+import { removeColumnWidths } from "../../../utils/columnWidths";
 
 export class PluggableAreaChart extends PluggableBaseChart {
     constructor(props: IVisConstruct) {
@@ -102,6 +103,7 @@ export class PluggableAreaChart extends PluggableBaseChart {
             this.supportedPropertiesList,
         );
         newReferencePoint = removeSort(newReferencePoint);
+        newReferencePoint = removeColumnWidths(newReferencePoint);
         return Promise.resolve(sanitizeFilters(newReferencePoint));
     }
 
