@@ -1,5 +1,5 @@
 // (C) 2007-2020 GoodData Corporation
-import { ICellRendererParams } from "ag-grid-community";
+import { ICellRendererParams, ColDef, Column } from "ag-grid-community";
 import omit = require("lodash/omit");
 import escape = require("lodash/escape");
 import stringify = require("json-stable-stringify");
@@ -207,3 +207,12 @@ export function getAttributeLocators(fields: string[][], attributeHeaders: Execu
         };
     });
 }
+
+export const getColumnIdentifierFromDef = (colDef: IGridHeader | ColDef): string => {
+    // field should be always present, fallback to colId could happen for empty columns
+    return colDef.field || colDef.colId;
+};
+
+export const getColumnIdentifier = (column: Column): string => {
+    return getColumnIdentifierFromDef(column.getColDef());
+};
