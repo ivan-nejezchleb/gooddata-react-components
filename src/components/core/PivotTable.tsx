@@ -175,7 +175,7 @@ const AGGRID_BEFORE_RESIZE_TIMEOUT = 100;
 const AGGRID_ON_RESIZE_TIMEOUT = 300;
 const COLUMN_RESIZE_TIMEOUT = 300;
 
-const DEFAULT_COLUMN_WIDTH = 200;
+export const DEFAULT_COLUMN_WIDTH = 200;
 
 /**
  * Pivot Table react component
