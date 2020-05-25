@@ -45,7 +45,7 @@ export interface IResizedColumns {
 }
 
 export type ColumnWidthItem = IAttributeColumnWidthItem | IMeasureColumnWidthItem;
-export type ColumnWidth = number | "auto"; // auto to override weak locator during reset of particular column
+export type ColumnWidth = number;
 export interface IAttributeColumnWidthItem {
     attributeColumnWidthItem: {
         width: ColumnWidth;
