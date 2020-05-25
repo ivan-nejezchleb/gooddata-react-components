@@ -5,6 +5,7 @@ import {
     getColumnWidthsFromMap,
     enrichColumnDefinitionsWithWidths,
     MANUALLY_SIZED_MAX_WIDTH,
+    setNewManuallyResizedColumns,
 } from "../agGridColumnSizing";
 import {
     ColumnWidthItem,
@@ -14,6 +15,7 @@ import {
 } from "../../../../interfaces/PivotTable";
 import { IGridHeader } from "../agGridTypes";
 import { DEFAULT_COLUMN_WIDTH } from "../../PivotTable";
+import { Column, ColumnApi } from "ag-grid-community";
 
 describe("agGridColumnSizing", () => {
     const columnWidths: ColumnWidthItem[] = [
@@ -556,6 +558,82 @@ describe("agGridColumnSizing", () => {
 
                 expect(result).toEqual(expectedColumnDefinition);
             });
+        });
+    });
+});
+
+describe("agGridColumnSizing", () => {
+    describe("setNewManuallyResizedColumns", () => {
+        function getFakeColumnApi(columnsMaps: { [id: string]: Column }): ColumnApi {
+            const fakeColumnApi = {
+                getColumn: (columnId: string) => {
+                    return columnsMaps[columnId];
+                },
+                setColumnWidth: (columnId: string, width: number) => {
+                    columnsMaps[columnId].getColDef().width = width;
+                },
+            };
+            return fakeColumnApi as ColumnApi;
+        }
+
+        function getFakeColumn(columnDefinition: any): Column {
+            const fakeColumn = {
+                getColDef: () => {
+                    return columnDefinition;
+                },
+            };
+
+            return fakeColumn as Column;
+        }
+
+        const colId1 = "colId1";
+        const colId2 = "colId2";
+        const colId3 = "colId3";
+
+        const oldResizeColumns: IResizedColumns = {
+            [colId1]: {
+                width: 100,
+                source: ColumnEventSourceType.UI_DRAGGED,
+            },
+            [colId2]: {
+                width: 200,
+                source: ColumnEventSourceType.UI_DRAGGED,
+            },
+        };
+        const newResizeColumns: IResizedColumns = {
+            [colId2]: {
+                width: 400,
+                source: ColumnEventSourceType.UI_DRAGGED,
+            },
+            [colId3]: {
+                width: 500,
+                source: ColumnEventSourceType.UI_DRAGGED,
+            },
+        };
+
+        it("should set correctly suppressSizeToFit and width for columns ", async () => {
+            const columnDef1 = { suppressSizeToFit: true, width: 100 };
+            const columnDef2 = { suppressSizeToFit: true, width: 200 };
+            const columnDef3 = { suppressSizeToFit: false, width: 200 };
+
+            const columnsMaps = {
+                colId1: getFakeColumn(columnDef1),
+                colId2: getFakeColumn(columnDef2),
+                colId3: getFakeColumn(columnDef3),
+            };
+
+            const columnApi = getFakeColumnApi(columnsMaps);
+
+            setNewManuallyResizedColumns(oldResizeColumns, newResizeColumns, columnApi);
+
+            expect(columnDef1.suppressSizeToFit).toEqual(false);
+            expect(columnDef1.width).toEqual(100);
+
+            expect(columnDef2.suppressSizeToFit).toEqual(true);
+            expect(columnDef2.width).toEqual(400);
+
+            expect(columnDef3.suppressSizeToFit).toEqual(true);
+            expect(columnDef3.width).toEqual(500);
         });
     });
 });
