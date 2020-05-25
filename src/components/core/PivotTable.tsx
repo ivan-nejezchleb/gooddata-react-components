@@ -1551,10 +1551,7 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
     }
 
     private widthValidator = (width: ColumnWidth): ColumnWidth => {
-        if (typeof width === "number") {
-            return Math.min(Math.max(width, MIN_WIDTH), MANUALLY_SIZED_MAX_WIDTH);
-        }
-        return width;
+        return Math.min(Math.max(width, MIN_WIDTH), MANUALLY_SIZED_MAX_WIDTH);
     };
 }
 

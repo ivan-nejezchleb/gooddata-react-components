@@ -216,42 +216,6 @@ storiesOf("Core components/PivotTable/ManualResizing/Simple table", module)
                 </div>
             </ScreenshotReadyWrapper>,
         ),
-    )
-    .add("'auto' value in width definition", () =>
-        screenshotWrap(
-            <ScreenshotReadyWrapper resolver={visualizationNotLoadingResolver()}>
-                <div style={wrapperStyle} className="s-table">
-                    <PivotTable
-                        projectId="storybook"
-                        measures={[MEASURE_1, MEASURE_2]}
-                        rows={[ATTRIBUTE_1]}
-                        config={{
-                            columnSizing: {
-                                defaultWidth: "viewport",
-                                growToFit: true,
-                                columnWidths: [
-                                    {
-                                        measureColumnWidthItem: {
-                                            ...measureColumnWidthItemSimple.measureColumnWidthItem,
-                                            width: "auto",
-                                        },
-                                    },
-                                    {
-                                        attributeColumnWidthItem: {
-                                            ...attributeColumnWidthItem.attributeColumnWidthItem,
-                                            width: "auto",
-                                        },
-                                    },
-                                ],
-                            },
-                        }}
-                        onError={onErrorHandler}
-                        LoadingComponent={null}
-                        ErrorComponent={null}
-                    />
-                </div>
-            </ScreenshotReadyWrapper>,
-        ),
     );
 storiesOf("Core components/PivotTable/ManualResizing/Table with column attr", module)
     .add("autoResize=on, growToFit=on", () => {
