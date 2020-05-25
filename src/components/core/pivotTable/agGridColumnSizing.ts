@@ -68,7 +68,7 @@ export const convertColumnWidthsToMap = (
     return columnWidthsMap;
 };
 
-export const getAttributeColumnWidthItemFieldAndWidth = (
+const getAttributeColumnWidthItemFieldAndWidth = (
     columnWidthItem: IAttributeColumnWidthItem,
     attributeHeaders: Execution.IAttributeHeader[],
 ): [string, ColumnWidth] => {
@@ -83,7 +83,7 @@ export const getAttributeColumnWidthItemFieldAndWidth = (
     return [field, columnWidthItem.attributeColumnWidthItem.width];
 };
 
-export const getMeasureColumnWidthItemFieldAndWidth = (
+const getMeasureColumnWidthItemFieldAndWidth = (
     columnWidthItem: IMeasureColumnWidthItem,
     measureHeaderItems: Execution.IMeasureHeaderItem[],
 ): [string, ColumnWidth] => {
