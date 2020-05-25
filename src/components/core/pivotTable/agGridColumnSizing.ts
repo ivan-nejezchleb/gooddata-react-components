@@ -1,4 +1,5 @@
 // (C) 2007-2020 GoodData Corporation
+import cloneDeep = require("lodash/cloneDeep");
 import { /*AFM,*/ Execution } from "@gooddata/typings";
 import {
     getAttributeLocators,
@@ -6,6 +7,8 @@ import {
     getLastFieldId,
     getLastFieldType,
     getParsedFields,
+    getTreeLeaves,
+    getColumnIdentifierFromDef,
 } from "./agGridUtils";
 import { FIELD_SEPARATOR, FIELD_TYPE_ATTRIBUTE, FIELD_TYPE_MEASURE, ID_SEPARATOR } from "./agGridConst";
 import { assortDimensionHeaders, identifyResponseHeader } from "./agGridHeaders";
@@ -22,6 +25,11 @@ import {
     ColumnEventSourceType,
     IResizedColumns,
 } from "../../../interfaces/PivotTable";
+import { IGridHeader } from "./agGridTypes";
+
+export const MIN_WIDTH = 60;
+export const AUTO_SIZED_MAX_WIDTH = 500;
+export const MANUALLY_SIZED_MAX_WIDTH = 2000;
 
 /*
  * All code related to column resizing the ag-grid backed Pivot Table is concentrated here
@@ -30,7 +38,7 @@ import {
 export const convertColumnWidthsToMap = (
     columnWidths: ColumnWidthItem[],
     executionResponse: Execution.IExecutionResponse,
-    widthValidator: (width: ColumnWidth) => ColumnWidth = (width: ColumnWidth) => width,
+    widthValidator: (width: ColumnWidth) => ColumnWidth = defaultWidthValidator,
 ): IResizedColumns => {
     if (!columnWidths || !executionResponse) {
         return {};
@@ -156,4 +164,48 @@ export const getColumnWidthsFromMap = (
         invariant(sizeItem, `unable to find size item by filed ${colId}`);
         return sizeItem;
     });
+};
+
+export const defaultWidthValidator = (width: ColumnWidth): ColumnWidth => {
+    return Math.min(Math.max(width, MIN_WIDTH), MANUALLY_SIZED_MAX_WIDTH);
+};
+
+export const enrichColumnDefinitionsWithWidths = (
+    columnDefinitions: IGridHeader[],
+    manuallyResizedColumns: IResizedColumns,
+    autoResizedColumns: IResizedColumns,
+    defaultColumnWidth: ColumnWidth,
+    isGrowToFitEnabled: boolean,
+    growToFittedColumns: IResizedColumns = {},
+): IGridHeader[] => {
+    const result = cloneDeep(columnDefinitions);
+    const leaves = getTreeLeaves(result);
+    leaves.forEach((columnDefinition: IGridHeader) => {
+        if (columnDefinition) {
+            const manualSize = manuallyResizedColumns[getColumnIdentifierFromDef(columnDefinition)];
+            const autoResizeSize = autoResizedColumns[getColumnIdentifierFromDef(columnDefinition)];
+
+            columnDefinition.maxWidth = MANUALLY_SIZED_MAX_WIDTH;
+
+            if (manualSize) {
+                columnDefinition.width = manualSize.width;
+                columnDefinition.suppressSizeToFit = true;
+            } else {
+                columnDefinition.suppressSizeToFit = false;
+                columnDefinition.width = autoResizeSize ? autoResizeSize.width : defaultColumnWidth;
+                if (isGrowToFitEnabled) {
+                    const growToFittedColumn =
+                        growToFittedColumns[getColumnIdentifierFromDef(columnDefinition)];
+
+                    if (growToFittedColumn) {
+                        columnDefinition.width = growToFittedColumn.width;
+                        if (growToFittedColumn.width > MANUALLY_SIZED_MAX_WIDTH) {
+                            columnDefinition.maxWidth = undefined;
+                        }
+                    }
+                }
+            }
+        }
+    });
+    return result;
 };
