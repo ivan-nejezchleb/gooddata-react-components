@@ -1,4 +1,4 @@
-// (C) 2019 GoodData Corporation
+// (C) 2019-2020 GoodData Corporation
 import get = require("lodash/get");
 import has = require("lodash/has");
 import set = require("lodash/set");
@@ -19,6 +19,7 @@ import { PROPERTY_CONTROLS, PROPERTY_CONTROLS_DUAL_AXIS } from "../constants/pro
 import { UICONFIG_AXIS } from "../constants/uiConfig";
 import { AxisType, IAxisNameProperties } from "../interfaces/AxisType";
 import { OPTIONAL_STACKING_PROPERTIES } from "../constants/supportedProperties";
+import { ColumnWidthItem } from "../../interfaces/PivotTable";
 
 export function getSupportedPropertiesControls(
     visualizationControlsProperties: any,
@@ -99,12 +100,18 @@ export function getReferencePointWithSupportedProperties(
 
     if (isEmpty(supportedControlsProperties)) {
         const sortItems = referencePoint.properties && referencePoint.properties.sortItems;
-        const sortItemsExpand = sortItems && !isEmpty(sortItems) ? { sortItems } : {};
+        const sortItemsExpand = sortItems && !isEmpty(sortItems) ? { sortItems } : { sortItems: [] };
+        const columnWidths =
+            referencePoint.properties &&
+            referencePoint.properties.controls &&
+            referencePoint.properties.controls.columnWidths;
+        const columnWidthsExpand = columnWidths ? { controls: { columnWidths } } : {};
 
         return {
             ...referencePoint,
             properties: {
                 ...sortItemsExpand,
+                ...columnWidthsExpand,
             },
         };
     }
@@ -210,4 +217,10 @@ export function getHighchartsAxisNameConfiguration(
         ...controlProperties,
         ...axisProperties,
     };
+}
+
+export function getColumnWidthsFromProperties(
+    visualizationProperties: IVisualizationProperties,
+): ColumnWidthItem[] | undefined {
+    return get(visualizationProperties, "properties.controls.columnWidths", undefined);
 }

@@ -1,4 +1,4 @@
-// (C) 2019 GoodData Corporation
+// (C) 2019-2020 GoodData Corporation
 import * as React from "react";
 import { render } from "react-dom";
 import { VisualizationObject, AFM } from "@gooddata/typings";
@@ -20,6 +20,7 @@ import { getXirrBuckets } from "./xirrBucketHelper";
 import { generateDimensions } from "../../../../helpers/dimensions";
 import { VisualizationTypes } from "../../../../constants/visualizationTypes";
 import { PluggableBaseHeadline } from "../baseHeadline/PluggableBaseHeadline";
+import { removeColumnWidths } from "../../../utils/columnWidths";
 
 export class PluggableXirr extends PluggableBaseHeadline {
     public getExtendedReferencePoint = async (
@@ -42,6 +43,7 @@ export class PluggableXirr extends PluggableBaseHeadline {
         newReferencePoint.uiConfig = getXirrUiConfig(newReferencePoint, this.intl);
 
         newReferencePoint = removeSort(newReferencePoint);
+        newReferencePoint = removeColumnWidths(newReferencePoint);
         newReferencePoint = getReferencePointWithSupportedProperties(
             newReferencePoint,
             this.supportedPropertiesList,
