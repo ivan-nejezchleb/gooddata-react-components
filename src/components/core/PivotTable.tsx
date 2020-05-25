@@ -131,6 +131,7 @@ import {
     MIN_WIDTH,
     AUTO_SIZED_MAX_WIDTH,
     enrichColumnDefinitionsWithWidths,
+    setNewManuallyResizedColumns,
 } from "./pivotTable/agGridColumnSizing";
 import { setColumnMaxWidth, setColumnMaxWidthIf } from "./pivotTable/agColumnWrapper";
 
@@ -266,7 +267,8 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
                 nextColumnWidths,
                 this.getExecutionResponse(),
             );
-            this.setNewManuallyResizedColumns(this.manuallyResizedColumns, columnWidthsByField);
+            setNewManuallyResizedColumns(this.manuallyResizedColumns, columnWidthsByField, this.columnApi);
+            this.manuallyResizedColumns = columnWidthsByField;
         }
     }
 
@@ -306,13 +308,16 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
 
             const dataSourceChanged =
                 this.props.dataSource.getFingerprint() !== prevProps.dataSource.getFingerprint();
-            // TODO INE Should we support change of growToFit and defaultWidth during lifetime??
+            // TODO INE Should we support change of defaultWidth during lifetime??
             if (dataSourceChanged || totalsPropsChanged || totalsStateChanged) {
                 this.autoResizedColumns = {};
                 this.clearFittedColumns();
                 this.setState({
                     resized: false,
                 });
+            }
+            if (this.isGrowToFitEnabled(prevProps) !== this.isGrowToFitEnabled()) {
+                this.growToFit(this.columnApi);
             }
             const prevColumnWidths = this.getColumnWidths(prevProps);
             const columnWidths = this.getColumnWidths(this.props);
@@ -337,7 +342,8 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
         const gridOptions = this.createGridOptions();
         const CustomLoadingComponent = this.props.LoadingComponent;
 
-        // columnDefs are loaded with first page request. Show overlay loading before first page is available.
+        // wait for columnDefs are loaded with first page request and initial column resizing is done.
+        // Show overlay loading before first page is available.
         const tableLoadingOverlay = this.isTableHidden() ? (
             <div
                 style={{
@@ -404,33 +410,6 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
             agGridRerenderNumber: state.agGridRerenderNumber + 1,
         }));
     }
-
-    private setNewManuallyResizedColumns = (
-        oldManuallyResizedColumns: IResizedColumns,
-        newManuallyResizedColumns: IResizedColumns,
-    ) => {
-        this.manuallyResizedColumns = newManuallyResizedColumns;
-
-        if (!this.columnApi) {
-            return;
-        }
-
-        const oldColumnIds = Object.keys(oldManuallyResizedColumns);
-        const newColumnIds = Object.keys(newManuallyResizedColumns);
-        const removedColumnIds = difference(oldColumnIds, newColumnIds);
-        const addedColumnIds = difference(newColumnIds, oldColumnIds);
-
-        removedColumnIds.forEach(
-            (columnId: string) => (this.columnApi.getColumn(columnId).getColDef().suppressSizeToFit = false),
-        );
-        addedColumnIds.forEach(
-            (columnId: string) => (this.columnApi.getColumn(columnId).getColDef().suppressSizeToFit = true),
-        );
-
-        newColumnIds.forEach((columnId: string) =>
-            this.columnApi.setColumnWidth(columnId, newManuallyResizedColumns[columnId].width),
-        );
-    };
 
     //
     // getters / setters / manipulators
@@ -600,10 +579,8 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
 
     private isColumnAutoresizeEnabled = () => this.getDefaultWidthFromProps(this.props) === "viewport";
 
-    private isGrowToFitEnabled = () =>
-        this.props.config && this.props.config.columnSizing
-            ? !!this.props.config.columnSizing.growToFit
-            : false;
+    private isGrowToFitEnabled = (props = this.props) =>
+        props.config && props.config.columnSizing ? !!props.config.columnSizing.growToFit : false;
 
     private autoresizeColumns = async (
         event: AgGridEvent,
@@ -643,7 +620,11 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
             if (this.isGrowToFitEnabled()) {
                 this.growToFit(event.columnApi);
             } else if (this.shouldPerformAutoresize() && this.isColumnAutoresizeEnabled()) {
-                this.setNewManuallyResizedColumns(this.manuallyResizedColumns, this.manuallyResizedColumns);
+                setNewManuallyResizedColumns(
+                    this.manuallyResizedColumns,
+                    this.manuallyResizedColumns,
+                    this.columnApi,
+                );
             }
             this.resizing = false;
             this.setState({
@@ -695,6 +676,9 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
         if (!this.isGrowToFitEnabled()) {
             return;
         }
+
+        invariant(columnApi !== undefined, "calling grow to fit without column api cannot work");
+
         const clientWidth = this.containerRef && this.containerRef.clientWidth;
 
         if (clientWidth === 0) {
