@@ -295,12 +295,13 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
                 this.groupingProvider.reset();
                 agGridDataSourceUpdateNeeded = true;
             }
-            if (agGridDataSourceUpdateNeeded) {
-                this.updateAGGridDataSource();
-            }
 
             const dataSourceChanged =
                 this.props.dataSource.getFingerprint() !== prevProps.dataSource.getFingerprint();
+
+            if (dataSourceChanged) {
+                this.waitingForFirstExecution = true;
+            }
 
             if (dataSourceChanged || totalsPropsChanged || totalsStateChanged) {
                 // we need update last scroll position to be able call updateStickyRow
@@ -341,6 +342,9 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
                         this.resetColumnsWidthToDefault(this.columnApi, columns);
                     }
                 }
+            }
+            if (agGridDataSourceUpdateNeeded) {
+                this.updateAGGridDataSource();
             }
         });
 

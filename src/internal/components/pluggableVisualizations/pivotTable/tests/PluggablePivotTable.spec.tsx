@@ -25,14 +25,16 @@ import {
     ILocale,
     IVisConstruct,
     IVisProps,
+    IVisualizationProperties,
 } from "../../../../interfaces/Visualization";
 import { IDrillableItem } from "../../../../../interfaces/DrillEvents";
 import { PivotTable } from "../../../../../components/core/PivotTable";
 import { DEFAULT_LOCALE } from "../../../../../constants/localization";
-import { IPivotTableConfig } from "../../../../../interfaces/PivotTable";
+import { IPivotTableConfig, IColumnSizing } from "../../../../../interfaces/PivotTable";
 import noop = require("lodash/noop");
 import cloneDeep = require("lodash/cloneDeep");
 import SpyInstance = jest.SpyInstance;
+import { VisualizationEnvironment } from "../../../../../components/uri/Visualization";
 
 const getMockReferencePoint = (
     measures: IBucketItem[] = [],
@@ -356,6 +358,46 @@ describe("PluggablePivotTable", () => {
             expect(props.config).toEqual(extendedConfig);
         });
 
+        it("should have onColumnResized callback when FF enableTableColumnsManualResizing is set to true", () => {
+            const pivotTable = createComponent({
+                ...defaultProps,
+                featureFlags: { enableTableColumnsManualResizing: true },
+            });
+
+            const createElementSpy = spyOnFakeElement();
+            const renderSpy = spyOnRender();
+
+            const options = getDefaultOptions();
+            pivotTable.update(options, {}, testMocks.emptyMdObject);
+
+            expect(createElementSpy).toHaveBeenCalledTimes(1);
+            expect(createElementSpy.mock.calls[0][0]).toBe(PivotTable);
+
+            const props: any = createElementSpy.mock.calls[0][1];
+            expect(props.onColumnResized).toBeInstanceOf(Function);
+            spyOnCleanup(renderSpy, createElementSpy);
+        });
+
+        it("should have onColumnResized callback when FF enableTableColumnsManualResizing is set to false", () => {
+            const pivotTable = createComponent({
+                ...defaultProps,
+                featureFlags: { enableTableColumnsManualResizing: false },
+            });
+
+            const createElementSpy = spyOnFakeElement();
+            const renderSpy = spyOnRender();
+
+            const options = getDefaultOptions();
+            pivotTable.update(options, {}, testMocks.emptyMdObject);
+
+            expect(createElementSpy).toHaveBeenCalledTimes(1);
+            expect(createElementSpy.mock.calls[0][0]).toBe(PivotTable);
+
+            const props: any = createElementSpy.mock.calls[0][1];
+            expect(props.onColumnResized).toBeUndefined();
+            spyOnCleanup(renderSpy, createElementSpy);
+        });
+
         it("should render PivotTable passing down all the necessary properties", () => {
             const pivotTable = createComponent();
 
@@ -392,6 +434,74 @@ describe("PluggablePivotTable", () => {
             expect(props.LoadingComponent).toEqual(null);
 
             spyOnCleanup(renderSpy, createElementSpy);
+        });
+
+        describe("Passing down columnSizing props", () => {
+            const columnWidths = [
+                {
+                    attributeColumnWidthItem: {
+                        width: 740,
+                        attributeIdentifier: "294512a6b2ed4be8bd3948dd14db1950",
+                    },
+                },
+            ];
+
+            it.each([
+                [false, false, false, "none", undefined],
+                [true, false, false, "none", { columnWidths }],
+                [false, true, false, "none", { defaultWidth: "viewport" }],
+                [false, false, true, "none", undefined],
+                [true, true, false, "none", { columnWidths, defaultWidth: "viewport" }],
+                [true, false, true, "none", { columnWidths }],
+                [false, true, true, "none", { defaultWidth: "viewport" }],
+                [true, true, true, "none", { defaultWidth: "viewport", columnWidths }],
+                [false, false, false, "dashboards", undefined],
+                [true, false, false, "dashboards", { columnWidths }],
+                [false, true, false, "dashboards", { defaultWidth: "viewport" }],
+                [false, false, true, "dashboards", { growToFit: true }],
+                [true, true, false, "dashboards", { columnWidths, defaultWidth: "viewport" }],
+                [true, false, true, "dashboards", { columnWidths, growToFit: true }],
+                [false, true, true, "dashboards", { defaultWidth: "viewport", growToFit: true }],
+                [true, true, true, "dashboards", { columnWidths, defaultWidth: "viewport", growToFit: true }],
+            ])(
+                "should render PivotTable passing down correct columnSizing config base on feature manualResizing:%s autoResizing:%s growToFit:%s in environment:%s",
+                (
+                    enableTableColumnsManualResizing: boolean,
+                    enableTableColumnsAutoResizing: boolean,
+                    enableTableColumnsGrowToFit: boolean,
+                    environment: VisualizationEnvironment,
+                    expectedColumnSizing: IColumnSizing,
+                ) => {
+                    const createTableSpy = jest.fn();
+
+                    const pivotTable = createComponent({
+                        ...defaultProps,
+                        featureFlags: {
+                            enableTableColumnsManualResizing,
+                            enableTableColumnsAutoResizing,
+                            enableTableColumnsGrowToFit,
+                        },
+                        environment,
+                    });
+
+                    (pivotTable as any).createTable = createTableSpy;
+
+                    const visualizationProperties: IVisualizationProperties = {
+                        properties: {
+                            controls: {
+                                columnWidths,
+                            },
+                        },
+                    };
+
+                    const options = getDefaultOptions();
+                    pivotTable.update({ ...options }, visualizationProperties, testMocks.emptyMdObject);
+
+                    const props: any = createTableSpy.mock.calls[0][0];
+
+                    expect(props.config.columnSizing).toEqual(expectedColumnSizing);
+                },
+            );
         });
     });
 

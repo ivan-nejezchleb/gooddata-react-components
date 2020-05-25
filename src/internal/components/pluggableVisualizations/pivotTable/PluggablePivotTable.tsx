@@ -47,14 +47,25 @@ import { setPivotTableUiConfig } from "../../../utils/uiConfigHelpers/pivotTable
 import { createInternalIntl } from "../../../utils/internalIntlProvider";
 import { DEFAULT_PIVOT_TABLE_UICONFIG } from "../../../constants/uiConfig";
 import { AbstractPluggableVisualization } from "../AbstractPluggableVisualization";
-import { getReferencePointWithSupportedProperties } from "../../../utils/propertiesHelper";
+import {
+    getColumnWidthsFromProperties,
+    getPropertiesWithColumnWidths,
+    getReferencePointWithSupportedProperties,
+} from "../../../utils/propertiesHelper";
 import { VisualizationEnvironment } from "../../../../components/uri/Visualization";
 import { VisualizationTypes } from "../../../../constants/visualizationTypes";
 import { IPivotTableProps, PivotTable } from "../../../../components/core/PivotTable";
 import { generateDimensions } from "../../../../helpers/dimensions";
 import { DEFAULT_LOCALE } from "../../../../constants/localization";
 import { DASHBOARDS_ENVIRONMENT } from "../../../constants/properties";
-import { IColumnSizing, IMenu, IPivotTableConfig } from "../../../../interfaces/PivotTable";
+import {
+    ColumnWidthItem,
+    IColumnSizing,
+    IMeasureColumnWidthItem,
+    IMenu,
+    IPivotTableConfig,
+    isMeasureColumnWidthItem,
+} from "../../../../interfaces/PivotTable";
 
 export const getColumnAttributes = (buckets: IBucket[]): IBucketItem[] => {
     return getItemsFromBuckets(
@@ -132,6 +143,64 @@ function adaptSortItemsToPivotTable(
     }, []);
 }
 
+// removes attribute widthItems with invalid identifiers
+// removes measure widthItems with invalid identifiers and invalid number of locators
+function adaptWidthItemsToPivotTable(
+    originalColumnWidths: ColumnWidthItem[],
+    measureLocalIdentifiers: string[],
+    rowAttributeLocalIdentifiers: string[],
+    columnAttributeLocalIdentifiers: string[],
+): ColumnWidthItem[] {
+    const attributeLocalIdentifiers = [...rowAttributeLocalIdentifiers, ...columnAttributeLocalIdentifiers];
+
+    return originalColumnWidths.reduce((columnWidths: ColumnWidthItem[], columnWidth: ColumnWidthItem) => {
+        if (isMeasureColumnWidthItem(columnWidth)) {
+            // filter out invalid locators
+            const filteredMeasureColumnWidthItem: IMeasureColumnWidthItem = {
+                measureColumnWidthItem: {
+                    ...columnWidth.measureColumnWidthItem,
+                    locators: columnWidth.measureColumnWidthItem.locators.filter(
+                        (locator: AFM.LocatorItem) => {
+                            // filter out invalid measure locators
+                            if (AFM.isMeasureLocatorItem(locator)) {
+                                return includes(
+                                    measureLocalIdentifiers,
+                                    locator.measureLocatorItem.measureIdentifier,
+                                );
+                            }
+                            // filter out invalid column attribute locators
+                            return includes(
+                                columnAttributeLocalIdentifiers,
+                                locator.attributeLocatorItem.attributeIdentifier,
+                            );
+                        },
+                    ),
+                },
+            };
+
+            // keep widthItems if measureLocator is present and locators are correct length
+            if (
+                filteredMeasureColumnWidthItem.measureColumnWidthItem.locators.some(
+                    (locator: AFM.LocatorItem) => AFM.isMeasureLocatorItem(locator),
+                ) &&
+                filteredMeasureColumnWidthItem.measureColumnWidthItem.locators.length ===
+                    columnAttributeLocalIdentifiers.length + 1
+            ) {
+                return [...columnWidths, filteredMeasureColumnWidthItem];
+            }
+
+            // otherwise just carry over previous widthItems
+            return columnWidths;
+        }
+
+        if (includes(attributeLocalIdentifiers, columnWidth.attributeColumnWidthItem.attributeIdentifier)) {
+            return [...columnWidths, columnWidth];
+        }
+
+        return columnWidths;
+    }, []);
+}
+
 export function adaptReferencePointSortItemsToPivotTable(
     originalSortItems: AFM.SortItem[],
     measures: IBucketItem[],
@@ -146,6 +215,26 @@ export function adaptReferencePointSortItemsToPivotTable(
 
     return adaptSortItemsToPivotTable(
         originalSortItems,
+        measureLocalIdentifiers,
+        rowAttributeLocalIdentifiers,
+        columnAttributeLocalIdentifiers,
+    );
+}
+
+export function adaptReferencePointWidthItemsToPivotTable(
+    originalColumnWidths: ColumnWidthItem[],
+    measures: IBucketItem[],
+    rowAttributes: IBucketItem[],
+    columnAttributes: IBucketItem[],
+): ColumnWidthItem[] {
+    const measureLocalIdentifiers = measures.map(measure => measure.localIdentifier);
+    const rowAttributeLocalIdentifiers = rowAttributes.map(rowAttribute => rowAttribute.localIdentifier);
+    const columnAttributeLocalIdentifiers = columnAttributes.map(
+        columnAttribute => columnAttribute.localIdentifier,
+    );
+
+    return adaptWidthItemsToPivotTable(
+        originalColumnWidths,
         measureLocalIdentifiers,
         rowAttributeLocalIdentifiers,
         columnAttributeLocalIdentifiers,
@@ -283,6 +372,7 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
         this.onExportReady = props.callbacks.onExportReady && this.onExportReady.bind(this);
         this.environment = props.environment;
         this.featureFlags = props.featureFlags || {};
+        this.onColumnResized = this.onColumnResized.bind(this);
     }
 
     public unmount() {
@@ -343,6 +433,11 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                         "sortItems",
                         [],
                     );
+                    const originalColumnWidths: ColumnWidthItem[] = get(
+                        referencePointDraft.properties,
+                        "controls.columnWidths",
+                        [],
+                    );
 
                     referencePointDraft.properties = {
                         sortItems: addDefaultSort(
@@ -358,6 +453,14 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                             rowAttributes,
                             previousRowAttributes,
                         ),
+                        controls: {
+                            columnWidths: adaptReferencePointWidthItemsToPivotTable(
+                                originalColumnWidths,
+                                measures,
+                                rowAttributes,
+                                columnAttributes,
+                            ),
+                        },
                     };
 
                     setPivotTableUiConfig(referencePointDraft, this.intl, VisualizationTypes.TABLE);
@@ -420,12 +523,17 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                       sorts,
                   };
 
+            const columnWidths: ColumnWidthItem[] = getColumnWidthsFromProperties(visualizationProperties);
+
             const rowsBucket = mdObject.buckets.find(
                 bucket => bucket.localIdentifier === BucketNames.ATTRIBUTE,
             );
             const totals: VisualizationObject.IVisualizationTotal[] = (rowsBucket && rowsBucket.totals) || [];
 
-            const updatedConfig = this.enrichConfigWithColumnSizing(this.enrichConfigWithMenu(config));
+            const updatedConfig = this.enrichConfigWithColumnSizing(
+                this.enrichConfigWithMenu(config),
+                columnWidths,
+            );
             const pivotTableProps = {
                 projectId: this.projectId,
                 drillableItems,
@@ -446,6 +554,10 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                 ErrorComponent: null as any,
                 intl: this.intl,
             };
+            const pivotTablePropsFromFeatureFlags = {
+                ...pivotTableProps,
+                ...this.getPivotTablePropsFromFeatureFlags(),
+            };
 
             if (this.environment === DASHBOARDS_ENVIRONMENT) {
                 if (isNil(height)) {
@@ -459,7 +571,7 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                                     textAlign: "left",
                                 };
                                 const extendedPivotTableProps = this.getExtendedPivotTableProps(
-                                    pivotTableProps,
+                                    pivotTablePropsFromFeatureFlags,
                                     {
                                         ...updatedConfig,
                                         maxHeight: clientHeight,
@@ -472,7 +584,7 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                                         style={pivotWrapperStyle}
                                         className="gd-table-dashboard-wrapper"
                                     >
-                                        <PivotTable {...extendedPivotTableProps} height={usedHeight} />
+                                        {this.createTable({ ...extendedPivotTableProps, height: usedHeight })}
                                     </div>
                                 );
                             }}
@@ -485,10 +597,13 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                 render(
                     <ReactMeasure client={true}>
                         {({ measureRef, contentRect }: any) => {
-                            const extendedPivotTableProps = this.getExtendedPivotTableProps(pivotTableProps, {
-                                ...updatedConfig,
-                                maxHeight: contentRect.client.height,
-                            });
+                            const extendedPivotTableProps = this.getExtendedPivotTableProps(
+                                pivotTablePropsFromFeatureFlags,
+                                {
+                                    ...updatedConfig,
+                                    maxHeight: contentRect.client.height,
+                                },
+                            );
 
                             return (
                                 <div
@@ -496,7 +611,7 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                                     style={{ height: 328, textAlign: "left" }}
                                     className="gd-table-dashboard-wrapper"
                                 >
-                                    <PivotTable {...extendedPivotTableProps} />
+                                    {this.createTable(extendedPivotTableProps)}
                                 </div>
                             );
                         }}
@@ -504,9 +619,16 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                     document.querySelector(this.element),
                 );
             } else {
-                render(<PivotTable {...pivotTableProps} />, document.querySelector(this.element));
+                render(
+                    this.createTable(pivotTablePropsFromFeatureFlags),
+                    document.querySelector(this.element),
+                );
             }
         }
+    }
+
+    protected createTable(props: IPivotTableProps) {
+        return <PivotTable {...props} />;
     }
 
     protected onExportReady(exportResult: VisEvents.IExportFunction) {
@@ -523,7 +645,6 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                 "properties",
                 {},
             ) as IVisualizationProperties;
-
             // we need to handle cases when attribute previously bearing the default sort is no longer available
             const sanitizedProperties = properties.sortItems
                 ? {
@@ -560,9 +681,12 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
         return merge({ menu }, config);
     }
 
-    private enrichConfigWithColumnSizing(config: IPivotTableConfig): IPivotTableConfig {
+    private enrichConfigWithColumnSizing(
+        config: IPivotTableConfig,
+        columnWidths: ColumnWidthItem[],
+    ): IPivotTableConfig {
         const result = this.enrichConfigWithAutosize(config);
-        return this.enrichConfigWithGrowToFit(result);
+        return this.enrichConfigWithManualResize(this.enrichConfigWithGrowToFit(result), columnWidths);
     }
 
     private enrichConfigWithAutosize(config: IPivotTableConfig): IPivotTableConfig {
@@ -579,10 +703,37 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
             if (!this.featureFlags.enableTableColumnsGrowToFit) {
                 return config;
             }
-            const columnSizing: IColumnSizing = merge(config.columnSizing, { growToFit: true });
-            return merge(config, { columnSizing });
+            return merge(config, { columnSizing: { growToFit: true } });
         }
 
         return config;
+    }
+
+    private enrichConfigWithManualResize(
+        config: IPivotTableConfig,
+        columnWidths: ColumnWidthItem[],
+    ): IPivotTableConfig {
+        if (!this.featureFlags.enableTableColumnsManualResizing) {
+            return config;
+        }
+        return merge(config, { columnSizing: { columnWidths } });
+    }
+
+    private onColumnResized(columnWidths: ColumnWidthItem[]) {
+        const { pushData } = this.callbacks;
+
+        if (pushData) {
+            pushData(getPropertiesWithColumnWidths(columnWidths));
+        }
+    }
+
+    private getPivotTablePropsFromFeatureFlags() {
+        if (this.featureFlags.enableTableColumnsManualResizing) {
+            return {
+                onColumnResized: this.onColumnResized,
+            };
+        }
+
+        return {};
     }
 }
