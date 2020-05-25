@@ -1,6 +1,7 @@
 // (C) 2007-2020 GoodData Corporation
 import cloneDeep = require("lodash/cloneDeep");
-import { /*AFM,*/ Execution } from "@gooddata/typings";
+import difference = require("lodash/difference");
+import { Execution } from "@gooddata/typings";
 import {
     getAttributeLocators,
     getIdsFromUri,
@@ -26,6 +27,7 @@ import {
     IResizedColumns,
 } from "../../../interfaces/PivotTable";
 import { IGridHeader } from "./agGridTypes";
+import { ColumnApi } from "ag-grid-community";
 
 export const MIN_WIDTH = 60;
 export const AUTO_SIZED_MAX_WIDTH = 500;
@@ -208,4 +210,30 @@ export const enrichColumnDefinitionsWithWidths = (
         }
     });
     return result;
+};
+
+export const setNewManuallyResizedColumns = (
+    oldManuallyResizedColumns: IResizedColumns,
+    newManuallyResizedColumns: IResizedColumns,
+    columnApi: ColumnApi,
+) => {
+    if (!columnApi) {
+        return;
+    }
+
+    const oldColumnIds = Object.keys(oldManuallyResizedColumns);
+    const newColumnIds = Object.keys(newManuallyResizedColumns);
+    const removedColumnIds = difference(oldColumnIds, newColumnIds);
+    const addedColumnIds = difference(newColumnIds, oldColumnIds);
+
+    removedColumnIds.forEach(
+        (columnId: string) => (columnApi.getColumn(columnId).getColDef().suppressSizeToFit = false),
+    );
+    addedColumnIds.forEach(
+        (columnId: string) => (columnApi.getColumn(columnId).getColDef().suppressSizeToFit = true),
+    );
+
+    newColumnIds.forEach((columnId: string) =>
+        columnApi.setColumnWidth(columnId, newManuallyResizedColumns[columnId].width),
+    );
 };
