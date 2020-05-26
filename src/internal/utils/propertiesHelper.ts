@@ -1,4 +1,4 @@
-// (C) 2019 GoodData Corporation
+// (C) 2019-2020 GoodData Corporation
 import get = require("lodash/get");
 import has = require("lodash/has");
 import set = require("lodash/set");
@@ -105,6 +105,7 @@ export function getReferencePointWithSupportedProperties(
             ...referencePoint,
             properties: {
                 ...sortItemsExpand,
+                widthDefs: [],
             },
         };
     }
@@ -121,6 +122,7 @@ export function getReferencePointWithSupportedProperties(
         properties: {
             ...referencePoint.properties,
             controls: supportedControlsProperties,
+            widthDefs: [],
         },
     };
 }

@@ -359,6 +359,7 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                             rowAttributes,
                             previousRowAttributes,
                         ),
+                        widthDefs: [],
                     };
 
                     setPivotTableUiConfig(referencePointDraft, this.intl, VisualizationTypes.TABLE);
@@ -535,7 +536,6 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                 "properties",
                 {},
             ) as IVisualizationProperties;
-
             // we need to handle cases when attribute previously bearing the default sort is no longer available
             const sanitizedProperties = properties.sortItems
                 ? {
@@ -610,15 +610,17 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
         return merge(config, columnSizing);
     }
 
-    // TODO: ONE-4405 - should be send as properties?
     private onColumnResized(columnWidths: ColumnWidthItem[]) {
+        const properties: IVisualizationProperties = get(
+            this.visualizationProperties,
+            "properties",
+            {},
+        ) as IVisualizationProperties;
         const { pushData } = this.callbacks;
+        const mergedProperties = merge(properties, { widthDefs: columnWidths });
+
         if (pushData && this.featureFlags.enableTableColumnsManualResizing) {
-            pushData({
-                properties: {
-                    widthDefs: columnWidths,
-                },
-            });
+            pushData({ properties: mergedProperties });
         }
     }
 }
