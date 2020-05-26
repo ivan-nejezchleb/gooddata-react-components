@@ -54,7 +54,14 @@ import { IPivotTableProps, PivotTable } from "../../../../components/core/PivotT
 import { generateDimensions } from "../../../../helpers/dimensions";
 import { DEFAULT_LOCALE } from "../../../../constants/localization";
 import { DASHBOARDS_ENVIRONMENT } from "../../../constants/properties";
-import { ColumnWidthItem, IColumnSizing, IMenu, IPivotTableConfig } from "../../../../interfaces/PivotTable";
+import {
+    ColumnWidthItem,
+    IColumnSizing,
+    IMeasureColumnWidthItem,
+    IMenu,
+    IPivotTableConfig,
+    isMeasureColumnWidthItem,
+} from "../../../../interfaces/PivotTable";
 
 export const getColumnAttributes = (buckets: IBucket[]): IBucketItem[] => {
     return getItemsFromBuckets(
@@ -132,6 +139,63 @@ function adaptSortItemsToPivotTable(
     }, []);
 }
 
+// TODO: ONE-4405 similar function as adaptSortItemsToPivotTable
+// removes attribute sortItems with invalid identifiers
+// removes measure sortItems with invalid identifiers and invalid number of locators
+function adaptWidthItemsToPivotTable(
+    originalColumnWidths: ColumnWidthItem[],
+    measureLocalIdentifiers: string[],
+    rowAttributeLocalIdentifiers: string[],
+    columnAttributeLocalIdentifiers: string[],
+): ColumnWidthItem[] {
+    const attributeLocalIdentifiers = [...rowAttributeLocalIdentifiers, ...columnAttributeLocalIdentifiers];
+
+    return originalColumnWidths.reduce((columnWidths: ColumnWidthItem[], columnWidth: ColumnWidthItem) => {
+        if (isMeasureColumnWidthItem(columnWidth)) {
+            // filter out invalid locators
+            const filteredWidthItem: IMeasureColumnWidthItem = {
+                measureColumnWidthItem: {
+                    ...columnWidth.measureColumnWidthItem,
+                    locators: columnWidth.measureColumnWidthItem.locators.filter(
+                        (locator: AFM.LocatorItem) => {
+                            // filter out invalid measure locators
+                            if (AFM.isMeasureLocatorItem(locator)) {
+                                return includes(
+                                    measureLocalIdentifiers,
+                                    locator.measureLocatorItem.measureIdentifier,
+                                );
+                            }
+                            // filter out invalid column attribute locators
+                            return includes(
+                                columnAttributeLocalIdentifiers,
+                                locator.attributeLocatorItem.attributeIdentifier,
+                            );
+                        },
+                    ),
+                },
+            };
+
+            // keep sortItem if measureLocator is present and locators are correct length
+            if (
+                filteredWidthItem.measureColumnWidthItem.locators.some((locator: AFM.LocatorItem) =>
+                    AFM.isMeasureLocatorItem(locator),
+                ) &&
+                filteredWidthItem.measureColumnWidthItem.locators.length ===
+                    columnAttributeLocalIdentifiers.length + 1
+            ) {
+                return [...columnWidths, filteredWidthItem];
+            }
+
+            // otherwise just carry over previous sortItems
+            return columnWidths;
+        }
+        if (includes(attributeLocalIdentifiers, columnWidth.attributeColumnWidthItem.attributeIdentifier)) {
+            return [...columnWidths, columnWidth];
+        }
+        return columnWidths;
+    }, []);
+}
+
 export function adaptReferencePointSortItemsToPivotTable(
     originalSortItems: AFM.SortItem[],
     measures: IBucketItem[],
@@ -146,6 +210,27 @@ export function adaptReferencePointSortItemsToPivotTable(
 
     return adaptSortItemsToPivotTable(
         originalSortItems,
+        measureLocalIdentifiers,
+        rowAttributeLocalIdentifiers,
+        columnAttributeLocalIdentifiers,
+    );
+}
+
+// TODO: ONE-4405 similar function as adaptReferencePointWidthItemsToPivotTable
+export function adaptReferencePointWidthItemsToPivotTable(
+    columnWidths: ColumnWidthItem[],
+    measures: IBucketItem[],
+    rowAttributes: IBucketItem[],
+    columnAttributes: IBucketItem[],
+): ColumnWidthItem[] {
+    const measureLocalIdentifiers = measures.map(measure => measure.localIdentifier);
+    const rowAttributeLocalIdentifiers = rowAttributes.map(rowAttribute => rowAttribute.localIdentifier);
+    const columnAttributeLocalIdentifiers = columnAttributes.map(
+        columnAttribute => columnAttribute.localIdentifier,
+    );
+
+    return adaptWidthItemsToPivotTable(
+        columnWidths,
         measureLocalIdentifiers,
         rowAttributeLocalIdentifiers,
         columnAttributeLocalIdentifiers,
@@ -344,6 +429,11 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                         "sortItems",
                         [],
                     );
+                    const originalWidthDefs: ColumnWidthItem[] = get(
+                        referencePointDraft.properties,
+                        "widthDefs",
+                        [],
+                    );
 
                     referencePointDraft.properties = {
                         sortItems: addDefaultSort(
@@ -359,8 +449,15 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                             rowAttributes,
                             previousRowAttributes,
                         ),
-                        widthDefs: [],
+                        widthDefs: adaptReferencePointWidthItemsToPivotTable(
+                            originalWidthDefs,
+                            measures,
+                            rowAttributes,
+                            columnAttributes,
+                        ),
                     };
+                    console.log("referencePointDraft.properties", referencePointDraft.properties);
+                    console.log("this.supportedPropertiesList", this.supportedPropertiesList);
 
                     setPivotTableUiConfig(referencePointDraft, this.intl, VisualizationTypes.TABLE);
                     configurePercent(referencePointDraft, false);
