@@ -1101,9 +1101,9 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
 
         invariant(execution !== undefined, "changing column width prior execution cannot work");
 
-        columns.forEach(async column => {
+        for (const column of columns) {
             await this.resetResizedColumn(column);
-        });
+        }
 
         this.afterOnResizeColumns();
     };
