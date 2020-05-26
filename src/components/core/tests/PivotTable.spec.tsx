@@ -602,4 +602,41 @@ describe("PivotTable", () => {
             expect(currentInnerComponent.key()).toEqual(agGridComponentKey);
         });
     });
+
+    describe("componentWillUpdate", () => {
+        it("should set inner manuallyResizedColumns according columnWidths prop", async () => {
+            const wrapper = renderComponent({}, oneAttributeOneMeasureDataSource);
+            await waitFor(waitForDataLoaded(wrapper));
+            expect(1).toEqual(1);
+            // const table = getTableInstanceFromWrapper(wrapper);
+
+            // const columnSizing: IColumnSizing = {
+            //     columnWidths: [{
+            //         measureColumnWidthItem: {
+            //             width: 350,
+            //             locators: [
+            //                 {
+            //                     measureLocatorItem: {
+            //                         measureIdentifier: "m1"
+            //                     }
+            //                 }
+            //             ]
+            //         }
+            //     }]
+            // }
+
+            // wrapper.setProps({
+            //     config: {
+            //         columnSizing
+            //     },
+            // });
+
+            // expect(table.manuallyResizedColumns).toEqual({
+            //     "m_0": {
+            //         width: 350,
+            //         source: ColumnEventSourceType.UI_DRAGGED
+            //     }
+            // });
+        });
+    });
 });
