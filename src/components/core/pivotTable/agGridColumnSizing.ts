@@ -77,7 +77,7 @@ const getAttributeColumnWidthItemFieldAndWidth = (
     const attributeHeader = attributeHeaders.find(
         header => header.attributeHeader.localIdentifier === localIdentifier,
     );
-    invariant(attributeHeaders, `Could not find attributeHeaders with localIdentifier ${localIdentifier}`);
+    invariant(attributeHeader, `Could not find attributeHeader with localIdentifier "${localIdentifier}"`);
 
     const field = identifyResponseHeader(attributeHeader);
     return [field, columnWidthItem.attributeColumnWidthItem.width];
@@ -95,6 +95,12 @@ const getMeasureColumnWidthItemFieldAndWidth = (
                     measureHeaderItem.measureHeaderItem.localIdentifier ===
                     locator.measureLocatorItem.measureIdentifier,
             );
+            invariant(
+                measureColumnWidthHeaderIndex !== -1,
+                `Could not find measureHeader with localIdentifier "${
+                    locator.measureLocatorItem.measureIdentifier
+                }"`,
+            );
             keys.push(`m${ID_SEPARATOR}${measureColumnWidthHeaderIndex}`);
         } else {
             const key = `a${ID_SEPARATOR}${getIdsFromUri(locator.attributeLocatorItem.element).join(
@@ -107,7 +113,7 @@ const getMeasureColumnWidthItemFieldAndWidth = (
     return [field, columnWidthItem.measureColumnWidthItem.width];
 };
 
-export const getSizeItemByColId = (
+const getSizeItemByColId = (
     execution: Execution.IExecutionResponses,
     colId: string,
     width: number,
@@ -134,6 +140,23 @@ export const getSizeItemByColId = (
                 };
             }
         }
+        // check only column attribute without measure
+        const { attributeHeaders: columnAttributeHeaders } = assortDimensionHeaders([dimensions[1]]);
+
+        const EMPTY_MEASURE_FIELD: string[] = [];
+        const attributeLocators = getAttributeLocators(
+            [...fields, EMPTY_MEASURE_FIELD],
+            columnAttributeHeaders,
+        );
+        if (attributeLocators) {
+            return {
+                measureColumnWidthItem: {
+                    width,
+                    locators: [...attributeLocators],
+                },
+            };
+        }
+
         invariant(false, `could not find attribute header matching ${colId}`);
     } else if (lastFieldType === FIELD_TYPE_MEASURE) {
         const headerItem = measureHeaderItems[parseInt(lastFieldId, 10)];

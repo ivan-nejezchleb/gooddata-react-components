@@ -16,6 +16,7 @@ import {
 import { IGridHeader } from "../agGridTypes";
 import { DEFAULT_COLUMN_WIDTH } from "../../PivotTable";
 import { Column, ColumnApi } from "ag-grid-community";
+import { oneColumnAttributeNoMeasureResponse } from "../../../../execution/fixtures/ExecuteAfm.fixtures";
 
 describe("agGridColumnSizing", () => {
     const columnWidths: ColumnWidthItem[] = [
@@ -143,6 +144,37 @@ describe("agGridColumnSizing", () => {
                 executionResult: null,
             });
             expect(result).toEqual(columnWidths);
+        });
+
+        it("should return correct ColumnWidthItem array for only column attribute", async () => {
+            const columnAttributeColumnMap = {
+                a_4_1: {
+                    width: 400,
+                    source: ColumnEventSourceType.UI_DRAGGED,
+                },
+            };
+            const { executionResponse } = oneColumnAttributeNoMeasureResponse;
+            const expectedColumnWidths: ColumnWidthItem[] = [
+                {
+                    measureColumnWidthItem: {
+                        width: 400,
+                        locators: [
+                            {
+                                attributeLocatorItem: {
+                                    attributeIdentifier: "a1",
+                                    element: "/gdc/md/storybook/obj/4/elements?id=1",
+                                },
+                            },
+                        ],
+                    },
+                },
+            ];
+
+            const result = getColumnWidthsFromMap(columnAttributeColumnMap, {
+                executionResponse,
+                executionResult: null,
+            });
+            expect(result).toEqual(expectedColumnWidths);
         });
     });
 });
