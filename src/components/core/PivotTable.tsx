@@ -787,9 +787,6 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
                 this.growToFittedColumns,
             );
             if (!isEqual(enrichedColumnDefs, this.state.columnDefs)) {
-                if (this.state.columnDefs.length !== 0) {
-                    this.gridApi.setColumnDefs([]); // force usage of new columnDefs because of bug https://github.com/ag-grid/ag-grid/issues/2771
-                }
                 const sortedByFirstAttribute = isSortedByFirstAttibute(columnDefs, resultSpec);
 
                 // this solves only first render, not change of columnWidths during lifetime
