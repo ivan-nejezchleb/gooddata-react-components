@@ -229,9 +229,12 @@ export const setNewManuallyResizedColumns = (
     removedColumnIds.forEach(
         (columnId: string) => (columnApi.getColumn(columnId).getColDef().suppressSizeToFit = false),
     );
-    addedColumnIds.forEach(
-        (columnId: string) => (columnApi.getColumn(columnId).getColDef().suppressSizeToFit = true),
-    );
+    addedColumnIds.forEach((columnId: string) => {
+        const column = columnApi.getColumn(columnId);
+        invariant(column, `Could not find column with identifier ${columnId}`);
+
+        column.getColDef().suppressSizeToFit = true;
+    });
 
     newColumnIds.forEach((columnId: string) =>
         columnApi.setColumnWidth(columnId, newManuallyResizedColumns[columnId].width),

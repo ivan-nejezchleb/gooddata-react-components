@@ -262,7 +262,7 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
         }
         const nextColumnWidths = this.getColumnWidths(nextProps);
         const columnWidths = this.getColumnWidths(this.props);
-        if (columnWidths && !isEqual(nextColumnWidths, columnWidths)) {
+        if (!isEqual(nextColumnWidths, columnWidths)) {
             const columnWidthsByField = convertColumnWidthsToMap(
                 nextColumnWidths,
                 this.getExecutionResponse(),
@@ -321,7 +321,7 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
             }
             const prevColumnWidths = this.getColumnWidths(prevProps);
             const columnWidths = this.getColumnWidths(this.props);
-            if (columnWidths && !isEqual(prevColumnWidths, columnWidths)) {
+            if (!isEqual(prevColumnWidths, columnWidths)) {
                 if (this.columnApi) {
                     this.growToFit(this.columnApi);
                 }

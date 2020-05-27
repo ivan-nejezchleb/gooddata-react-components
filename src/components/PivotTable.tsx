@@ -11,7 +11,7 @@ import { ICommonChartProps } from "./core/base/BaseChart";
 import { convertBucketsToAFM } from "../helpers/conversion";
 import { getPivotTableDimensions } from "../helpers/dimensions";
 import { getResultSpec } from "../helpers/resultSpec";
-import { IPivotTableConfig } from "../interfaces/PivotTable";
+import { IPivotTableConfig, ColumnWidthItem } from "../interfaces/PivotTable";
 
 import { MEASURES, ATTRIBUTE, COLUMNS } from "../constants/bucketNames";
 import { hasDuplicateIdentifiers } from "../helpers/errorHandlers";
