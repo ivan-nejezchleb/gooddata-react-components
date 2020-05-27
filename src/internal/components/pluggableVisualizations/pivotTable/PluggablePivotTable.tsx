@@ -153,7 +153,7 @@ function adaptWidthItemsToPivotTable(
     return originalColumnWidths.reduce((columnWidths: ColumnWidthItem[], columnWidth: ColumnWidthItem) => {
         if (isMeasureColumnWidthItem(columnWidth)) {
             // filter out invalid locators
-            const filteredWidthItem: IMeasureColumnWidthItem = {
+            const filteredMeasureColumnWidthItem: IMeasureColumnWidthItem = {
                 measureColumnWidthItem: {
                     ...columnWidth.measureColumnWidthItem,
                     locators: columnWidth.measureColumnWidthItem.locators.filter(
@@ -174,24 +174,26 @@ function adaptWidthItemsToPivotTable(
                     ),
                 },
             };
-
-            // keep sortItem if measureLocator is present and locators are correct length
-            if (
-                filteredWidthItem.measureColumnWidthItem.locators.some((locator: AFM.LocatorItem) =>
-                    AFM.isMeasureLocatorItem(locator),
-                ) &&
-                filteredWidthItem.measureColumnWidthItem.locators.length ===
-                    columnAttributeLocalIdentifiers.length + 1
-            ) {
-                return [...columnWidths, filteredWidthItem];
-            }
-
-            // otherwise just carry over previous sortItems
-            return columnWidths;
+            //
+            //     // keep sortItem if measureLocator is present and locators are correct length
+            //     if (
+            //         filteredWidthItem.measureColumnWidthItem.locators.some((locator: AFM.LocatorItem) =>
+            //             AFM.isMeasureLocatorItem(locator),
+            //         ) &&
+            //         filteredWidthItem.measureColumnWidthItem.locators.length ===
+            //             columnAttributeLocalIdentifiers.length + 1
+            //     ) {
+            return [...columnWidths, filteredMeasureColumnWidthItem];
+            //     }
+            //
+            //     // otherwise just carry over previous sortItems
+            //     return columnWidths;
         }
+
         if (includes(attributeLocalIdentifiers, columnWidth.attributeColumnWidthItem.attributeIdentifier)) {
             return [...columnWidths, columnWidth];
         }
+
         return columnWidths;
     }, []);
 }
@@ -218,7 +220,7 @@ export function adaptReferencePointSortItemsToPivotTable(
 
 // TODO: ONE-4405 similar function as adaptReferencePointSortItemsToPivotTable
 export function adaptReferencePointWidthItemsToPivotTable(
-    columnWidths: ColumnWidthItem[],
+    originalWidthDefs: ColumnWidthItem[],
     measures: IBucketItem[],
     rowAttributes: IBucketItem[],
     columnAttributes: IBucketItem[],
@@ -230,7 +232,7 @@ export function adaptReferencePointWidthItemsToPivotTable(
     );
 
     return adaptWidthItemsToPivotTable(
-        columnWidths,
+        originalWidthDefs,
         measureLocalIdentifiers,
         rowAttributeLocalIdentifiers,
         columnAttributeLocalIdentifiers,
@@ -518,7 +520,7 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                   };
             // TODO: ONE-4405 - is this a correct way how to get widthDefs?
             // TODO: ONE-4405 - should it be named widthDefs?
-            const widthDefs: ColumnWidthItem[] = get(
+            const columnWidths: ColumnWidthItem[] = get(
                 visualizationProperties,
                 "properties.widthDefs",
                 undefined,
@@ -531,7 +533,7 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
 
             const updatedConfig = this.enrichConfigWithColumnSizing(
                 this.enrichConfigWithMenu(config),
-                widthDefs,
+                columnWidths,
             );
             const pivotTableProps = {
                 projectId: this.projectId,
@@ -706,16 +708,14 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
     }
 
     private onColumnResized(columnWidths: ColumnWidthItem[]) {
-        const properties: IVisualizationProperties = get(
-            this.visualizationProperties,
-            "properties",
-            {},
-        ) as IVisualizationProperties;
         const { pushData } = this.callbacks;
-        const mergedProperties = merge(properties, { widthDefs: columnWidths });
 
         if (pushData && this.featureFlags.enableTableColumnsManualResizing) {
-            pushData({ properties: mergedProperties });
+            pushData({
+                properties: {
+                    widthDefs: columnWidths,
+                },
+            });
         }
     }
 }
