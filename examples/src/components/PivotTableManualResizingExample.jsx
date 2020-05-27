@@ -35,20 +35,14 @@ export class PivotTableManualResizingExample extends Component {
     };
 
     onButtonClick = columnWidthItem => {
-        const filteredColumnWidths = [...this.state.columnWidths].filter(item =>
-            this.shouldFilterColumnWidthItem(item, columnWidthItem),
-        );
-
         this.setState({
-            columnWidths: [...filteredColumnWidths, columnWidthItem],
+            columnWidths: [columnWidthItem],
         });
     };
 
     onColumnResized = columnWidths => {
         this.setState({ columnWidths });
     };
-
-    shouldFilterColumnWidthItem = (item, newItem) => Object.keys(item)[0] !== Object.keys(newItem)[0];
 
     render() {
         return (
