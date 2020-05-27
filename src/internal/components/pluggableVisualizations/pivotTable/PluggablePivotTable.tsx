@@ -140,8 +140,8 @@ function adaptSortItemsToPivotTable(
 }
 
 // TODO: ONE-4405 similar function as adaptSortItemsToPivotTable
-// removes attribute sortItems with invalid identifiers
-// removes measure sortItems with invalid identifiers and invalid number of locators
+// removes attribute widthItems with invalid identifiers
+// removes measure widthItems with invalid identifiers and invalid number of locators
 function adaptWidthItemsToPivotTable(
     originalColumnWidths: ColumnWidthItem[],
     measureLocalIdentifiers: string[],
@@ -216,7 +216,7 @@ export function adaptReferencePointSortItemsToPivotTable(
     );
 }
 
-// TODO: ONE-4405 similar function as adaptReferencePointWidthItemsToPivotTable
+// TODO: ONE-4405 similar function as adaptReferencePointSortItemsToPivotTable
 export function adaptReferencePointWidthItemsToPivotTable(
     columnWidths: ColumnWidthItem[],
     measures: IBucketItem[],
@@ -456,8 +456,6 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                             columnAttributes,
                         ),
                     };
-                    console.log("referencePointDraft.properties", referencePointDraft.properties);
-                    console.log("this.supportedPropertiesList", this.supportedPropertiesList);
 
                     setPivotTableUiConfig(referencePointDraft, this.intl, VisualizationTypes.TABLE);
                     configurePercent(referencePointDraft, false);
