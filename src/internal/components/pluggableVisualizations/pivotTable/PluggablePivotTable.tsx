@@ -174,20 +174,20 @@ function adaptWidthItemsToPivotTable(
                     ),
                 },
             };
-            //
-            //     // keep sortItem if measureLocator is present and locators are correct length
-            //     if (
-            //         filteredWidthItem.measureColumnWidthItem.locators.some((locator: AFM.LocatorItem) =>
-            //             AFM.isMeasureLocatorItem(locator),
-            //         ) &&
-            //         filteredWidthItem.measureColumnWidthItem.locators.length ===
-            //             columnAttributeLocalIdentifiers.length + 1
-            //     ) {
-            return [...columnWidths, filteredMeasureColumnWidthItem];
-            //     }
-            //
-            //     // otherwise just carry over previous sortItems
-            //     return columnWidths;
+
+            // keep widthItems if measureLocator is present and locators are correct length
+            if (
+                filteredMeasureColumnWidthItem.measureColumnWidthItem.locators.some(
+                    (locator: AFM.LocatorItem) => AFM.isMeasureLocatorItem(locator),
+                ) &&
+                filteredMeasureColumnWidthItem.measureColumnWidthItem.locators.length ===
+                    columnAttributeLocalIdentifiers.length + 1
+            ) {
+                return [...columnWidths, filteredMeasureColumnWidthItem];
+            }
+
+            // otherwise just carry over previous widthItems
+            return columnWidths;
         }
 
         if (includes(attributeLocalIdentifiers, columnWidth.attributeColumnWidthItem.attributeIdentifier)) {
