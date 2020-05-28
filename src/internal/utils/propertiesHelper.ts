@@ -98,13 +98,16 @@ export function getReferencePointWithSupportedProperties(
         : {};
 
     if (isEmpty(supportedControlsProperties)) {
-        const properties = referencePoint.properties ? referencePoint.properties : {};
+        const sortItems = referencePoint.properties && referencePoint.properties.sortItems;
+        const sortItemsExpand = sortItems && !isEmpty(sortItems) ? { sortItems } : {};
+        const widthDefs = referencePoint.properties && referencePoint.properties.widthDefs;
+        const widthDefsExpand = widthDefs && !isEmpty(widthDefs) ? { widthDefs } : {};
 
         return {
             ...referencePoint,
             properties: {
-                sortItems: properties.sortItems && !isEmpty(properties.sortItems) ? properties.sortItems : {},
-                widthDefs: properties.widthDefs && !isEmpty(properties.widthDefs) ? properties.widthDefs : {},
+                ...sortItemsExpand,
+                ...widthDefsExpand,
             },
         };
     }
