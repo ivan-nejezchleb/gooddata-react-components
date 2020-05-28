@@ -218,7 +218,7 @@ export function adaptReferencePointSortItemsToPivotTable(
 }
 
 export function adaptReferencePointWidthItemsToPivotTable(
-    originalWidthDefs: ColumnWidthItem[],
+    originalColumnWidths: ColumnWidthItem[],
     measures: IBucketItem[],
     rowAttributes: IBucketItem[],
     columnAttributes: IBucketItem[],
@@ -230,7 +230,7 @@ export function adaptReferencePointWidthItemsToPivotTable(
     );
 
     return adaptWidthItemsToPivotTable(
-        originalWidthDefs,
+        originalColumnWidths,
         measureLocalIdentifiers,
         rowAttributeLocalIdentifiers,
         columnAttributeLocalIdentifiers,
@@ -429,9 +429,9 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                         "sortItems",
                         [],
                     );
-                    const originalWidthDefs: ColumnWidthItem[] = get(
+                    const originalColumnWidths: ColumnWidthItem[] = get(
                         referencePointDraft.properties,
-                        "widthDefs",
+                        "columnWidths",
                         [],
                     );
 
@@ -449,8 +449,8 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                             rowAttributes,
                             previousRowAttributes,
                         ),
-                        widthDefs: adaptReferencePointWidthItemsToPivotTable(
-                            originalWidthDefs,
+                        columnWidths: adaptReferencePointWidthItemsToPivotTable(
+                            originalColumnWidths,
                             measures,
                             rowAttributes,
                             columnAttributes,
@@ -516,11 +516,10 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                       ...resultSpecWithDimensions,
                       sorts,
                   };
-            // TODO: ONE-4405 - is this a correct way how to get widthDefs?
-            // TODO: ONE-4405 - should it be named widthDefs?
+            // TODO: ONE-4405 - is this a correct way how to get columnWidths?
             const columnWidths: ColumnWidthItem[] = get(
                 visualizationProperties,
-                "properties.widthDefs",
+                "properties.columnWidths",
                 undefined,
             );
 
@@ -720,7 +719,7 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
         if (pushData) {
             pushData({
                 properties: {
-                    widthDefs: columnWidths,
+                    columnWidths,
                 },
             });
         }

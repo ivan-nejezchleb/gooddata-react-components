@@ -100,14 +100,14 @@ export function getReferencePointWithSupportedProperties(
     if (isEmpty(supportedControlsProperties)) {
         const sortItems = referencePoint.properties && referencePoint.properties.sortItems;
         const sortItemsExpand = sortItems && !isEmpty(sortItems) ? { sortItems } : {};
-        const widthDefs = referencePoint.properties && referencePoint.properties.widthDefs;
-        const widthDefsExpand = widthDefs && !isEmpty(widthDefs) ? { widthDefs } : {};
+        const columnWidths = referencePoint.properties && referencePoint.properties.widthDefs;
+        const columnWidthsExpand = columnWidths && !isEmpty(columnWidths) ? { columnWidths } : {};
 
         return {
             ...referencePoint,
             properties: {
                 ...sortItemsExpand,
-                ...widthDefsExpand,
+                ...columnWidthsExpand,
             },
         };
     }
