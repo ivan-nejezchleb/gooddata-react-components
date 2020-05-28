@@ -431,7 +431,7 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                     );
                     const originalColumnWidths: ColumnWidthItem[] = get(
                         referencePointDraft.properties,
-                        "columnWidths",
+                        "controls.columnWidths",
                         [],
                     );
 
@@ -449,12 +449,14 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                             rowAttributes,
                             previousRowAttributes,
                         ),
-                        columnWidths: adaptReferencePointWidthItemsToPivotTable(
-                            originalColumnWidths,
-                            measures,
-                            rowAttributes,
-                            columnAttributes,
-                        ),
+                        controls: {
+                            columnWidths: adaptReferencePointWidthItemsToPivotTable(
+                                originalColumnWidths,
+                                measures,
+                                rowAttributes,
+                                columnAttributes,
+                            ),
+                        },
                     };
 
                     setPivotTableUiConfig(referencePointDraft, this.intl, VisualizationTypes.TABLE);
@@ -519,7 +521,7 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
             // TODO: ONE-4405 - is this a correct way how to get columnWidths?
             const columnWidths: ColumnWidthItem[] = get(
                 visualizationProperties,
-                "properties.columnWidths",
+                "properties.controls.columnWidths",
                 undefined,
             );
 
@@ -719,7 +721,9 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
         if (pushData) {
             pushData({
                 properties: {
-                    columnWidths,
+                    controls: {
+                        columnWidths,
+                    },
                 },
             });
         }

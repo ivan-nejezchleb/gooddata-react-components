@@ -100,8 +100,12 @@ export function getReferencePointWithSupportedProperties(
     if (isEmpty(supportedControlsProperties)) {
         const sortItems = referencePoint.properties && referencePoint.properties.sortItems;
         const sortItemsExpand = sortItems && !isEmpty(sortItems) ? { sortItems } : {};
-        const columnWidths = referencePoint.properties && referencePoint.properties.columnWidths;
-        const columnWidthsExpand = columnWidths && !isEmpty(columnWidths) ? { columnWidths } : {};
+        const columnWidths =
+            referencePoint.properties &&
+            referencePoint.properties.controls &&
+            referencePoint.properties.controls.columnWidths;
+        const columnWidthsExpand =
+            columnWidths && !isEmpty(columnWidths) ? { controls: { columnWidths } } : {};
 
         return {
             ...referencePoint,
