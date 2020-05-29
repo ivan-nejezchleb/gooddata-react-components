@@ -47,7 +47,11 @@ import { setPivotTableUiConfig } from "../../../utils/uiConfigHelpers/pivotTable
 import { createInternalIntl } from "../../../utils/internalIntlProvider";
 import { DEFAULT_PIVOT_TABLE_UICONFIG } from "../../../constants/uiConfig";
 import { AbstractPluggableVisualization } from "../AbstractPluggableVisualization";
-import { getReferencePointWithSupportedProperties } from "../../../utils/propertiesHelper";
+import {
+    getColumnWidthsFromProperties,
+    getPropertiesWithColumnWidths,
+    getReferencePointWithSupportedProperties,
+} from "../../../utils/propertiesHelper";
 import { VisualizationEnvironment } from "../../../../components/uri/Visualization";
 import { VisualizationTypes } from "../../../../constants/visualizationTypes";
 import { IPivotTableProps, PivotTable } from "../../../../components/core/PivotTable";
@@ -519,11 +523,7 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                       sorts,
                   };
             // TODO: ONE-4405 - is this a correct way how to get columnWidths?
-            const columnWidths: ColumnWidthItem[] = get(
-                visualizationProperties,
-                "properties.controls.columnWidths",
-                undefined,
-            );
+            const columnWidths: ColumnWidthItem[] = getColumnWidthsFromProperties(visualizationProperties);
 
             const rowsBucket = mdObject.buckets.find(
                 bucket => bucket.localIdentifier === BucketNames.ATTRIBUTE,
@@ -677,7 +677,6 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
         return merge({ menu }, config);
     }
 
-    // TODO: ONE-4405 - here is a lot of "enrichSizing", what about some better way how to do it?
     private enrichConfigWithColumnSizing(
         config: IPivotTableConfig,
         columnWidths: ColumnWidthItem[],
@@ -719,13 +718,7 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
         const { pushData } = this.callbacks;
 
         if (pushData) {
-            pushData({
-                properties: {
-                    controls: {
-                        columnWidths,
-                    },
-                },
-            });
+            pushData(getPropertiesWithColumnWidths(columnWidths));
         }
     }
 
