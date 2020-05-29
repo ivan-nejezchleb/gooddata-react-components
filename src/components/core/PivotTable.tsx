@@ -260,16 +260,6 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
         ) {
             this.setGroupingProvider(nextProps.groupRows && nextState.sortedByFirstAttribute);
         }
-        const nextColumnWidths = this.getColumnWidths(nextProps);
-        const columnWidths = this.getColumnWidths(this.props);
-        if (!isEqual(nextColumnWidths, columnWidths)) {
-            const columnWidthsByField = convertColumnWidthsToMap(
-                nextColumnWidths,
-                this.getExecutionResponse(),
-            );
-            setNewManuallyResizedColumns(this.manuallyResizedColumns, columnWidthsByField, this.columnApi);
-            this.manuallyResizedColumns = columnWidthsByField;
-        }
     }
 
     public componentDidUpdate(prevProps: IPivotTableInnerProps, prevState: IPivotTableState) {
@@ -323,6 +313,16 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
             const columnWidths = this.getColumnWidths(this.props);
             if (!isEqual(prevColumnWidths, columnWidths)) {
                 if (this.columnApi) {
+                    const columnWidthsByField = convertColumnWidthsToMap(
+                        columnWidths,
+                        this.getExecutionResponse(),
+                    );
+                    setNewManuallyResizedColumns(
+                        this.manuallyResizedColumns,
+                        columnWidthsByField,
+                        this.columnApi,
+                    );
+                    this.manuallyResizedColumns = columnWidthsByField;
                     this.growToFit(this.columnApi);
                 }
             }

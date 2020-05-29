@@ -604,6 +604,9 @@ describe("agGridColumnSizing", () => {
                 setColumnWidth: (columnId: string, width: number) => {
                     columnsMaps[columnId].getColDef().width = width;
                 },
+                getAllColumns: () => {
+                    return Object.keys(columnsMaps).map((colId: string) => columnsMaps[colId]);
+                },
             };
             return fakeColumnApi as ColumnApi;
         }
@@ -612,6 +615,9 @@ describe("agGridColumnSizing", () => {
             const fakeColumn = {
                 getColDef: () => {
                     return columnDefinition;
+                },
+                getColId: () => {
+                    return columnDefinition.colId;
                 },
             };
 
@@ -644,9 +650,9 @@ describe("agGridColumnSizing", () => {
         };
 
         it("should set correctly suppressSizeToFit and width for columns ", async () => {
-            const columnDef1 = { suppressSizeToFit: true, width: 100 };
-            const columnDef2 = { suppressSizeToFit: true, width: 200 };
-            const columnDef3 = { suppressSizeToFit: false, width: 200 };
+            const columnDef1 = { suppressSizeToFit: true, width: 100, colId: colId1 };
+            const columnDef2 = { suppressSizeToFit: true, width: 200, colId: colId2 };
+            const columnDef3 = { suppressSizeToFit: false, width: 200, colId: colId3 };
 
             const columnsMaps = {
                 colId1: getFakeColumn(columnDef1),

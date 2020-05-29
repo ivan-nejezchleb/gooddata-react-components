@@ -10,6 +10,7 @@ import {
     getParsedFields,
     getTreeLeaves,
     getColumnIdentifierFromDef,
+    getColumnIdentifier,
 } from "./agGridUtils";
 import { FIELD_SEPARATOR, FIELD_TYPE_ATTRIBUTE, FIELD_TYPE_MEASURE, ID_SEPARATOR } from "./agGridConst";
 import { assortDimensionHeaders, identifyResponseHeader } from "./agGridHeaders";
@@ -249,17 +250,21 @@ export const setNewManuallyResizedColumns = (
     const removedColumnIds = difference(oldColumnIds, newColumnIds);
     const addedColumnIds = difference(newColumnIds, oldColumnIds);
 
-    removedColumnIds.forEach(
-        (columnId: string) => (columnApi.getColumn(columnId).getColDef().suppressSizeToFit = false),
-    );
-    addedColumnIds.forEach((columnId: string) => {
-        const column = columnApi.getColumn(columnId);
-        invariant(column, `Could not find column with identifier ${columnId}`);
+    const columns = columnApi.getAllColumns();
 
-        column.getColDef().suppressSizeToFit = true;
+    columns.forEach(col => {
+        const field = getColumnIdentifier(col);
+        const colId = col.getColId();
+
+        if (removedColumnIds.indexOf(field) !== -1) {
+            col.getColDef().suppressSizeToFit = false;
+        }
+        if (addedColumnIds.indexOf(field) !== -1) {
+            col.getColDef().suppressSizeToFit = true;
+        }
+
+        if (newColumnIds.indexOf(field) !== -1) {
+            columnApi.setColumnWidth(colId, newManuallyResizedColumns[field].width);
+        }
     });
-
-    newColumnIds.forEach((columnId: string) =>
-        columnApi.setColumnWidth(columnId, newManuallyResizedColumns[columnId].width),
-    );
 };

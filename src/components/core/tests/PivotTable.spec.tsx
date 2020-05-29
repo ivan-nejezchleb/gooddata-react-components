@@ -104,35 +104,6 @@ describe("PivotTable", () => {
     });
 
     // this describe block needs to be first, otherwise random tests fail
-    describe("componentWillUpdate", () => {
-        it("should set inner manuallyResizedColumns according columnWidths prop", async () => {
-            const wrapper = renderComponent(
-                {
-                    resultSpec: oneAttributeOneMeasureExecutionObject.execution.resultSpec,
-                },
-                oneAttributeOneMeasureDataSource,
-            );
-            await waitFor(waitForDataLoaded(wrapper));
-
-            const table = getTableInstanceFromWrapper(wrapper);
-
-            wrapper.setProps({
-                config: {
-                    columnSizing: {
-                        columnWidths,
-                    },
-                },
-            });
-
-            expect(table.manuallyResizedColumns).toEqual({
-                m_0: {
-                    width: 350,
-                    source: ColumnEventSourceType.UI_DRAGGED,
-                },
-            });
-        });
-    });
-
     describe("componentDidUpdate", () => {
         it("should grow to fit when this prop is set", async done => {
             expect.assertions(1);
@@ -196,6 +167,43 @@ describe("PivotTable", () => {
                     columnSizing: {
                         columnWidths,
                         growToFit: true,
+                    },
+                },
+            });
+            wrapper.update();
+        });
+
+        it("should set inner manuallyResizedColumns according columnWidths prop", async done => {
+            expect.assertions(1);
+            const wrapper = renderComponent(
+                {
+                    resultSpec: oneAttributeOneMeasureExecutionObject.execution.resultSpec,
+                },
+                oneAttributeOneMeasureDataSource,
+            );
+            await waitFor(waitForDataLoaded(wrapper));
+
+            const table = getTableInstanceFromWrapper(wrapper);
+            // didUpdate is async in PivotTable so expect needs to be async too
+            const growToFit = jest.spyOn(table, "growToFit");
+            try {
+                growToFit.mockImplementation(() => {
+                    expect(table.manuallyResizedColumns).toEqual({
+                        m_0: {
+                            width: 350,
+                            source: ColumnEventSourceType.UI_DRAGGED,
+                        },
+                    });
+                    done();
+                });
+            } catch (e) {
+                done.fail(e);
+            }
+
+            wrapper.setProps({
+                config: {
+                    columnSizing: {
+                        columnWidths,
                     },
                 },
             });
