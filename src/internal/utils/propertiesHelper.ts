@@ -220,8 +220,7 @@ export function getHighchartsAxisNameConfiguration(
     };
 }
 
-// TODO: ONE-4405 unit test
-export function getPropertiesWithColumnWidths(columnWidths: ColumnWidthItem[]) {
+export function getPropertiesWithColumnWidths(columnWidths: ColumnWidthItem[]): IVisualizationProperties {
     return {
         properties: {
             controls: {
@@ -231,7 +230,6 @@ export function getPropertiesWithColumnWidths(columnWidths: ColumnWidthItem[]) {
     };
 }
 
-// TODO: ONE-4405 unit test
 export function getColumnWidthsFromProperties(
     visualizationProperties: IVisualizationProperties,
 ): ColumnWidthItem[] | undefined {

@@ -522,7 +522,7 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                       ...resultSpecWithDimensions,
                       sorts,
                   };
-            // TODO: ONE-4405 - is this a correct way how to get columnWidths?
+
             const columnWidths: ColumnWidthItem[] = getColumnWidthsFromProperties(visualizationProperties);
 
             const rowsBucket = mdObject.buckets.find(
