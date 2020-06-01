@@ -74,9 +74,14 @@ export class PivotTableManualResizingExample extends Component {
                             columnSizing: {
                                 columnWidths: [...this.state.columnWidths],
                             },
+                            menu: {
+                                aggregations: true,
+                                aggregationsSubMenu: true,
+                            },
                         }}
                         pageSize={20}
                         onColumnResized={this.onColumnResized}
+                        groupRows
                     />
                 </div>
             </div>
