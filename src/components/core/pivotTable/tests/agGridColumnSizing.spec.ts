@@ -5,7 +5,8 @@ import {
     getColumnWidthsFromMap,
     enrichColumnDefinitionsWithWidths,
     MANUALLY_SIZED_MAX_WIDTH,
-    setNewManuallyResizedColumns,
+    syncSuppressSizeToFitOnColumns,
+    resetColumnsWidthToDefault,
 } from "../agGridColumnSizing";
 import {
     ColumnWidthItem,
@@ -177,141 +178,138 @@ describe("agGridColumnSizing", () => {
             expect(result).toEqual(expectedColumnWidths);
         });
     });
-});
-
-describe("agGridColumnSizing", () => {
-    const coloursId = "a_4DOTdf";
-    const coloursDefinition: IGridHeader = {
-        headerName: "Colours",
-        type: "ROW_ATTRIBUTE_COLUMN",
-        field: coloursId,
-        colId: coloursId,
-        drillItems: [
-            {
-                attributeHeader: {
-                    identifier: "4.df",
-                    uri: "/gdc/md/storybook/obj/4.df",
-                    name: "Colours",
-                    localIdentifier: "a1",
-                    formOf: {
-                        uri: "/gdc/md/storybook/obj/4",
-                        identifier: "4",
-                        name: "Colours",
-                    },
-                },
-            },
-        ],
-        index: 0,
-        sort: "asc",
-        cellRenderer: "loadingRenderer",
-    };
-
-    const amountId = "m_0";
-    const amountDefinition: IGridHeader = {
-        drillItems: [
-            {
-                measureHeaderItem: {
-                    identifier: "1",
-                    uri: "/gdc/md/storybook/obj/1",
-                    localIdentifier: "m1",
-                    format: "#,##0.00",
-                    name: "Amount",
-                },
-            },
-        ],
-        headerName: "Amount",
-        field: amountId,
-        colId: amountId,
-        type: "MEASURE_COLUMN",
-        measureIndex: 0,
-        index: 1,
-    };
-
-    const biggerAmountId = "m_1";
-    const biggerAmount: IGridHeader = {
-        drillItems: [
-            {
-                measureHeaderItem: {
-                    identifier: "2",
-                    uri: "/gdc/md/storybook/obj/2",
-                    localIdentifier: "m2",
-                    format: "#,##0.00",
-                    name: "Bigger Amount",
-                },
-            },
-        ],
-        headerName: "Bigger Amount",
-        field: biggerAmountId,
-        colId: biggerAmountId,
-        type: "MEASURE_COLUMN",
-        measureIndex: 1,
-        index: 2,
-    };
-
-    const columnDefinitions: IGridHeader[] = [coloursDefinition, amountDefinition, biggerAmount];
-
-    const coloursManualWidth = 400;
-    const amountManualWidth = 100;
-
-    const manuallyResizedColumns: IResizedColumns = {
-        m_0: {
-            width: amountManualWidth,
-            source: ColumnEventSourceType.UI_DRAGGED,
-        },
-        [coloursId]: {
-            width: coloursManualWidth,
-            source: ColumnEventSourceType.UI_DRAGGED,
-        },
-    };
-
-    const coloursAutoWidth = 76;
-    const amountAutoWidth = 77;
-    const biggerAmountAutoWidth = 116;
-
-    const autoResizeColumns: IResizedColumns = {
-        [amountId]: {
-            width: amountAutoWidth,
-            source: ColumnEventSourceType.AUTOSIZE_COLUMNS,
-        },
-        [coloursId]: {
-            width: coloursAutoWidth,
-            source: ColumnEventSourceType.AUTOSIZE_COLUMNS,
-        },
-        [biggerAmountId]: {
-            width: biggerAmountAutoWidth,
-            source: ColumnEventSourceType.AUTOSIZE_COLUMNS,
-        },
-    };
-
-    const coloursGrowToFitWidth = 400;
-    const amountGrowToFitWidth = 400;
-    const biggerAmountGrowToFitWidth = 400;
-
-    const growToFitResizeColumns: IResizedColumns = {
-        [amountId]: {
-            width: amountGrowToFitWidth,
-            source: ColumnEventSourceType.FIT_GROW,
-        },
-        [coloursId]: {
-            width: coloursGrowToFitWidth,
-            source: ColumnEventSourceType.FIT_GROW,
-        },
-        [biggerAmountId]: {
-            width: biggerAmountGrowToFitWidth,
-            source: ColumnEventSourceType.FIT_GROW,
-        },
-    };
-
-    const overLimitWidth = MANUALLY_SIZED_MAX_WIDTH + 100;
-
-    const getGrowToFitResizeColumnsOverLimit = () => {
-        return {
-            ...growToFitResizeColumns,
-            [amountId]: { width: overLimitWidth, source: ColumnEventSourceType.FIT_GROW },
-        };
-    };
 
     describe("enrichColumnDefinitionsWithWidths", () => {
+        const coloursId = "a_4DOTdf";
+        const coloursDefinition: IGridHeader = {
+            headerName: "Colours",
+            type: "ROW_ATTRIBUTE_COLUMN",
+            field: coloursId,
+            colId: coloursId,
+            drillItems: [
+                {
+                    attributeHeader: {
+                        identifier: "4.df",
+                        uri: "/gdc/md/storybook/obj/4.df",
+                        name: "Colours",
+                        localIdentifier: "a1",
+                        formOf: {
+                            uri: "/gdc/md/storybook/obj/4",
+                            identifier: "4",
+                            name: "Colours",
+                        },
+                    },
+                },
+            ],
+            index: 0,
+            sort: "asc",
+            cellRenderer: "loadingRenderer",
+        };
+
+        const amountId = "m_0";
+        const amountDefinition: IGridHeader = {
+            drillItems: [
+                {
+                    measureHeaderItem: {
+                        identifier: "1",
+                        uri: "/gdc/md/storybook/obj/1",
+                        localIdentifier: "m1",
+                        format: "#,##0.00",
+                        name: "Amount",
+                    },
+                },
+            ],
+            headerName: "Amount",
+            field: amountId,
+            colId: amountId,
+            type: "MEASURE_COLUMN",
+            measureIndex: 0,
+            index: 1,
+        };
+
+        const biggerAmountId = "m_1";
+        const biggerAmount: IGridHeader = {
+            drillItems: [
+                {
+                    measureHeaderItem: {
+                        identifier: "2",
+                        uri: "/gdc/md/storybook/obj/2",
+                        localIdentifier: "m2",
+                        format: "#,##0.00",
+                        name: "Bigger Amount",
+                    },
+                },
+            ],
+            headerName: "Bigger Amount",
+            field: biggerAmountId,
+            colId: biggerAmountId,
+            type: "MEASURE_COLUMN",
+            measureIndex: 1,
+            index: 2,
+        };
+
+        const columnDefinitions: IGridHeader[] = [coloursDefinition, amountDefinition, biggerAmount];
+
+        const coloursManualWidth = 400;
+        const amountManualWidth = 100;
+
+        const manuallyResizedColumns: IResizedColumns = {
+            m_0: {
+                width: amountManualWidth,
+                source: ColumnEventSourceType.UI_DRAGGED,
+            },
+            [coloursId]: {
+                width: coloursManualWidth,
+                source: ColumnEventSourceType.UI_DRAGGED,
+            },
+        };
+
+        const coloursAutoWidth = 76;
+        const amountAutoWidth = 77;
+        const biggerAmountAutoWidth = 116;
+
+        const autoResizeColumns: IResizedColumns = {
+            [amountId]: {
+                width: amountAutoWidth,
+                source: ColumnEventSourceType.AUTOSIZE_COLUMNS,
+            },
+            [coloursId]: {
+                width: coloursAutoWidth,
+                source: ColumnEventSourceType.AUTOSIZE_COLUMNS,
+            },
+            [biggerAmountId]: {
+                width: biggerAmountAutoWidth,
+                source: ColumnEventSourceType.AUTOSIZE_COLUMNS,
+            },
+        };
+
+        const coloursGrowToFitWidth = 400;
+        const amountGrowToFitWidth = 400;
+        const biggerAmountGrowToFitWidth = 400;
+
+        const growToFitResizeColumns: IResizedColumns = {
+            [amountId]: {
+                width: amountGrowToFitWidth,
+                source: ColumnEventSourceType.FIT_GROW,
+            },
+            [coloursId]: {
+                width: coloursGrowToFitWidth,
+                source: ColumnEventSourceType.FIT_GROW,
+            },
+            [biggerAmountId]: {
+                width: biggerAmountGrowToFitWidth,
+                source: ColumnEventSourceType.FIT_GROW,
+            },
+        };
+
+        const overLimitWidth = MANUALLY_SIZED_MAX_WIDTH + 100;
+
+        const getGrowToFitResizeColumnsOverLimit = () => {
+            return {
+                ...growToFitResizeColumns,
+                [amountId]: { width: overLimitWidth, source: ColumnEventSourceType.FIT_GROW },
+            };
+        };
         describe("manually resized", () => {
             it("should correctly enrich columns definition by manually resized columns, auto resize map is empty and growToFit off", async () => {
                 const expectedColumnDefinition = [
@@ -592,64 +590,62 @@ describe("agGridColumnSizing", () => {
             });
         });
     });
-});
 
-describe("agGridColumnSizing", () => {
-    describe("setNewManuallyResizedColumns", () => {
-        function getFakeColumnApi(columnsMaps: { [id: string]: Column }): ColumnApi {
-            const fakeColumnApi = {
-                getColumn: (columnId: string) => {
-                    return columnsMaps[columnId];
-                },
-                setColumnWidth: (columnId: string, width: number) => {
-                    columnsMaps[columnId].getColDef().width = width;
-                },
-                getAllColumns: () => {
-                    return Object.keys(columnsMaps).map((colId: string) => columnsMaps[colId]);
-                },
-            };
-            return fakeColumnApi as ColumnApi;
-        }
-
-        function getFakeColumn(columnDefinition: any): Column {
-            const fakeColumn = {
-                getColDef: () => {
-                    return columnDefinition;
-                },
-                getColId: () => {
-                    return columnDefinition.colId;
-                },
-            };
-
-            return fakeColumn as Column;
-        }
-
-        const colId1 = "colId1";
-        const colId2 = "colId2";
-        const colId3 = "colId3";
-
-        const oldResizeColumns: IResizedColumns = {
-            [colId1]: {
-                width: 100,
-                source: ColumnEventSourceType.UI_DRAGGED,
+    function getFakeColumnApi(columnsMaps: { [id: string]: Column }): ColumnApi {
+        const fakeColumnApi = {
+            getColumn: (columnId: string) => {
+                return columnsMaps[columnId];
             },
-            [colId2]: {
-                width: 200,
-                source: ColumnEventSourceType.UI_DRAGGED,
+            setColumnWidth: (column: Column, width: number) => {
+                columnsMaps[column.getColId()].getColDef().width = width;
+            },
+            getAllColumns: () => {
+                return Object.keys(columnsMaps).map((colId: string) => columnsMaps[colId]);
             },
         };
-        const newResizeColumns: IResizedColumns = {
-            [colId2]: {
-                width: 400,
-                source: ColumnEventSourceType.UI_DRAGGED,
+        return fakeColumnApi as ColumnApi;
+    }
+
+    function getFakeColumn(columnDefinition: any): Column {
+        const fakeColumn = {
+            getColDef: () => {
+                return columnDefinition;
             },
-            [colId3]: {
-                width: 500,
-                source: ColumnEventSourceType.UI_DRAGGED,
+            getColId: () => {
+                return columnDefinition.colId;
             },
         };
 
-        it("should set correctly suppressSizeToFit and width for columns ", async () => {
+        return fakeColumn as Column;
+    }
+
+    const colId1 = "colId1";
+    const colId2 = "colId2";
+    const colId3 = "colId3";
+
+    const oldResizeColumns: IResizedColumns = {
+        [colId1]: {
+            width: 100,
+            source: ColumnEventSourceType.UI_DRAGGED,
+        },
+        [colId2]: {
+            width: 200,
+            source: ColumnEventSourceType.UI_DRAGGED,
+        },
+    };
+    const newResizeColumns: IResizedColumns = {
+        [colId2]: {
+            width: 400,
+            source: ColumnEventSourceType.UI_DRAGGED,
+        },
+        [colId3]: {
+            width: 500,
+            source: ColumnEventSourceType.UI_DRAGGED,
+        },
+    };
+
+    describe("syncSuppressSizeToFitOnColumns", () => {
+        it("should set correctly suppressSizeToFit for columns ", () => {
             const columnDef1 = { suppressSizeToFit: true, width: 100, colId: colId1 };
             const columnDef2 = { suppressSizeToFit: true, width: 200, colId: colId2 };
             const columnDef3 = { suppressSizeToFit: false, width: 200, colId: colId3 };
@@ -662,16 +658,62 @@ describe("agGridColumnSizing", () => {
 
             const columnApi = getFakeColumnApi(columnsMaps);
 
-            setNewManuallyResizedColumns(oldResizeColumns, newResizeColumns, columnApi);
+            syncSuppressSizeToFitOnColumns(oldResizeColumns, newResizeColumns, columnApi);
 
             expect(columnDef1.suppressSizeToFit).toEqual(false);
-            expect(columnDef1.width).toEqual(100);
 
             expect(columnDef2.suppressSizeToFit).toEqual(true);
-            expect(columnDef2.width).toEqual(400);
 
             expect(columnDef3.suppressSizeToFit).toEqual(true);
-            expect(columnDef3.width).toEqual(500);
+        });
+    });
+
+    describe("resetColumnsWidthToDefault", () => {
+        it("should set correctly widths for columns: manual>auto>default", () => {
+            const columnDef1 = { suppressSizeToFit: true, width: 100, colId: colId1 };
+            const columnDef2 = { suppressSizeToFit: true, width: 200, colId: colId2 };
+            const columnDef3 = { suppressSizeToFit: false, width: 200, colId: colId3 };
+
+            const columnsMaps = {
+                colId1: getFakeColumn(columnDef1),
+                colId2: getFakeColumn(columnDef2),
+                colId3: getFakeColumn(columnDef3),
+            };
+
+            const columnApi = getFakeColumnApi(columnsMaps);
+
+            const manualWidths = {
+                colId1: {
+                    width: 300,
+                    source: ColumnEventSourceType.UI_DRAGGED,
+                },
+            };
+
+            const autoWidths = {
+                colId1: {
+                    width: 150,
+                    source: ColumnEventSourceType.UI_DRAGGED,
+                },
+                colId2: {
+                    width: 400,
+                    source: ColumnEventSourceType.UI_DRAGGED,
+                },
+            };
+            const defaultWidth = 250;
+
+            resetColumnsWidthToDefault(
+                columnApi,
+                columnApi.getAllColumns(),
+                manualWidths,
+                autoWidths,
+                defaultWidth,
+            );
+
+            expect(columnDef1.width).toEqual(300);
+
+            expect(columnDef2.width).toEqual(400);
+
+            expect(columnDef3.width).toEqual(250);
         });
     });
 });

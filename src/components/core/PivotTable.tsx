@@ -131,7 +131,10 @@ import {
     MIN_WIDTH,
     AUTO_SIZED_MAX_WIDTH,
     enrichColumnDefinitionsWithWidths,
-    setNewManuallyResizedColumns,
+    syncSuppressSizeToFitOnColumns,
+    isColumnAutoResized,
+    isColumnManuallyResized,
+    resetColumnsWidthToDefault,
 } from "./pivotTable/agGridColumnSizing";
 import { setColumnMaxWidth, setColumnMaxWidthIf } from "./pivotTable/agColumnWrapper";
 
@@ -298,7 +301,7 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
 
             const dataSourceChanged =
                 this.props.dataSource.getFingerprint() !== prevProps.dataSource.getFingerprint();
-            // TODO INE Should we support change of defaultWidth during lifetime??
+
             if (dataSourceChanged || totalsPropsChanged || totalsStateChanged) {
                 // we need update last scroll position to be able call updateStickyRow
                 // solve blank cell after scroll and sort change
@@ -324,13 +327,19 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
                         columnWidths,
                         this.getExecutionResponse(),
                     );
-                    setNewManuallyResizedColumns(
+
+                    syncSuppressSizeToFitOnColumns(
                         this.manuallyResizedColumns,
                         columnWidthsByField,
                         this.columnApi,
                     );
                     this.manuallyResizedColumns = columnWidthsByField;
-                    this.growToFit(this.columnApi);
+                    if (this.isGrowToFitEnabled()) {
+                        this.growToFit(this.columnApi); // calls resetColumnsWidthToDefault internally too
+                    } else {
+                        const columns = this.columnApi.getAllColumns();
+                        this.resetColumnsWidthToDefault(this.columnApi, columns);
+                    }
                 }
             }
         });
@@ -626,17 +635,14 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
             (!alreadyResized() || (alreadyResized() && force))
         ) {
             this.resizing = true;
-            // we need to know autosize width for each column, even manually resized ones
+            // we need to know autosize width for each column, even manually resized ones, to support removal of columnWidth def from props
             await this.autoresizeVisibleColumns(event.columnApi, previouslyResizedColumnIds);
-            // ater that we need to reset manually resized columns back to its manually set width by growToFit or by helper
+            // after that we need to reset manually resized columns back to its manually set width by growToFit or by helper. See UT resetColumnsWidthToDefault for width priorities
             if (this.isGrowToFitEnabled()) {
                 this.growToFit(event.columnApi);
             } else if (this.shouldPerformAutoresize() && this.isColumnAutoresizeEnabled()) {
-                setNewManuallyResizedColumns(
-                    this.manuallyResizedColumns,
-                    this.manuallyResizedColumns,
-                    this.columnApi,
-                );
+                const columns = this.columnApi.getAllColumns();
+                this.resetColumnsWidthToDefault(this.columnApi, columns);
             }
             this.resizing = false;
             this.setState({
@@ -646,25 +652,21 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
     };
 
     private isColumnAutoResized(resizedColumnId: string) {
-        return resizedColumnId && this.autoResizedColumns[resizedColumnId];
+        return isColumnAutoResized(this.autoResizedColumns, resizedColumnId);
     }
 
     private isColumnManuallyResized(resizedColumnId: string) {
-        return resizedColumnId && this.manuallyResizedColumns[resizedColumnId];
+        return isColumnManuallyResized(this.manuallyResizedColumns, resizedColumnId);
     }
 
     private resetColumnsWidthToDefault(columnApi: ColumnApi, columns: Column[]) {
-        columns.forEach(col => {
-            const id = getColumnIdentifier(col);
-
-            if (this.isColumnManuallyResized(id)) {
-                columnApi.setColumnWidth(col, this.manuallyResizedColumns[id].width);
-            } else if (this.isColumnAutoResized(id)) {
-                columnApi.setColumnWidth(col, this.autoResizedColumns[id].width);
-            } else {
-                columnApi.setColumnWidth(col, this.getDefaultWidth());
-            }
-        });
+        resetColumnsWidthToDefault(
+            columnApi,
+            columns,
+            this.manuallyResizedColumns,
+            this.autoResizedColumns,
+            this.getDefaultWidth(),
+        );
     }
 
     private clearFittedColumns() {

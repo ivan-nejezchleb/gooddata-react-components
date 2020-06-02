@@ -28,7 +28,7 @@ import {
     IResizedColumns,
 } from "../../../interfaces/PivotTable";
 import { IGridHeader } from "./agGridTypes";
-import { ColumnApi } from "ag-grid-community";
+import { ColumnApi, Column } from "ag-grid-community";
 
 export const MIN_WIDTH = 60;
 export const AUTO_SIZED_MAX_WIDTH = 500;
@@ -236,7 +236,7 @@ export const enrichColumnDefinitionsWithWidths = (
     return result;
 };
 
-export const setNewManuallyResizedColumns = (
+export const syncSuppressSizeToFitOnColumns = (
     oldManuallyResizedColumns: IResizedColumns,
     newManuallyResizedColumns: IResizedColumns,
     columnApi: ColumnApi,
@@ -254,7 +254,6 @@ export const setNewManuallyResizedColumns = (
 
     columns.forEach(col => {
         const field = getColumnIdentifier(col);
-        const colId = col.getColId();
 
         if (removedColumnIds.indexOf(field) !== -1) {
             col.getColDef().suppressSizeToFit = false;
@@ -262,9 +261,31 @@ export const setNewManuallyResizedColumns = (
         if (addedColumnIds.indexOf(field) !== -1) {
             col.getColDef().suppressSizeToFit = true;
         }
+    });
+};
 
-        if (newColumnIds.indexOf(field) !== -1) {
-            columnApi.setColumnWidth(colId, newManuallyResizedColumns[field].width);
+export const isColumnAutoResized = (autoResizedColumns: IResizedColumns, resizedColumnId: string) =>
+    resizedColumnId && autoResizedColumns[resizedColumnId];
+
+export const isColumnManuallyResized = (manuallyResizedColumns: IResizedColumns, resizedColumnId: string) =>
+    resizedColumnId && manuallyResizedColumns[resizedColumnId];
+
+export const resetColumnsWidthToDefault = (
+    columnApi: ColumnApi,
+    columns: Column[],
+    manuallyResizedColumns: IResizedColumns,
+    autoResizedColumns: IResizedColumns,
+    defaultWidth: number,
+) => {
+    columns.forEach(col => {
+        const id = getColumnIdentifier(col);
+
+        if (isColumnManuallyResized(manuallyResizedColumns, id)) {
+            columnApi.setColumnWidth(col, manuallyResizedColumns[id].width);
+        } else if (isColumnAutoResized(autoResizedColumns, id)) {
+            columnApi.setColumnWidth(col, autoResizedColumns[id].width);
+        } else {
+            columnApi.setColumnWidth(col, defaultWidth);
         }
     });
 };

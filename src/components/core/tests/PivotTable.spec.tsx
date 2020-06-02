@@ -185,9 +185,9 @@ describe("PivotTable", () => {
 
             const table = getTableInstanceFromWrapper(wrapper);
             // didUpdate is async in PivotTable so expect needs to be async too
-            const growToFit = jest.spyOn(table, "growToFit");
+            const resetColumnsWidthToDefault = jest.spyOn(table, "resetColumnsWidthToDefault");
             try {
-                growToFit.mockImplementation(() => {
+                resetColumnsWidthToDefault.mockImplementation(() => {
                     expect(table.manuallyResizedColumns).toEqual({
                         m_0: {
                             width: 350,

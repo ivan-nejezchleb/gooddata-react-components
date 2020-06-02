@@ -19,8 +19,9 @@ export const setColumnMaxWidthIf = (
         const column = columnApi.getColumn(colId);
 
         if (column && condition(column)) {
-            // we need set maxWidth dynamically before autoresize
-            // set this by column.getColDef().maxWidth not working
+            // We need set maxWidth dynamically before/after autoresize/growToFit.
+            // Set this only on column.getColDef().maxWidth not working
+            // so we need to set it also on column's private member
             (column as any).maxWidth = newMaxWidth;
             column.getColDef().maxWidth = newMaxWidth;
         }
