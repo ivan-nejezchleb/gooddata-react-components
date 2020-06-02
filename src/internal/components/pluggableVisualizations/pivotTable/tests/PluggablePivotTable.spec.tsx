@@ -356,6 +356,26 @@ describe("PluggablePivotTable", () => {
             expect(props.config).toEqual(extendedConfig);
         });
 
+        it("should have onColumnResized callback when FF enableTableColumnsManualResizing is set to true", () => {
+            const pivotTable = createComponent({
+                ...defaultProps,
+                featureFlags: { enableTableColumnsManualResizing: true },
+            });
+
+            const createElementSpy = spyOnFakeElement();
+            const renderSpy = spyOnRender();
+
+            const options = getDefaultOptions();
+            pivotTable.update(options, {}, testMocks.emptyMdObject);
+
+            expect(createElementSpy).toHaveBeenCalledTimes(1);
+            expect(createElementSpy.mock.calls[0][0]).toBe(PivotTable);
+
+            const props: any = createElementSpy.mock.calls[0][1];
+            expect(props.onColumnResized).toBeInstanceOf(Function);
+            spyOnCleanup(renderSpy, createElementSpy);
+        });
+
         it("should render PivotTable passing down all the necessary properties", () => {
             const pivotTable = createComponent();
 
@@ -644,6 +664,17 @@ describe("PluggablePivotTable", () => {
                 .then(extendedReferencePoint => {
                     expect(extendedReferencePoint.buckets).toEqual(expectedBuckets);
                 });
+        });
+    });
+
+    describe("manual resizing", () => {
+        it("should have onColumnResized callback when FF enableTableColumnsManualResizing is set to false", () => {
+            const pivotTable = createComponent({
+                ...defaultProps,
+                featureFlags: { enableTableColumnsManualResizing: true },
+            });
+
+            // todo: check props
         });
     });
 });
