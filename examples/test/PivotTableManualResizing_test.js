@@ -40,6 +40,24 @@ test("should change width of measure column to properly value by click on button
     await t.expect(actualCellWidth).eql(correctCellWidth);
 });
 
+test("should reset width of column to default value by click on button", async t => {
+    const tableSelectorStr = ".s-pivot-table-manual-resizing";
+    const cellSelectorStr = ".s-cell-0-0";
+    const correctCellWidthBeforeReset = 200;
+    const correctCellWidthAfterReset = 200;
+    const cell = await getCell(t, tableSelectorStr, cellSelectorStr);
+
+    await t.click(".s-change-width-button-attribute");
+
+    let actualCellWidth = await cell.getBoundingClientRectProperty("width");
+    await t.expect(actualCellWidth).eql(correctCellWidthBeforeReset);
+
+    await t.click(".s-change-width-button-remove");
+
+    actualCellWidth = await cell.getBoundingClientRectProperty("width");
+    await t.expect(actualCellWidth).eql(correctCellWidthAfterReset);
+});
+
 test("should change width of column after change of sorting", async t => {
     const tableSelectorStr = ".s-pivot-table-manual-resizing";
     const cellSelectorStr = ".s-cell-0-0";

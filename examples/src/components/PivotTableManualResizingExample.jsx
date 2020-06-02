@@ -60,6 +60,12 @@ export class PivotTableManualResizingExample extends Component {
                     >
                         Change Q1 column width to 60
                     </button>
+                    <button
+                        className="gd-button gd-button-secondary gd-button gd-button-secondary s-change-width-button-remove"
+                        onClick={() => this.setState({ columnWidths: [] })}
+                    >
+                        Remove column widths
+                    </button>
                 </div>
                 <div
                     style={{ height: 300, marginTop: 20, resize: "both", overflow: "auto" }}
