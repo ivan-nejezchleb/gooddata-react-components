@@ -300,6 +300,13 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
                 this.props.dataSource.getFingerprint() !== prevProps.dataSource.getFingerprint();
             // TODO INE Should we support change of defaultWidth during lifetime??
             if (dataSourceChanged || totalsPropsChanged || totalsStateChanged) {
+                // we need update last scroll position to be able call updateStickyRow
+                // solve blank cell after scroll and sort change
+                this.lastScrollPosition = {
+                    top: 0,
+                    left: 0,
+                };
+
                 this.autoResizedColumns = {};
                 this.clearFittedColumns();
                 this.setState({
@@ -600,6 +607,7 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
                 (executionResult && event.api.getRenderedNodes().length > 0)
             );
         };
+
         const tablePagesLoaded = () => {
             const pages = event.api.getCacheBlockState();
             return (
