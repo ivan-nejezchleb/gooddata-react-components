@@ -1,4 +1,0 @@
-diff a/src/internal/components/pluggableVisualizations/pivotTable/PluggablePivotTable.tsx b/src/internal/components/pluggableVisualizations/pivotTable/PluggablePivotTable.tsx	(rejected hunks)
-@@ -416 +416 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
--            
-+
