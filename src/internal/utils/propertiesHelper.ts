@@ -105,8 +105,7 @@ export function getReferencePointWithSupportedProperties(
             referencePoint.properties &&
             referencePoint.properties.controls &&
             referencePoint.properties.controls.columnWidths;
-        const columnWidthsExpand =
-            columnWidths && !isEmpty(columnWidths) ? { controls: { columnWidths } } : {};
+        const columnWidthsExpand = columnWidths ? { controls: { columnWidths } } : {};
 
         return {
             ...referencePoint,
