@@ -711,7 +711,7 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
         columnWidths: ColumnWidthItem[],
     ): IPivotTableConfig {
         const columnSizing: IColumnSizing = merge(config.columnSizing, { columnWidths });
-        return merge(config, columnSizing);
+        return merge(config, { columnSizing });
     }
 
     private onColumnResized(columnWidths: ColumnWidthItem[]) {
