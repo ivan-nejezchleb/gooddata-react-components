@@ -584,7 +584,7 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                                         style={pivotWrapperStyle}
                                         className="gd-table-dashboard-wrapper"
                                     >
-                                        <PivotTable {...extendedPivotTableProps} height={usedHeight} />
+                                        {this.createTable({ ...extendedPivotTableProps, height: usedHeight })}
                                     </div>
                                 );
                             }}
@@ -611,7 +611,7 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                                     style={{ height: 328, textAlign: "left" }}
                                     className="gd-table-dashboard-wrapper"
                                 >
-                                    <PivotTable {...extendedPivotTableProps} />
+                                    {this.createTable(extendedPivotTableProps)}
                                 </div>
                             );
                         }}
@@ -620,11 +620,15 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                 );
             } else {
                 render(
-                    <PivotTable {...pivotTablePropsFromFeatureFlags} />,
+                    this.createTable(pivotTablePropsFromFeatureFlags),
                     document.querySelector(this.element),
                 );
             }
         }
+    }
+
+    protected createTable(props: IPivotTableProps) {
+        return <PivotTable {...props} />;
     }
 
     protected onExportReady(exportResult: VisEvents.IExportFunction) {
@@ -699,8 +703,7 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
             if (!this.featureFlags.enableTableColumnsGrowToFit) {
                 return config;
             }
-            const columnSizing: IColumnSizing = merge(config.columnSizing, { growToFit: true });
-            return merge(config, { columnSizing });
+            return merge(config, { columnSizing: { growToFit: true } });
         }
 
         return config;
@@ -710,8 +713,10 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
         config: IPivotTableConfig,
         columnWidths: ColumnWidthItem[],
     ): IPivotTableConfig {
-        const columnSizing: IColumnSizing = merge(config.columnSizing, { columnWidths });
-        return merge(config, { columnSizing });
+        if (!this.featureFlags.enableTableColumnsManualResizing) {
+            return config;
+        }
+        return merge(config, { columnSizing: { columnWidths } });
     }
 
     private onColumnResized(columnWidths: ColumnWidthItem[]) {
