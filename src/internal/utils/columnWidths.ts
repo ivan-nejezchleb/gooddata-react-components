@@ -9,6 +9,7 @@ export function removeColumnWidths(referencePoint: Readonly<IExtendedReferencePo
         referencePoint.properties.controls &&
         referencePoint.properties.controls.columnWidths
     ) {
+        // TODO: ONE-4405 - check functionality
         const properties = omitBy(
             {
                 ...referencePoint.properties.controls,
