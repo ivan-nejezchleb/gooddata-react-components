@@ -4,7 +4,11 @@ import omitBy = require("lodash/omitBy");
 import isNil = require("lodash/isNil");
 
 export function removeColumnWidths(referencePoint: Readonly<IExtendedReferencePoint>) {
-    if (referencePoint.properties && referencePoint.properties.controls) {
+    if (
+        referencePoint.properties &&
+        referencePoint.properties.controls &&
+        referencePoint.properties.controls.columnWidths
+    ) {
         const properties = omitBy(
             {
                 ...referencePoint.properties.controls,
@@ -12,7 +16,6 @@ export function removeColumnWidths(referencePoint: Readonly<IExtendedReferencePo
             },
             isNil,
         );
-
         return {
             ...referencePoint,
             properties,
