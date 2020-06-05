@@ -749,6 +749,41 @@ describe("PluggablePivotTable", () => {
             });
         });
 
+        it("should return a new reference point with invalid columnWidths removed", () => {
+            const pivotTable = createComponent();
+            const sourceReferencePoint = referencePointMocks.simpleStackedReferencePoint;
+            const mockPivotTableReferencePoint: IExtendedReferencePoint = getMockReferencePoint(
+                sourceReferencePoint.buckets[0].items,
+                sourceReferencePoint.buckets[1].items,
+                sourceReferencePoint.buckets[2].items,
+                [],
+                [],
+                true,
+                [
+                    invalidAttributeColumnWidthItem,
+                    invalidMeasureColumnWidthItem,
+                    invalidMeasureColumnWidthItemInvalidAttribute,
+                    invalidMeasureColumnWidthItemLocatorsTooShort,
+                    invalidMeasureColumnWidthItemTooManyLocators,
+                    validAttributeColumnWidthItem,
+                    validMeasureColumnWidthItem,
+                ],
+            );
+            const expectedColumnWidthItems: ColumnWidthItem[] = [
+                validAttributeColumnWidthItem,
+                validMeasureColumnWidthItem,
+            ];
+
+            const extendedReferencePointPromise: Promise<
+                IExtendedReferencePoint
+            > = pivotTable.getExtendedReferencePoint(mockPivotTableReferencePoint);
+            return extendedReferencePointPromise.then(extendedReferencePoint => {
+                expect(extendedReferencePoint.properties.controls.columnWidths).toEqual(
+                    expectedColumnWidthItems,
+                );
+            });
+        });
+
         describe("given a reference point with duplicate attributes", () => {
             const pivotTable = createComponent();
             const sourceReferencePoint = referencePointMocks.sameCategoryAndStackReferencePoint;
