@@ -1087,7 +1087,10 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
             return; // only update the height once the user is done setting the column size
         }
 
-        this.updateDesiredHeight(this.state.execution.executionResult);
+        const executionResult = this.getExecutionResult();
+        if (executionResult) {
+            this.updateDesiredHeight(executionResult);
+        }
 
         if (this.isManualResizing(columnEvent)) {
             if (this.hasColumnWidths()) {
