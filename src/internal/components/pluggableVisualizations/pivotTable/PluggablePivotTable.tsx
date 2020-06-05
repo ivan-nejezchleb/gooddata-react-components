@@ -438,6 +438,25 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                         "controls.columnWidths",
                         [],
                     );
+                    const columnWidths = adaptReferencePointWidthItemsToPivotTable(
+                        originalColumnWidths,
+                        measures,
+                        rowAttributes,
+                        columnAttributes,
+                    );
+                    const controlsObj =
+                        this.featureFlags.enableTableColumnsManualResizing || columnWidths.length > 0
+                            ? {
+                                  controls: {
+                                      columnWidths: adaptReferencePointWidthItemsToPivotTable(
+                                          originalColumnWidths,
+                                          measures,
+                                          rowAttributes,
+                                          columnAttributes,
+                                      ),
+                                  },
+                              }
+                            : {};
 
                     referencePointDraft.properties = {
                         sortItems: addDefaultSort(
@@ -453,14 +472,7 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                             rowAttributes,
                             previousRowAttributes,
                         ),
-                        controls: {
-                            columnWidths: adaptReferencePointWidthItemsToPivotTable(
-                                originalColumnWidths,
-                                measures,
-                                rowAttributes,
-                                columnAttributes,
-                            ),
-                        },
+                        ...controlsObj,
                     };
 
                     setPivotTableUiConfig(referencePointDraft, this.intl, VisualizationTypes.TABLE);
