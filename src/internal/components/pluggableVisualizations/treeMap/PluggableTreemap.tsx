@@ -37,6 +37,7 @@ import { setTreemapUiConfig } from "../../../utils/uiConfigHelpers/treemapUiConf
 import { removeSort } from "../../../utils/sort";
 import { getReferencePointWithSupportedProperties } from "../../../utils/propertiesHelper";
 import { VisualizationTypes } from "../../../../constants/visualizationTypes";
+import { removeColumnWidths } from "../../../utils/columnWidths";
 
 export class PluggableTreemap extends PluggableBaseChart {
     constructor(props: IVisConstruct) {
@@ -103,6 +104,7 @@ export class PluggableTreemap extends PluggableBaseChart {
             this.supportedPropertiesList,
         );
         newReferencePoint = removeSort(newReferencePoint);
+        newReferencePoint = removeColumnWidths(newReferencePoint);
 
         return Promise.resolve(sanitizeFilters(newReferencePoint));
     }
