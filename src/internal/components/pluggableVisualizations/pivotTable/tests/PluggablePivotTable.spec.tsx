@@ -5,6 +5,7 @@ import { AFM } from "@gooddata/typings";
 
 import {
     adaptReferencePointSortItemsToPivotTable,
+    adaptReferencePointWidthItemsToPivotTable,
     addDefaultSort,
     getColumnAttributes,
     getRowAttributes,
@@ -30,7 +31,13 @@ import {
 import { IDrillableItem } from "../../../../../interfaces/DrillEvents";
 import { PivotTable } from "../../../../../components/core/PivotTable";
 import { DEFAULT_LOCALE } from "../../../../../constants/localization";
-import { IPivotTableConfig, IColumnSizing } from "../../../../../interfaces/PivotTable";
+import {
+    IPivotTableConfig,
+    IColumnSizing,
+    ColumnWidthItem,
+    IMeasureColumnWidthItem,
+    IAttributeColumnWidthItem,
+} from "../../../../../interfaces/PivotTable";
 import noop = require("lodash/noop");
 import cloneDeep = require("lodash/cloneDeep");
 import SpyInstance = jest.SpyInstance;
@@ -43,6 +50,7 @@ const getMockReferencePoint = (
     filterItems: IFiltersBucketItem[] = [],
     sortItems: AFM.SortItem[] = [],
     measuresIsShowInPercentEnabled = false,
+    columnWidths: ColumnWidthItem[] = [],
 ): IExtendedReferencePoint => ({
     buckets: [
         {
@@ -64,6 +72,9 @@ const getMockReferencePoint = (
     },
     properties: {
         sortItems,
+        controls: {
+            columnWidths,
+        },
     },
     uiConfig: {
         buckets: {
@@ -224,6 +235,115 @@ const invalidMeasureSortTooManyLocators: AFM.IMeasureSortItem = {
 const invalidMeasureSortLocatorsTooShort: AFM.IMeasureSortItem = {
     measureSortItem: {
         direction: "asc",
+        locators: [
+            {
+                measureLocatorItem: {
+                    measureIdentifier: "m1",
+                },
+            },
+        ],
+    },
+};
+
+const validMeasureColumnWidthItem: IMeasureColumnWidthItem = {
+    measureColumnWidthItem: {
+        width: 100,
+        locators: [
+            {
+                attributeLocatorItem: {
+                    attributeIdentifier: "a2",
+                    element: "/gdc/md/PROJECTID/obj/2210/elements?id=1234",
+                },
+            },
+            {
+                measureLocatorItem: {
+                    measureIdentifier: "m1",
+                },
+            },
+        ],
+    },
+};
+
+const validAttributeColumnWidthItem: IAttributeColumnWidthItem = {
+    attributeColumnWidthItem: {
+        width: 100,
+        attributeIdentifier: "a1",
+    },
+};
+
+const invalidAttributeColumnWidthItem: IAttributeColumnWidthItem = {
+    attributeColumnWidthItem: {
+        width: 100,
+        attributeIdentifier: "invalid",
+    },
+};
+
+const invalidMeasureColumnWidthItem: IMeasureColumnWidthItem = {
+    measureColumnWidthItem: {
+        width: 100,
+        locators: [
+            {
+                attributeLocatorItem: {
+                    attributeIdentifier: "a2",
+                    element: "/gdc/md/PROJECTID/obj/2210/elements?id=1234",
+                },
+            },
+            {
+                measureLocatorItem: {
+                    measureIdentifier: "invalid", // this measure is not in buckets
+                },
+            },
+        ],
+    },
+};
+
+const invalidMeasureColumnWidthItemInvalidAttribute: IMeasureColumnWidthItem = {
+    measureColumnWidthItem: {
+        width: 100,
+        locators: [
+            {
+                attributeLocatorItem: {
+                    attributeIdentifier: "a1", // this identifier doesn't exist on second dimension
+                    element: "/gdc/md/PROJECTID/obj/2210/elements?id=1234",
+                },
+            },
+            {
+                measureLocatorItem: {
+                    measureIdentifier: "m1",
+                },
+            },
+        ],
+    },
+};
+
+const invalidMeasureColumnWidthItemTooManyLocators: IMeasureColumnWidthItem = {
+    measureColumnWidthItem: {
+        width: 100,
+        locators: [
+            {
+                attributeLocatorItem: {
+                    attributeIdentifier: "a2",
+                    element: "/gdc/md/PROJECTID/obj/2210/elements?id=1234",
+                },
+            },
+            {
+                attributeLocatorItem: {
+                    attributeIdentifier: "a2",
+                    element: "/gdc/md/PROJECTID/obj/2210/elements?id=1234",
+                },
+            },
+            {
+                measureLocatorItem: {
+                    measureIdentifier: "m1",
+                },
+            },
+        ],
+    },
+};
+
+const invalidMeasureColumnWidthItemLocatorsTooShort: IMeasureColumnWidthItem = {
+    measureColumnWidthItem: {
+        width: 100,
         locators: [
             {
                 measureLocatorItem: {
@@ -516,8 +636,8 @@ describe("PluggablePivotTable", () => {
                 [],
                 [],
                 true,
+                [],
             );
-
             const extendedReferencePointPromise: Promise<
                 IExtendedReferencePoint
             > = pivotTable.getExtendedReferencePoint(sourceReferencePoint);
@@ -546,6 +666,16 @@ describe("PluggablePivotTable", () => {
                 return extendedReferencePointPromise.then(extendedReferencePoint => {
                     const expectedSortItems: AFM.SortItem[] = sourceReferencePoint.properties.sortItems;
                     expect(extendedReferencePoint.properties.sortItems).toEqual(expectedSortItems);
+                });
+            });
+
+            it("should return a new reference point with columnWidths", () => {
+                return extendedReferencePointPromise.then(extendedReferencePoint => {
+                    const expectedColumnWidths: ColumnWidthItem[] =
+                        sourceReferencePoint.properties.controls.columnWidths;
+                    expect(extendedReferencePoint.properties.controls.columnWidths).toEqual(
+                        expectedColumnWidths,
+                    );
                 });
             });
         });
@@ -1250,5 +1380,48 @@ describe("isSortItemVisible", () => {
             const actual = isSortItemVisible(sortItem, [measureValueFilter]);
             expect(actual).toEqual(true);
         });
+    });
+});
+
+describe("adaptReferencePointWidthItemsToPivotTable", () => {
+    const sourceReferencePoint = referencePointMocks.simpleStackedReferencePoint;
+    const mockPivotTableReferencePoint: IExtendedReferencePoint = getMockReferencePoint(
+        sourceReferencePoint.buckets[0].items,
+        sourceReferencePoint.buckets[1].items,
+        sourceReferencePoint.buckets[2].items,
+        [],
+        [],
+        true,
+        [],
+    );
+
+    const sourceColumnWidths: ColumnWidthItem[] = [
+        invalidAttributeColumnWidthItem,
+        invalidMeasureColumnWidthItem,
+        invalidMeasureColumnWidthItemInvalidAttribute,
+        invalidMeasureColumnWidthItemLocatorsTooShort,
+        invalidMeasureColumnWidthItemTooManyLocators,
+        validAttributeColumnWidthItem,
+        validMeasureColumnWidthItem,
+    ];
+
+    const measures: IBucketItem[] = mockPivotTableReferencePoint.buckets[0].items;
+    const rowAttributes: IBucketItem[] = mockPivotTableReferencePoint.buckets[1].items;
+    const columnAttributes: IBucketItem[] = mockPivotTableReferencePoint.buckets[2].items;
+
+    it("should remove invalid sort items", async () => {
+        const expectedColumnWidthItems: ColumnWidthItem[] = [
+            validAttributeColumnWidthItem,
+            validMeasureColumnWidthItem,
+        ];
+
+        expect(
+            adaptReferencePointWidthItemsToPivotTable(
+                sourceColumnWidths,
+                measures,
+                rowAttributes,
+                columnAttributes,
+            ),
+        ).toEqual(expectedColumnWidthItems);
     });
 });
