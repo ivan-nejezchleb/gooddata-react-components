@@ -59,7 +59,6 @@ import { DEFAULT_LOCALE } from "../../../../constants/localization";
 import { DASHBOARDS_ENVIRONMENT } from "../../../constants/properties";
 import {
     ColumnWidthItem,
-    IColumnSizing,
     IMeasureColumnWidthItem,
     IMenu,
     IPivotTableConfig,
@@ -709,44 +708,6 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
         };
         return merge({ menu }, config);
     }
-
-    // private enrichConfigWithColumnSizing(
-    //     config: IPivotTableConfig,
-    //     columnWidths: ColumnWidthItem[],
-    // ): IPivotTableConfig {
-    //     const result = this.enrichConfigWithAutosize(config);
-    //     return this.enrichConfigWithManualResize(this.enrichConfigWithGrowToFit(result), columnWidths);
-    // }
-
-    // private enrichConfigWithAutosize(config: IPivotTableConfig): IPivotTableConfig {
-    //     if (!this.featureFlags.enableTableColumnsAutoResizing) {
-    //         return config;
-    //     }
-
-    //     const columnSizing: IColumnSizing = { defaultWidth: "viewport" };
-    //     return merge(config, { columnSizing });
-    // }
-
-    // private enrichConfigWithGrowToFit(config: IPivotTableConfig): IPivotTableConfig {
-    //     if (this.environment === DASHBOARDS_ENVIRONMENT) {
-    //         if (!this.featureFlags.enableTableColumnsGrowToFit) {
-    //             return config;
-    //         }
-    //         return merge(config, { columnSizing: { growToFit: true } });
-    //     }
-
-    //     return config;
-    // }
-
-    // private enrichConfigWithManualResize(
-    //     config: IPivotTableConfig,
-    //     columnWidths: ColumnWidthItem[],
-    // ): IPivotTableConfig {
-    //     if (!this.featureFlags.enableTableColumnsManualResizing) {
-    //         return config;
-    //     }
-    //     return merge(config, { columnSizing: { columnWidths } });
-    // }
 
     private onColumnResized(columnWidths: ColumnWidthItem[]) {
         const { pushData } = this.callbacks;

@@ -383,7 +383,7 @@ export class VisualizationWrapped extends React.Component<
                         ? mdObjectContentProperties.widthDefs
                         : undefined;
                 const pivotTableColumnProps = {
-                    config: getTableConfigFromFeatureFlags(config, this.state.featureFlags, false, widthDefs),
+                    config: getTableConfigFromFeatureFlags(config, this.state.featureFlags, false, widthDefs), // growToFit is always turned off by environment, until user doesn't provide his own config with growToFit turned on
                 };
                 // we do not need to pass totals={totals} because BucketPivotTable deals with changes in totals itself
                 return (

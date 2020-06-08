@@ -593,9 +593,11 @@ storiesOf("Core components/PivotTable", module)
                         projectId="storybook"
                         measures={[MEASURE_1, MEASURE_2]}
                         rows={[ATTRIBUTE_1]}
-                        config={{ columnSizing: {
-                            growToFit: true
-                        }}}
+                        config={{
+                            columnSizing: {
+                                growToFit: true,
+                            },
+                        }}
                         onError={onErrorHandler}
                         LoadingComponent={null}
                         ErrorComponent={null}
@@ -612,9 +614,11 @@ storiesOf("Core components/PivotTable", module)
                         projectId="storybook"
                         measures={[MEASURE_1, MEASURE_2]}
                         rows={[ATTRIBUTE_1]}
-                        config={{ columnSizing: {
-                            growToFit: true
-                        }}}
+                        config={{
+                            columnSizing: {
+                                growToFit: true,
+                            },
+                        }}
                         onError={onErrorHandler}
                         LoadingComponent={null}
                         ErrorComponent={null}
@@ -655,9 +659,11 @@ storiesOf("Core components/PivotTable", module)
                         measures={measures}
                         rows={attributes}
                         totals={totals}
-                        config={{ columnSizing: {
-                            growToFit: true
-                        }}}
+                        config={{
+                            columnSizing: {
+                                growToFit: true,
+                            },
+                        }}
                         onError={onErrorHandler}
                         LoadingComponent={null}
                         ErrorComponent={null}

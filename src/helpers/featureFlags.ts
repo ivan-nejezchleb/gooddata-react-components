@@ -1,10 +1,10 @@
 // (C) 2007-2020 GoodData Corporation
+import isNil = require("lodash/isNil");
+import isEmpty = require("lodash/isEmpty");
 import { IFeatureFlags, SDK } from "@gooddata/gooddata-js";
 import { getCachedOrLoad } from "./sdkCache";
 import { IChartConfig } from "../interfaces/Config";
-import isNil = require("lodash/isNil");
-import merge = require("lodash/merge");
-import { IColumnSizing, IPivotTableConfig } from "../interfaces/PivotTable";
+import { IColumnSizing, IPivotTableConfig, ColumnWidthItem } from "../interfaces/PivotTable";
 
 export async function getFeatureFlags(sdk: SDK, projectId: string): Promise<IFeatureFlags> {
     const apiCallIdentifier = `getFeatureFlags.${projectId}`;
@@ -33,40 +33,16 @@ export function setConfigFromFeatureFlags(config: IChartConfig, featureFlags: IF
     return result;
 }
 
-// export function getTableConfigFromFeatureFlags(featureFlags: IFeatureFlags): IPivotTableConfig {
-//     let columnSizing: IColumnSizing = {};
-
-//     if (featureFlags.enableTableColumnsAutoResizing) {
-//         columnSizing = merge(columnSizing, {
-//             defaultWidth: "viewport",
-//         });
-//     }
-
-//     if (featureFlags.enableTableColumnsGrowToFit) {
-//         columnSizing = merge(columnSizing, {
-//             growToFit: true,
-//         });
-//     }
-
-//     return {
-//         columnSizing,
-//     };
-// }
-// TODO: ONE-4407 refactor - here should be only feature flag logic
 export function getTableConfigFromFeatureFlags(
     config: IPivotTableConfig,
     featureFlags: IFeatureFlags,
     predicateEnvironment: boolean = true,
-    widthDefs?: any,
+    widthDefs?: ColumnWidthItem[],
 ): IPivotTableConfig {
-    let result: IPivotTableConfig = {
-        ...config,
-    };
-    let columnSizing: IColumnSizing = { defaultWidth: "unset" };
+    let columnSizing: IColumnSizing = {};
 
     if (featureFlags.enableTableColumnsAutoResizing) {
         columnSizing = { defaultWidth: "viewport" };
-        result = merge(result, { columnSizing });
     }
 
     if (featureFlags.enableTableColumnsManualResizing && widthDefs) {
@@ -74,12 +50,17 @@ export function getTableConfigFromFeatureFlags(
             ...columnSizing,
             columnWidths: widthDefs,
         };
-        result = merge(result, { columnSizing });
     }
 
     if (featureFlags.enableTableColumnsGrowToFit && predicateEnvironment) {
-        result = merge(result, { growToFit: true });
+        columnSizing = {
+            ...columnSizing,
+            growToFit: true,
+        };
     }
-
-    return result;
+    const columnSizingProp = isEmpty(columnSizing) ? {} : { columnSizing };
+    return {
+        ...columnSizingProp,
+        ...config,
+    };
 }
