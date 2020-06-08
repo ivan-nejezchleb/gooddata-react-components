@@ -226,18 +226,34 @@ export function adaptReferencePointWidthItemsToPivotTable(
     measures: IBucketItem[],
     rowAttributes: IBucketItem[],
     columnAttributes: IBucketItem[],
+    previousRowAttributes: IBucketItem[],
+    previousColumnAttributes: IBucketItem[],
 ): ColumnWidthItem[] {
     const measureLocalIdentifiers = measures.map(measure => measure.localIdentifier);
     const rowAttributeLocalIdentifiers = rowAttributes.map(rowAttribute => rowAttribute.localIdentifier);
     const columnAttributeLocalIdentifiers = columnAttributes.map(
         columnAttribute => columnAttribute.localIdentifier,
     );
+    const previousRowAttributeLocalIdentifiers = previousRowAttributes.map(
+        rowAttribute => rowAttribute.localIdentifier,
+    );
+    const previousColumnAttributeLocalIdentifiers = previousColumnAttributes.map(
+        columnAttribute => columnAttribute.localIdentifier,
+    );
+    const filteredRowAttributeLocalIdentifiers = rowAttributeLocalIdentifiers.filter(
+        rowAttributeLocalIdentifier =>
+            !previousColumnAttributeLocalIdentifiers.includes(rowAttributeLocalIdentifier),
+    );
+    const filteredColumnAttributeLocalIdentifiers = columnAttributeLocalIdentifiers.filter(
+        columnAttributeLocalIdentifier =>
+            !previousRowAttributeLocalIdentifiers.includes(columnAttributeLocalIdentifier),
+    );
 
     return adaptWidthItemsToPivotTable(
         originalColumnWidths,
         measureLocalIdentifiers,
-        rowAttributeLocalIdentifiers,
-        columnAttributeLocalIdentifiers,
+        filteredRowAttributeLocalIdentifiers,
+        filteredColumnAttributeLocalIdentifiers,
     );
 }
 
@@ -406,6 +422,8 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                         previousReferencePoint && getRowAttributes(previousReferencePoint.buckets);
 
                     const columnAttributes = getColumnAttributes(buckets);
+                    const previousColumnAttributes =
+                        previousReferencePoint && getColumnAttributes(previousReferencePoint.buckets);
 
                     const totals = getTotalsFromBucket(buckets, BucketNames.ATTRIBUTE);
 
@@ -443,17 +461,14 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                         measures,
                         rowAttributes,
                         columnAttributes,
+                        previousRowAttributes ? previousRowAttributes : [],
+                        previousColumnAttributes ? previousColumnAttributes : [],
                     );
                     const controlsObj =
                         this.featureFlags.enableTableColumnsManualResizing || columnWidths.length > 0
                             ? {
                                   controls: {
-                                      columnWidths: adaptReferencePointWidthItemsToPivotTable(
-                                          originalColumnWidths,
-                                          measures,
-                                          rowAttributes,
-                                          columnAttributes,
-                                      ),
+                                      columnWidths,
                                   },
                               }
                             : {};
