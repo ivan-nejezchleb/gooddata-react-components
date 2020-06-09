@@ -66,6 +66,7 @@ import {
     IPivotTableConfig,
     isMeasureColumnWidthItem,
 } from "../../../../interfaces/PivotTable";
+import { isWidthItemVisible } from "./widthItemsHelpers";
 
 export const getColumnAttributes = (buckets: IBucket[]): IBucketItem[] => {
     return getItemsFromBuckets(
@@ -150,6 +151,7 @@ function adaptWidthItemsToPivotTable(
     measureLocalIdentifiers: string[],
     rowAttributeLocalIdentifiers: string[],
     columnAttributeLocalIdentifiers: string[],
+    filters: IBucketFilter[],
 ): ColumnWidthItem[] {
     const attributeLocalIdentifiers = [...rowAttributeLocalIdentifiers, ...columnAttributeLocalIdentifiers];
 
@@ -177,12 +179,16 @@ function adaptWidthItemsToPivotTable(
                     ),
                 },
             };
-
-            return [...columnWidths, filteredMeasureColumnWidthItem];
-        }
-
-        if (includes(attributeLocalIdentifiers, columnWidth.attributeColumnWidthItem.attributeIdentifier)) {
-            return [...columnWidths, columnWidth];
+            // check the attribute elements vs filters
+            if (isWidthItemVisible(filteredMeasureColumnWidthItem, filters)) {
+                return [...columnWidths, filteredMeasureColumnWidthItem];
+            }
+        } else {
+            if (
+                includes(attributeLocalIdentifiers, columnWidth.attributeColumnWidthItem.attributeIdentifier)
+            ) {
+                return [...columnWidths, columnWidth];
+            }
         }
 
         return columnWidths;
@@ -216,6 +222,7 @@ export function adaptReferencePointWidthItemsToPivotTable(
     columnAttributes: IBucketItem[],
     previousRowAttributes: IBucketItem[],
     previousColumnAttributes: IBucketItem[],
+    filters: IBucketFilter[],
 ): ColumnWidthItem[] {
     const measureLocalIdentifiers = measures.map(measure => measure.localIdentifier);
     const rowAttributeLocalIdentifiers = rowAttributes.map(rowAttribute => rowAttribute.localIdentifier);
@@ -242,6 +249,7 @@ export function adaptReferencePointWidthItemsToPivotTable(
         measureLocalIdentifiers,
         filteredRowAttributeLocalIdentifiers,
         filteredColumnAttributeLocalIdentifiers,
+        filters,
     );
 }
 
@@ -434,6 +442,10 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                         },
                     ]);
 
+                    const filters: IBucketFilter[] = referencePointDraft.filters
+                        ? flatMap(referencePointDraft.filters.items, item => item.filters)
+                        : [];
+
                     const originalSortItems: AFM.SortItem[] = get(
                         referencePointDraft.properties,
                         "sortItems",
@@ -451,6 +463,7 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                         columnAttributes,
                         previousRowAttributes ? previousRowAttributes : [],
                         previousColumnAttributes ? previousColumnAttributes : [],
+                        filters,
                     );
                     const controlsObj =
                         this.featureFlags.enableTableColumnsManualResizing || columnWidths.length > 0
@@ -469,9 +482,7 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                                 rowAttributes,
                                 columnAttributes,
                             ),
-                            referencePointDraft.filters
-                                ? flatMap(referencePointDraft.filters.items, item => item.filters)
-                                : [],
+                            filters,
                             rowAttributes,
                             previousRowAttributes,
                         ),
