@@ -500,8 +500,6 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                         ),
                     );
                     referencePointDraft.filters = sanitizeFilters(referencePointDraft).filters;
-                    // TODO: ONE-4405
-                    this.visualizationProperties = referencePointDraft.properties;
                 },
             ),
         );
