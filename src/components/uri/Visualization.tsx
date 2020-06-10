@@ -56,6 +56,8 @@ import { _experimentalDataSourceFactory } from "./experimentalDataSource";
 import IVisualizationObjectContent = VisualizationObject.IVisualizationObjectContent;
 import { getHighchartsAxisNameConfiguration } from "../../internal/utils/propertiesHelper";
 import { DEFAULT_LOCALE } from "../../constants/localization";
+import { IVisualizationProperties } from "../../internal/interfaces/Visualization";
+import { ColumnWidthItem } from "../../interfaces/PivotTable";
 export { Requireable };
 
 const { ExecuteAfmAdapter, toAfmResultSpec, createSubject } = DataLayer;
@@ -168,6 +170,16 @@ function fetchLocalizationFromUser(sdk: SDK, projectId: string): Promise<Localiz
                 resolve(DEFAULT_LOCALE);
             });
         });
+}
+
+function getWidthDefs(mdObjectContentProperties: IVisualizationProperties): ColumnWidthItem[] | undefined {
+    return mdObjectContentProperties && mdObjectContentProperties.widthDefs
+        ? mdObjectContentProperties.widthDefs
+        : undefined;
+}
+
+function getProperties(mdObject: VisualizationObject.IVisualizationObject): IVisualizationProperties {
+    return mdObject.content && mdObject.content.properties && JSON.parse(mdObject.content.properties);
 }
 
 export class VisualizationWrapped extends React.Component<
@@ -373,15 +385,9 @@ export class VisualizationWrapped extends React.Component<
                     processedVisualizationObject,
                     filtersFromProps,
                 );
-                // TODO ONE-4407 here could be function to get widthDefs from mdObject.content
-                const mdObjectContentProperties =
-                    mdObject.content &&
-                    mdObject.content.properties &&
-                    JSON.parse(mdObject.content.properties);
-                const widthDefs =
-                    mdObjectContentProperties && mdObjectContentProperties.widthDefs
-                        ? mdObjectContentProperties.widthDefs
-                        : undefined;
+
+                const mdObjectContentProperties = getProperties(mdObject);
+                const widthDefs = getWidthDefs(mdObjectContentProperties);
                 const pivotTableColumnProps = {
                     config: getTableConfigFromFeatureFlags(config, this.state.featureFlags, false, widthDefs), // growToFit is always turned off by environment, until user doesn't provide his own config with growToFit turned on
                 };
