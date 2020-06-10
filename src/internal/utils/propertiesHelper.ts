@@ -100,7 +100,7 @@ export function getReferencePointWithSupportedProperties(
 
     if (isEmpty(supportedControlsProperties)) {
         const sortItems = referencePoint.properties && referencePoint.properties.sortItems;
-        const sortItemsExpand = sortItems && !isEmpty(sortItems) ? { sortItems } : {};
+        const sortItemsExpand = sortItems && !isEmpty(sortItems) ? { sortItems } : { sortItems: undefined };
         const columnWidths =
             referencePoint.properties &&
             referencePoint.properties.controls &&
@@ -221,11 +221,11 @@ export function getHighchartsAxisNameConfiguration(
 
 export function getPropertiesWithColumnWidths(columnWidths: ColumnWidthItem[]): IVisualizationProperties {
     return {
-        properties: {
-            controls: {
-                columnWidths,
-            },
+        // properties: {
+        controls: {
+            columnWidths,
         },
+        // },
     };
 }
 

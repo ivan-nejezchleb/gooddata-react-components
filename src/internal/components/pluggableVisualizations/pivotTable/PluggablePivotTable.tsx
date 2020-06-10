@@ -49,7 +49,6 @@ import { DEFAULT_PIVOT_TABLE_UICONFIG } from "../../../constants/uiConfig";
 import { AbstractPluggableVisualization } from "../AbstractPluggableVisualization";
 import {
     getColumnWidthsFromProperties,
-    getPropertiesWithColumnWidths,
     getReferencePointWithSupportedProperties,
 } from "../../../utils/propertiesHelper";
 import { VisualizationEnvironment } from "../../../../components/uri/Visualization";
@@ -385,6 +384,7 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
         this.environment = props.environment;
         this.featureFlags = props.featureFlags || {};
         this.onColumnResized = this.onColumnResized.bind(this);
+        this.handlePushData = this.handlePushData.bind(this);
     }
 
     public unmount() {
@@ -500,6 +500,8 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                         ),
                     );
                     referencePointDraft.filters = sanitizeFilters(referencePointDraft).filters;
+                    // TODO: ONE-4405
+                    this.visualizationProperties = referencePointDraft.properties;
                 },
             ),
         );
@@ -530,7 +532,7 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                 afterRender,
                 onError,
                 onLoadingChanged,
-                pushData,
+                // pushData,
                 onDrill,
                 onFiredDrillEvent,
             } = this.callbacks;
@@ -573,7 +575,7 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
                 resultSpec: resultSpecWithSorts,
                 afterRender,
                 onLoadingChanged,
-                pushData,
+                pushData: this.handlePushData,
                 onError,
                 onExportReady: this.onExportReady,
                 LoadingComponent: null as any,
@@ -747,9 +749,38 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
 
     private onColumnResized(columnWidths: ColumnWidthItem[]) {
         const { pushData } = this.callbacks;
+        const properties: IVisualizationProperties = get(
+            this.visualizationProperties,
+            "properties",
+            {},
+        ) as IVisualizationProperties;
 
-        if (pushData) {
-            pushData(getPropertiesWithColumnWidths(columnWidths));
+        pushData({
+            properties: {
+                ...properties,
+                controls: {
+                    columnWidths,
+                },
+            },
+        });
+    }
+
+    private handlePushData(data: any) {
+        const { pushData } = this.callbacks;
+        if (data && data.properties && data.properties.sortItems) {
+            const properties: IVisualizationProperties = get(
+                this.visualizationProperties,
+                "properties",
+                {},
+            ) as IVisualizationProperties;
+            pushData({
+                properties: {
+                    ...properties,
+                    sortItems: data.properties.sortItems,
+                },
+            });
+        } else {
+            pushData(data);
         }
     }
 
