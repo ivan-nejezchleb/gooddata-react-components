@@ -77,7 +77,6 @@ import { DEFAULT_LOCALE } from "../../../../constants/localization";
 import { DASHBOARDS_ENVIRONMENT } from "../../../constants/properties";
 import { IChartConfig, IColorMapping } from "../../../../interfaces/Config";
 import { unmountComponentsAtNodes } from "../../../utils/domHelper";
-import { removeColumnWidths } from "../../../utils/columnWidths";
 
 export class PluggableBaseChart extends AbstractPluggableVisualization {
     protected projectId: string;
@@ -181,7 +180,6 @@ export class PluggableBaseChart extends AbstractPluggableVisualization {
         );
         newReferencePoint = setBaseChartUiConfig(newReferencePoint, this.intl, this.type);
         newReferencePoint = removeSort(newReferencePoint);
-        newReferencePoint = removeColumnWidths(newReferencePoint);
 
         return Promise.resolve(sanitizeFilters(newReferencePoint));
     }

@@ -49,7 +49,6 @@ describe("adaptReferencePointWidthItemsToPivotTable", () => {
             previousColumnAttributes,
             [],
         );
-        console.log(result.length, expectedColumnWidthItems.length);
 
         expect(result).toEqual(expectedColumnWidthItems);
     });

@@ -43,7 +43,6 @@ import { VisualizationTypes } from "../../../../constants/visualizationTypes";
 import { IChartConfig } from "../../../../interfaces/Config";
 import { DASHBOARDS_ENVIRONMENT } from "../../../constants/properties";
 import { TOP } from "../../../../constants/alignments";
-import { removeColumnWidths } from "../../../utils/columnWidths";
 
 export class PluggablePieChart extends PluggableBaseChart {
     constructor(props: IVisConstruct) {
@@ -110,7 +109,6 @@ export class PluggablePieChart extends PluggableBaseChart {
             this.supportedPropertiesList,
         );
         newReferencePoint = removeSort(newReferencePoint);
-        newReferencePoint = removeColumnWidths(newReferencePoint);
 
         return Promise.resolve(sanitizeFilters(newReferencePoint));
     }

@@ -50,7 +50,6 @@ import {
 import { VisualizationTypes } from "../../../../constants/visualizationTypes";
 import { getMasterMeasuresCount } from "../../../utils/bucketRules";
 import { isLineChart, isAreaChart } from "../../../../components/visualizations/utils/common";
-import { removeColumnWidths } from "../../../utils/columnWidths";
 
 export class PluggableComboChart extends PluggableBaseChart {
     private primaryChartType: string = VisualizationTypes.COLUMN;
@@ -121,7 +120,6 @@ export class PluggableComboChart extends PluggableBaseChart {
         );
         newReferencePoint = applyUiConfig(newReferencePoint);
         newReferencePoint = removeSort(newReferencePoint);
-        newReferencePoint = removeColumnWidths(newReferencePoint);
 
         return Promise.resolve(sanitizeFilters(newReferencePoint));
     }
