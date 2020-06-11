@@ -42,7 +42,6 @@ export class PluggableXirr extends PluggableBaseHeadline {
         newReferencePoint.uiConfig = getXirrUiConfig(newReferencePoint, this.intl);
 
         newReferencePoint = removeSort(newReferencePoint);
-
         newReferencePoint = getReferencePointWithSupportedProperties(
             newReferencePoint,
             this.supportedPropertiesList,
