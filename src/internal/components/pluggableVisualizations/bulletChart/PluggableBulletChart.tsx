@@ -28,7 +28,6 @@ import BulletChartConfigurationPanel from "../../configurationPanels/BulletChart
 import { getReferencePointWithSupportedProperties } from "../../../utils/propertiesHelper";
 import { VisualizationTypes } from "../../../../constants/visualizationTypes";
 import { transformBuckets } from "./bucketHelper";
-import { removeColumnWidths } from "../../../utils/columnWidths";
 
 export class PluggableBulletChart extends PluggableBaseChart {
     constructor(props: IVisConstruct) {
@@ -61,7 +60,6 @@ export class PluggableBulletChart extends PluggableBaseChart {
             this.supportedPropertiesList,
         );
         newReferencePoint = removeSort(newReferencePoint);
-        newReferencePoint = removeColumnWidths(newReferencePoint);
 
         this.setPrimaryMeasureIsMissingError(buckets);
 

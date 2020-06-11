@@ -30,7 +30,6 @@ import ScatterPlotConfigurationPanel from "../../configurationPanels/ScatterPlot
 import { SCATTERPLOT_SUPPORTED_PROPERTIES } from "../../../constants/supportedProperties";
 import { getReferencePointWithSupportedProperties } from "../../../utils/propertiesHelper";
 import { VisualizationTypes } from "../../../../constants/visualizationTypes";
-import { removeColumnWidths } from "../../../utils/columnWidths";
 
 const measureBucketItemsLimit: IMeasureBucketItemsLimit[] = [
     {
@@ -87,7 +86,6 @@ export class PluggableScatterPlot extends PluggableBaseChart {
             this.supportedPropertiesList,
         );
         newReferencePoint = removeSort(newReferencePoint);
-        newReferencePoint = removeColumnWidths(newReferencePoint);
 
         return Promise.resolve(sanitizeFilters(newReferencePoint));
     }

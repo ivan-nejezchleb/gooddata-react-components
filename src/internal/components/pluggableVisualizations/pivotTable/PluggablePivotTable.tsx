@@ -57,15 +57,9 @@ import { IPivotTableProps, PivotTable } from "../../../../components/core/PivotT
 import { generateDimensions } from "../../../../helpers/dimensions";
 import { DEFAULT_LOCALE } from "../../../../constants/localization";
 import { DASHBOARDS_ENVIRONMENT } from "../../../constants/properties";
-import {
-    ColumnWidthItem,
-    IColumnSizing,
-    IMeasureColumnWidthItem,
-    IMenu,
-    IPivotTableConfig,
-    isMeasureColumnWidthItem,
-} from "../../../../interfaces/PivotTable";
-import { isWidthItemVisible, widthItemLocatorsHaveProperLength } from "./widthItemsHelpers";
+import { ColumnWidthItem, IColumnSizing, IMenu, IPivotTableConfig } from "../../../../interfaces/PivotTable";
+import { adaptReferencePointWidthItemsToPivotTable } from "./widthItemsHelpers";
+import { PIVOT_TABLE_SUPPORTED_PROPERTIES } from "../../../constants/supportedProperties";
 
 export const getColumnAttributes = (buckets: IBucket[]): IBucketItem[] => {
     return getItemsFromBuckets(
@@ -143,66 +137,6 @@ function adaptSortItemsToPivotTable(
     }, []);
 }
 
-// removes attribute widthItems with invalid identifiers
-// removes measure widthItems with invalid identifiers and invalid number of locators
-function adaptWidthItemsToPivotTable(
-    originalColumnWidths: ColumnWidthItem[],
-    measureLocalIdentifiers: string[],
-    rowAttributeLocalIdentifiers: string[],
-    columnAttributeLocalIdentifiers: string[],
-    filters: IBucketFilter[],
-): ColumnWidthItem[] {
-    const attributeLocalIdentifiers = [...rowAttributeLocalIdentifiers, ...columnAttributeLocalIdentifiers];
-
-    return originalColumnWidths.reduce((columnWidths: ColumnWidthItem[], columnWidth: ColumnWidthItem) => {
-        if (isMeasureColumnWidthItem(columnWidth)) {
-            // filter out invalid locators
-            const filteredMeasureColumnWidthItem: IMeasureColumnWidthItem = {
-                measureColumnWidthItem: {
-                    ...columnWidth.measureColumnWidthItem,
-                    locators: columnWidth.measureColumnWidthItem.locators.filter(
-                        (locator: AFM.LocatorItem) => {
-                            // filter out invalid measure locators
-                            if (AFM.isMeasureLocatorItem(locator)) {
-                                return includes(
-                                    measureLocalIdentifiers,
-                                    locator.measureLocatorItem.measureIdentifier,
-                                );
-                            }
-                            // filter out invalid column attribute locators
-                            return includes(
-                                columnAttributeLocalIdentifiers,
-                                locator.attributeLocatorItem.attributeIdentifier,
-                            );
-                        },
-                    ),
-                },
-            };
-
-            // check the attribute elements vs filters
-            // and proper locators length
-            // TODO: ONE-4449 - which will create widthItems with empty locators
-            if (
-                isWidthItemVisible(filteredMeasureColumnWidthItem, filters) &&
-                widthItemLocatorsHaveProperLength(
-                    filteredMeasureColumnWidthItem,
-                    columnAttributeLocalIdentifiers.length,
-                )
-            ) {
-                return [...columnWidths, filteredMeasureColumnWidthItem];
-            }
-        } else {
-            if (
-                includes(attributeLocalIdentifiers, columnWidth.attributeColumnWidthItem.attributeIdentifier)
-            ) {
-                return [...columnWidths, columnWidth];
-            }
-        }
-
-        return columnWidths;
-    }, []);
-}
-
 export function adaptReferencePointSortItemsToPivotTable(
     originalSortItems: AFM.SortItem[],
     measures: IBucketItem[],
@@ -220,44 +154,6 @@ export function adaptReferencePointSortItemsToPivotTable(
         measureLocalIdentifiers,
         rowAttributeLocalIdentifiers,
         columnAttributeLocalIdentifiers,
-    );
-}
-
-export function adaptReferencePointWidthItemsToPivotTable(
-    originalColumnWidths: ColumnWidthItem[],
-    measures: IBucketItem[],
-    rowAttributes: IBucketItem[],
-    columnAttributes: IBucketItem[],
-    previousRowAttributes: IBucketItem[],
-    previousColumnAttributes: IBucketItem[],
-    filters: IBucketFilter[],
-): ColumnWidthItem[] {
-    const measureLocalIdentifiers = measures.map(measure => measure.localIdentifier);
-    const rowAttributeLocalIdentifiers = rowAttributes.map(rowAttribute => rowAttribute.localIdentifier);
-    const columnAttributeLocalIdentifiers = columnAttributes.map(
-        columnAttribute => columnAttribute.localIdentifier,
-    );
-    const previousRowAttributeLocalIdentifiers = previousRowAttributes.map(
-        rowAttribute => rowAttribute.localIdentifier,
-    );
-    const previousColumnAttributeLocalIdentifiers = previousColumnAttributes.map(
-        columnAttribute => columnAttribute.localIdentifier,
-    );
-    const filteredRowAttributeLocalIdentifiers = rowAttributeLocalIdentifiers.filter(
-        rowAttributeLocalIdentifier =>
-            !previousColumnAttributeLocalIdentifiers.includes(rowAttributeLocalIdentifier),
-    );
-    const filteredColumnAttributeLocalIdentifiers = columnAttributeLocalIdentifiers.filter(
-        columnAttributeLocalIdentifier =>
-            !previousRowAttributeLocalIdentifiers.includes(columnAttributeLocalIdentifier),
-    );
-
-    return adaptWidthItemsToPivotTable(
-        originalColumnWidths,
-        measureLocalIdentifiers,
-        filteredRowAttributeLocalIdentifiers,
-        filteredColumnAttributeLocalIdentifiers,
-        filters,
     );
 }
 
@@ -394,6 +290,7 @@ export class PluggablePivotTable extends AbstractPluggableVisualization {
         this.featureFlags = props.featureFlags || {};
         this.onColumnResized = this.onColumnResized.bind(this);
         this.handlePushData = this.handlePushData.bind(this);
+        this.supportedPropertiesList = PIVOT_TABLE_SUPPORTED_PROPERTIES;
     }
 
     public unmount() {
