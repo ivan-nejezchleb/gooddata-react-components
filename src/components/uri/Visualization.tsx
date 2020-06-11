@@ -57,7 +57,7 @@ import IVisualizationObjectContent = VisualizationObject.IVisualizationObjectCon
 import { getHighchartsAxisNameConfiguration } from "../../internal/utils/propertiesHelper";
 import { DEFAULT_LOCALE } from "../../constants/localization";
 import { IVisualizationProperties } from "../../internal/interfaces/Visualization";
-import { ColumnWidthItem } from "../../interfaces/PivotTable";
+import { ColumnWidthItem, IPivotTableConfig } from "../../interfaces/PivotTable";
 export { Requireable };
 
 const { ExecuteAfmAdapter, toAfmResultSpec, createSubject } = DataLayer;
@@ -75,7 +75,7 @@ export interface IVisualizationProps extends IEvents {
     uri?: string;
     identifier?: string;
     locale?: Localization.ILocale;
-    config?: IChartConfig | IGeoConfig;
+    config?: IChartConfig | IGeoConfig | IPivotTableConfig;
     filters?: AFM.ExtendedFilter[];
     drillableItems?: Array<IDrillableItem | IHeaderPredicate>;
     uriResolver?: (sdk: SDK, projectId: string, uri?: string, identifier?: string) => Promise<string>;

@@ -2972,4 +2972,10 @@ module.exports = [
             enableTableColumnsGrowToFit: true
         }
     },
+    {
+        ...getBaseProjectSchema('Storybook with table columns manual resizing', 'manualresizingstorybook'),
+        featureFlags: {
+            enableTableColumnsManualResizing: true,
+        }
+    },
 ];
