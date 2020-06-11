@@ -35,13 +35,13 @@ const isMeasureWidthItemMatchedByFilter = (
     );
 
 const isMeasureColumnWidthItemVisible = (
-    sortItem: IMeasureColumnWidthItem,
+    widthItem: IMeasureColumnWidthItem,
     filters: IBucketFilter[],
 ): boolean =>
     filters.reduce((isVisible, filter) => {
         if (isAttributeFilter(filter)) {
             const shouldBeMatched = !filter.isInverted;
-            return isVisible && shouldBeMatched === isMeasureWidthItemMatchedByFilter(sortItem, filter);
+            return isVisible && shouldBeMatched === isMeasureWidthItemMatchedByFilter(widthItem, filter);
         }
         return isVisible;
     }, true);
@@ -60,12 +60,13 @@ const widthItemLocatorsHaveProperLength = (
     columnAttributesCount: number,
 ): boolean => {
     return (
-        (measuresCount > 0 &&
+        widthItem.measureColumnWidthItem.locators.length > 0 &&
+        ((measuresCount > 0 &&
             containsMeasureLocator(widthItem) &&
             widthItem.measureColumnWidthItem.locators.length === columnAttributesCount + 1) ||
-        (measuresCount === 0 &&
-            !containsMeasureLocator(widthItem) &&
-            widthItem.measureColumnWidthItem.locators.length === columnAttributesCount)
+            (measuresCount === 0 &&
+                !containsMeasureLocator(widthItem) &&
+                widthItem.measureColumnWidthItem.locators.length === columnAttributesCount))
     );
 };
 
