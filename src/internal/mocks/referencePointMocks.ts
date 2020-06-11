@@ -618,7 +618,7 @@ export const simpleStackedReferencePoint: IReferencePoint = {
         sortItems: [defaultSortItem],
         controls: {
             columnWidths,
-            test: "neco",
+            test: "test",
         },
     },
 };
