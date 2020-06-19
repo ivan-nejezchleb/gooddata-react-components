@@ -94,6 +94,20 @@ export class ResizedColumnsStore {
         });
     }
 
+    public addWeekMeasureColumns(columnWidth: number, allColumns: Column[]) {
+        // this should add week measure
+        this.allMeasureColumnWidth = columnWidth;
+        allColumns.forEach(col => {
+            if (isMeasureColumn(col)) {
+                const colId = getColumnIdentifier(col);
+                if (this.manuallyResizedColumns[colId]) {
+                    this.manuallyResizedColumns = omit(this.manuallyResizedColumns, colId);
+                }
+                col.getColDef().suppressSizeToFit = true;
+            }
+        });
+    }
+
     public removeAllMeasureColumns() {
         this.allMeasureColumnWidth = null;
         const colIds = Object.keys(this.manuallyResizedColumns);
