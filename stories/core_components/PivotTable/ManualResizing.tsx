@@ -8,13 +8,18 @@ import { onErrorHandler } from "../../mocks";
 import { ATTRIBUTE_1, ATTRIBUTE_2, MEASURE_1, MEASURE_2 } from "../../data/componentProps";
 import { ScreenshotReadyWrapper, visualizationNotLoadingResolver } from "../../utils/ScreenshotReadyWrapper";
 import { action } from "@storybook/addon-actions";
+import {
+    IWeakMeasureColumnWidthItem,
+    IMeasureColumnWidthItem,
+    IAllMeasureColumnWidthItem,
+} from "../../../src/interfaces/PivotTable";
 
 const wrapperStyle = { width: 1200, height: 300 };
 const ATTRIBUTE_WIDTH = 400;
 const MEASURE_WIDTH = 60;
 const ALL_MEASURE_WIDTH = 300;
 
-const measureColumnWidthItemSimple = {
+const measureColumnWidthItemSimple: IMeasureColumnWidthItem = {
     measureColumnWidthItem: {
         width: MEASURE_WIDTH,
         locators: [
@@ -27,13 +32,13 @@ const measureColumnWidthItemSimple = {
     },
 };
 
-const allMeasureColumnWidthItem = {
+const allMeasureColumnWidthItem: IAllMeasureColumnWidthItem = {
     measureColumnWidthItem: {
         width: ALL_MEASURE_WIDTH,
     },
 };
 
-const measureColumnWidthItemWithAttr = {
+const measureColumnWidthItemWithAttr: IMeasureColumnWidthItem = {
     measureColumnWidthItem: {
         width: MEASURE_WIDTH,
         locators: [
@@ -55,6 +60,28 @@ const attributeColumnWidthItem = {
     attributeColumnWidthItem: {
         width: ATTRIBUTE_WIDTH,
         attributeIdentifier: ATTRIBUTE_1.visualizationAttribute.localIdentifier,
+    },
+};
+
+const weakMeasureColumnWidthItemM1: IWeakMeasureColumnWidthItem = {
+    measureColumnWidthItem: {
+        width: MEASURE_WIDTH,
+        locator: {
+            measureLocatorItem: {
+                measureIdentifier: MEASURE_1.measure.localIdentifier,
+            },
+        },
+    },
+};
+
+const weakMeasureColumnWidthItemM2: IWeakMeasureColumnWidthItem = {
+    measureColumnWidthItem: {
+        width: 320,
+        locator: {
+            measureLocatorItem: {
+                measureIdentifier: MEASURE_2.measure.localIdentifier,
+            },
+        },
     },
 };
 
@@ -395,6 +422,101 @@ storiesOf("Core components/PivotTable/ManualResizing/With All measure width defi
         const columnWidths = [
             allMeasureColumnWidthItem,
             measureColumnWidthItemWithAttr,
+            attributeColumnWidthItem,
+        ];
+
+        return screenshotWrap(
+            <ScreenshotReadyWrapper resolver={visualizationNotLoadingResolver()}>
+                <div style={wrapperStyle} className="s-table">
+                    <PivotTable
+                        projectId="storybook"
+                        measures={[MEASURE_1, MEASURE_2]}
+                        rows={[ATTRIBUTE_1]}
+                        columns={[ATTRIBUTE_2]}
+                        config={{
+                            columnSizing: {
+                                defaultWidth: "unset",
+                                growToFit: false,
+                                columnWidths,
+                            },
+                        }}
+                        onError={onErrorHandler}
+                        LoadingComponent={null}
+                        ErrorComponent={null}
+                        onColumnResized={action("onColumnResized")}
+                    />
+                </div>
+            </ScreenshotReadyWrapper>,
+        );
+    })
+    .add("autoResize=on, growToFit=off", () => {
+        const columnWidths = [
+            allMeasureColumnWidthItem,
+            measureColumnWidthItemWithAttr,
+            attributeColumnWidthItem,
+        ];
+
+        return screenshotWrap(
+            <ScreenshotReadyWrapper resolver={visualizationNotLoadingResolver()}>
+                <div style={wrapperStyle} className="s-table">
+                    <PivotTable
+                        projectId="storybook"
+                        measures={[MEASURE_1, MEASURE_2]}
+                        rows={[ATTRIBUTE_1]}
+                        columns={[ATTRIBUTE_2]}
+                        config={{
+                            columnSizing: {
+                                defaultWidth: "viewport",
+                                growToFit: false,
+                                columnWidths,
+                            },
+                        }}
+                        onError={onErrorHandler}
+                        LoadingComponent={null}
+                        ErrorComponent={null}
+                        onColumnResized={action("onColumnResized")}
+                    />
+                </div>
+            </ScreenshotReadyWrapper>,
+        );
+    })
+    .add("autoResize=on, growToFit=on", () => {
+        const columnWidths = [
+            allMeasureColumnWidthItem,
+            measureColumnWidthItemWithAttr,
+            attributeColumnWidthItem,
+        ];
+
+        return screenshotWrap(
+            <ScreenshotReadyWrapper resolver={visualizationNotLoadingResolver()}>
+                <div style={wrapperStyle} className="s-table">
+                    <PivotTable
+                        projectId="storybook"
+                        measures={[MEASURE_1, MEASURE_2]}
+                        rows={[ATTRIBUTE_1]}
+                        columns={[ATTRIBUTE_2]}
+                        config={{
+                            columnSizing: {
+                                defaultWidth: "viewport",
+                                growToFit: true,
+                                columnWidths,
+                            },
+                        }}
+                        onError={onErrorHandler}
+                        LoadingComponent={null}
+                        ErrorComponent={null}
+                        onColumnResized={action("onColumnResized")}
+                    />
+                </div>
+            </ScreenshotReadyWrapper>,
+        );
+    });
+
+storiesOf("Core components/PivotTable/ManualResizing/With weak measure width definition", module)
+    .add("autoResize=off, growToFit=off", () => {
+        const columnWidths = [
+            weakMeasureColumnWidthItemM2,
+            weakMeasureColumnWidthItemM1,
             attributeColumnWidthItem,
         ];
 

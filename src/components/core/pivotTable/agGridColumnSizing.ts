@@ -302,3 +302,25 @@ export const resizeAllMeasuresColumns = (
     });
     resizedColumnsStore.addAllMeasureColumns(columnWidth, allColumns);
 };
+
+export const resizeWeakMeasureColumns = (
+    columnApi: ColumnApi,
+    resizedColumnsStore: ResizedColumnsStore,
+    column: Column,
+) => {
+    const columnWidth = column.getActualWidth();
+    const allColumns = columnApi.getAllColumns();
+
+    // set width wor same measure
+    // initMid = get measure id
+
+    allColumns.forEach(col => {
+        if (isMeasureColumn(col)) {
+            // get measure id === initMid than set columns
+            columnApi.setColumnWidth(col, columnWidth);
+        }
+    });
+
+    // add weakMerasure def to map
+    resizedColumnsStore.addAllMeasureColumns(columnWidth, allColumns);
+};

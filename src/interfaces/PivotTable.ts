@@ -85,6 +85,13 @@ export interface IAllMeasureColumnWidthItem {
     };
 }
 
+export interface IWeakMeasureColumnWidthItem {
+    measureColumnWidthItem: {
+        width: AbsoluteColumnWidth;
+        locator: AFM.IMeasureLocatorItem;
+    };
+}
+
 type LocatorItem = IAttributeLocatorItem | AFM.IMeasureLocatorItem;
 interface IAttributeLocatorItem {
     attributeLocatorItem: {
@@ -118,7 +125,18 @@ export function isAllMeasureColumnWidthItem(
     return (
         !isEmpty(columnWidthItem) &&
         (columnWidthItem as IAllMeasureColumnWidthItem).measureColumnWidthItem !== undefined &&
-        (columnWidthItem as IMeasureColumnWidthItem).measureColumnWidthItem.locators === undefined
+        (columnWidthItem as IMeasureColumnWidthItem).measureColumnWidthItem.locators === undefined &&
+        (columnWidthItem as IWeakMeasureColumnWidthItem).measureColumnWidthItem.locator === undefined
+    );
+}
+
+export function isWeakMeasureColumnWidthItem(
+    columnWidthItem: ColumnWidthItem,
+): columnWidthItem is IWeakMeasureColumnWidthItem {
+    return (
+        !isEmpty(columnWidthItem) &&
+        (columnWidthItem as IWeakMeasureColumnWidthItem).measureColumnWidthItem !== undefined &&
+        (columnWidthItem as IWeakMeasureColumnWidthItem).measureColumnWidthItem.locator !== undefined
     );
 }
 

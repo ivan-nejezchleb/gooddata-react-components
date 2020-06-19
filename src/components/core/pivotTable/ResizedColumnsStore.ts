@@ -4,7 +4,7 @@ import { Execution } from "@gooddata/typings";
 import { ColDef, Column } from "ag-grid-community";
 import omit = require("lodash/omit");
 
-import { getColumnIdentifier, isMeasureColumn } from "./agGridUtils";
+import { getColumnIdentifier, isMeasureColumn, isColumn } from "./agGridUtils";
 import {
     getColumnWidthsFromMap,
     convertColumnWidthsToMap,
@@ -19,7 +19,13 @@ import {
     IResizedColumnsItem,
     isAbsoluteColumnWidth,
     isColumnWidthAuto,
+    IWeakMeasureColumnWidthItem,
+    isAttributeColumnWidthItem,
+    isMeasureColumnWidthItem,
+    isWeakMeasureColumnWidthItem,
 } from "../../../interfaces/PivotTable";
+import { isMappingHeaderMeasureItem, IMappingHeader } from "../../../interfaces/MappingHeader";
+import { IGridHeader } from "./agGridTypes";
 
 export interface IResizedColumnsCollection {
     [columnIdentifier: string]: IResizedColumnsCollectionItem;
@@ -30,13 +36,18 @@ export interface IResizedColumnsCollectionItem {
     source: ColumnEventSourceType;
 }
 
+// todo unify private lists
+// IResizedColumnsCollection remove source
 export class ResizedColumnsStore {
     private manuallyResizedColumns: IResizedColumnsCollection;
     private allMeasureColumnWidth: number | null;
+    // should be map per locator
+    private weakMeasuresColumnWidths: IWeakMeasureColumnWidthItem[];
 
     public constructor() {
         this.manuallyResizedColumns = {};
         this.allMeasureColumnWidth = null;
+        this.weakMeasuresColumnWidths = [];
     }
 
     public getManuallyResizedColumn(item: Column | ColDef): IResizedColumnsItem {
@@ -44,6 +55,12 @@ export class ResizedColumnsStore {
 
         if (this.manuallyResizedColumns[colId]) {
             return this.convertItem(this.manuallyResizedColumns[colId]);
+        }
+
+        const weakColumnWidth = this.getMatchedWeakMeasuresColumnWidths(item);
+
+        if (weakColumnWidth) {
+            return this.convertFromWeakDef(weakColumnWidth);
         }
 
         if (isMeasureColumn(item) && this.isAllMeasureColumWidthUsed()) {
@@ -111,6 +128,8 @@ export class ResizedColumnsStore {
         if (this.isAllMeasureColumWidthUsed()) {
             result.push(this.getAllMeasureColumnWidth());
         }
+
+        // push all weak items
         return result;
     }
 
@@ -118,11 +137,7 @@ export class ResizedColumnsStore {
         columnWidths: ColumnWidthItem[],
         executionResponse: Execution.IExecutionResponse,
     ) {
-        const [allMeasureColumnWidthItems, columnWidthItems] = this.partition(columnWidths, item =>
-            isAllMeasureColumnWidthItem(item),
-        );
-
-        const allMeasureWidthItem = allMeasureColumnWidthItems[0];
+        const allMeasureWidthItem = this.filterAllMeasureColumnWidthItem(columnWidths);
 
         if (isAllMeasureColumnWidthItem(allMeasureWidthItem)) {
             const validatedWidth = defaultWidthValidator(allMeasureWidthItem.measureColumnWidthItem.width);
@@ -131,24 +146,35 @@ export class ResizedColumnsStore {
             this.allMeasureColumnWidth = null;
         }
 
+        this.weakMeasuresColumnWidths = this.filterWeakColumnWidthItems(columnWidths);
+
+        const columnWidthItems = this.filterStrongColumnWidthItems(columnWidths);
         const columnWidthsByField = convertColumnWidthsToMap(columnWidthItems, executionResponse);
         this.manuallyResizedColumns = columnWidthsByField;
     }
 
-    private partition(
-        array: ColumnWidthItem[],
-        isValid: (elem: ColumnWidthItem) => boolean,
-    ): [ColumnWidthItem[], ColumnWidthItem[]] {
-        if (!array) {
-            return [[], []];
+    private filterAllMeasureColumnWidthItem(columnWidths: ColumnWidthItem[]): IAllMeasureColumnWidthItem {
+        if (columnWidths) {
+            return columnWidths.filter(isAllMeasureColumnWidthItem)[0];
         }
+    }
 
-        return array.reduce<[ColumnWidthItem[], ColumnWidthItem[]]>(
-            ([pass, fail], elem) => {
-                return isValid(elem) ? [[...pass, elem], fail] : [pass, [...fail, elem]];
-            },
-            [[], []],
-        );
+    private filterStrongColumnWidthItems(columnWidths: ColumnWidthItem[]) {
+        if (columnWidths) {
+            return columnWidths.filter(
+                item => isAttributeColumnWidthItem(item) || isMeasureColumnWidthItem(item),
+            );
+        }
+        return [];
+    }
+
+    private filterWeakColumnWidthItems(columnWidths: ColumnWidthItem[]): IWeakMeasureColumnWidthItem[] {
+        if (columnWidths) {
+            return columnWidths.filter(item =>
+                isWeakMeasureColumnWidthItem(item),
+            ) as IWeakMeasureColumnWidthItem[];
+        }
+        return [];
     }
 
     private convertItem(item: IResizedColumnsCollectionItem): IResizedColumnsItem {
@@ -159,6 +185,13 @@ export class ResizedColumnsStore {
                 source: item.source,
             };
         }
+    }
+
+    private convertFromWeakDef(item: IWeakMeasureColumnWidthItem): IResizedColumnsItem {
+        return {
+            width: item.measureColumnWidthItem.width,
+            source: ColumnEventSourceType.UI_DRAGGED,
+        };
     }
 
     private isAllMeasureColumWidthUsed() {
@@ -179,5 +212,34 @@ export class ResizedColumnsStore {
                 width: this.allMeasureColumnWidth,
             },
         };
+    }
+
+    private getMatchedWeakMeasuresColumnWidths(item: Column | ColDef): IWeakMeasureColumnWidthItem {
+        const measureHeader: Execution.IMeasureHeaderItem = this.getMappingHeaderMeasureItem(item);
+
+        if (measureHeader) {
+            return this.weakMeasuresColumnWidths.filter(
+                colWidth =>
+                    colWidth.measureColumnWidthItem.locator.measureLocatorItem.measureIdentifier ===
+                    measureHeader.measureHeaderItem.localIdentifier,
+            )[0];
+        }
+    }
+
+    private getMappingHeaderMeasureItem(item: Column | ColDef): Execution.IMeasureHeaderItem | undefined {
+        let headers: IMappingHeader[] = [];
+        if (!isMeasureColumn(item)) {
+            return;
+        }
+
+        if (isColumn(item)) {
+            headers = (item.getColDef() as IGridHeader).drillItems;
+        } else {
+            headers = (item as IGridHeader).drillItems;
+        }
+
+        if (headers) {
+            return headers.filter(isMappingHeaderMeasureItem)[0];
+        }
     }
 }

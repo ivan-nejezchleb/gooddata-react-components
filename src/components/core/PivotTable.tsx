@@ -135,6 +135,7 @@ import {
     syncSuppressSizeToFitOnColumns,
     resetColumnsWidthToDefault,
     resizeAllMeasuresColumns,
+    resizeWeakMeasureColumns,
 } from "./pivotTable/agGridColumnSizing";
 import { setColumnMaxWidth, setColumnMaxWidthIf } from "./pivotTable/agColumnWrapper";
 import { ResizedColumnsStore } from "./pivotTable/ResizedColumnsStore";
@@ -219,6 +220,7 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
     private numberOfColumnResizedCalls = 0;
     private columnWidthsChangeWaitingForExecution = true;
     private isMetaOrCtrlKeyPressed = false;
+    private isAltKeyPressed = false;
 
     constructor(props: IPivotTableInnerProps) {
         super(props);
@@ -1106,9 +1108,16 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
         return this.isMetaOrCtrlKeyPressed && columns.length === 1 && isMeasureColumn(columns[0]);
     }
 
+    private isWeakMeasureResizeOperation(columns: Column[]) {
+        return this.isAltKeyPressed && columns.length === 1 && isMeasureColumn(columns[0]);
+    }
+
     private onColumnsManualResized = (columns: Column[]) => {
         if (this.isAllMeasureResizeOperation(columns)) {
             resizeAllMeasuresColumns(this.columnApi, this.resizedColumnsStore, columns[0]);
+        } else if (this.isWeakMeasureResizeOperation(columns)) {
+            console.log("Weak resize");
+            resizeWeakMeasureColumns(this.columnApi, this.resizedColumnsStore, columns[0]);
         } else {
             columns.forEach(column => {
                 this.resizedColumnsStore.addToManuallyResizedColumn(column);
@@ -1154,6 +1163,7 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
             event.stopPropagation();
         }
         this.isMetaOrCtrlKeyPressed = event.metaKey || event.ctrlKey;
+        this.isAltKeyPressed = event.altKey;
     };
 
     private getInfiniteInitialRowCountRowCount() {
