@@ -7,14 +7,16 @@ import {
     ColumnWidth,
 } from "../../interfaces/PivotTable";
 import { AFM } from "@gooddata/typings";
+import { getIsAutoProp } from "../../components/core/pivotTable/agGridColumnSizing";
 
 export class AttributeColumnWidthItemBuilder implements IAttributeColumnWidthItem {
     public attributeColumnWidthItem: IAttributeColumnWidthItem["attributeColumnWidthItem"];
 
-    constructor(attributeIdentifier: string, width: AbsoluteColumnWidth) {
+    constructor(attributeIdentifier: string, width: AbsoluteColumnWidth, isAuto: boolean = false) {
         this.attributeColumnWidthItem = {
             attributeIdentifier,
             width,
+            ...getIsAutoProp(isAuto),
         };
     }
 
@@ -27,7 +29,7 @@ export class AttributeColumnWidthItemBuilder implements IAttributeColumnWidthIte
 export class MeasureColumnWidthItemBuilder implements IMeasureColumnWidthItem {
     public measureColumnWidthItem: IMeasureColumnWidthItem["measureColumnWidthItem"];
 
-    constructor(measureIdentifier: AFM.Identifier, width: ColumnWidth) {
+    constructor(measureIdentifier: AFM.Identifier, width: ColumnWidth, isAuto: boolean = false) {
         this.measureColumnWidthItem = {
             width,
             locators: [
@@ -37,6 +39,7 @@ export class MeasureColumnWidthItemBuilder implements IMeasureColumnWidthItem {
                     },
                 },
             ],
+            ...getIsAutoProp(isAuto),
         };
     }
 

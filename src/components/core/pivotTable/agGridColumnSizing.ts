@@ -59,6 +59,7 @@ export const convertColumnWidthsToMap = (
             columnWidthsMap[field] = {
                 width: widthValidator(width),
                 source: ColumnEventSourceType.UI_DRAGGED,
+                ...getIsAutoProp(columnWidth.attributeColumnWidthItem.isAuto),
             };
         }
         if (isMeasureColumnWidthItem(columnWidth)) {
@@ -66,6 +67,7 @@ export const convertColumnWidthsToMap = (
             columnWidthsMap[field] = {
                 width: widthValidator(width),
                 source: ColumnEventSourceType.UI_DRAGGED,
+                ...getIsAutoProp(columnWidth.measureColumnWidthItem.isAuto),
             };
         }
     });
@@ -121,6 +123,7 @@ const getSizeItemByColId = (
     execution: Execution.IExecutionResponses,
     colId: string,
     width: ColumnWidth,
+    isAuto: boolean,
 ): ColumnWidthItem => {
     const { dimensions } = execution.executionResponse;
     const fields = getParsedFields(colId);
@@ -140,6 +143,7 @@ const getSizeItemByColId = (
                         attributeColumnWidthItem: {
                             width,
                             attributeIdentifier,
+                            ...getIsAutoProp(isAuto),
                         },
                     };
                 } else {
@@ -160,6 +164,7 @@ const getSizeItemByColId = (
                 measureColumnWidthItem: {
                     width,
                     locators: [...attributeLocators],
+                    ...getIsAutoProp(isAuto),
                 },
             };
         }
@@ -180,6 +185,7 @@ const getSizeItemByColId = (
                         },
                     },
                 ],
+                ...getIsAutoProp(isAuto),
             },
         };
     }
@@ -191,8 +197,8 @@ export const getColumnWidthsFromMap = (
     execution: Execution.IExecutionResponses,
 ): ColumnWidthItem[] => {
     return Object.keys(map).map((colId: string) => {
-        const { width } = map[colId];
-        const sizeItem = getSizeItemByColId(execution, colId, width);
+        const { width, isAuto } = map[colId];
+        const sizeItem = getSizeItemByColId(execution, colId, width, isAuto);
         invariant(sizeItem, `unable to find size item by filed ${colId}`);
         return sizeItem;
     });
@@ -225,7 +231,7 @@ export const enrichColumnDefinitionsWithWidths = (
 
             if (manualSize) {
                 columnDefinition.width = manualSize.width;
-                columnDefinition.suppressSizeToFit = true;
+                columnDefinition.suppressSizeToFit = !manualSize.isAuto;
             } else {
                 columnDefinition.suppressSizeToFit = false;
                 columnDefinition.width = autoResizeSize ? autoResizeSize.width : defaultColumnWidth;
@@ -257,9 +263,9 @@ export const syncSuppressSizeToFitOnColumns = (
     const columns = columnApi.getAllColumns();
 
     columns.forEach(col => {
-        const resizedColumn = resizedColumnsStore.isColumnManuallyResized(col);
+        const resizedColumn = resizedColumnsStore.getManuallyResizedColumn(col);
         resizedColumn
-            ? (col.getColDef().suppressSizeToFit = true)
+            ? (col.getColDef().suppressSizeToFit = !resizedColumn.isAuto)
             : (col.getColDef().suppressSizeToFit = false);
     });
 };
@@ -302,3 +308,5 @@ export const resizeAllMeasuresColumns = (
     });
     resizedColumnsStore.addAllMeasureColumns(columnWidth, allColumns);
 };
+
+export const getIsAutoProp = (isAuto: boolean) => (isAuto ? { isAuto } : {});

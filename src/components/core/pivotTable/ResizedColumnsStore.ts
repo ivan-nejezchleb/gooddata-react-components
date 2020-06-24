@@ -9,6 +9,7 @@ import {
     getColumnWidthsFromMap,
     convertColumnWidthsToMap,
     defaultWidthValidator,
+    getIsAutoProp,
 } from "./agGridColumnSizing";
 import {
     ColumnEventSourceType,
@@ -16,9 +17,8 @@ import {
     isAllMeasureColumnWidthItem,
     IAllMeasureColumnWidthItem,
     ColumnWidth,
-    IResizedColumnsItem,
     isAbsoluteColumnWidth,
-    isColumnWidthAuto,
+    IManuallyResizedColumnsItem,
 } from "../../../interfaces/PivotTable";
 
 export interface IResizedColumnsCollection {
@@ -28,6 +28,11 @@ export interface IResizedColumnsCollection {
 export interface IResizedColumnsCollectionItem {
     width: ColumnWidth;
     source: ColumnEventSourceType;
+    isAuto?: boolean;
+}
+
+export function isColumnWidthAuto(columnWidth: ColumnWidth): boolean {
+    return columnWidth === "auto";
 }
 
 export class ResizedColumnsStore {
@@ -39,7 +44,7 @@ export class ResizedColumnsStore {
         this.allMeasureColumnWidth = null;
     }
 
-    public getManuallyResizedColumn(item: Column | ColDef): IResizedColumnsItem {
+    public getManuallyResizedColumn(item: Column | ColDef): IManuallyResizedColumnsItem {
         const colId = getColumnIdentifier(item);
 
         if (this.manuallyResizedColumns[colId]) {
@@ -55,13 +60,14 @@ export class ResizedColumnsStore {
         return !!this.getManuallyResizedColumn(item);
     }
 
-    public addToManuallyResizedColumn(column: Column): void {
+    public addToManuallyResizedColumn(column: Column, isAuto: boolean = false): void {
         this.manuallyResizedColumns[getColumnIdentifier(column)] = {
             width: column.getActualWidth(),
             source: ColumnEventSourceType.UI_DRAGGED,
+            ...getIsAutoProp(isAuto),
         };
 
-        column.getColDef().suppressSizeToFit = true;
+        column.getColDef().suppressSizeToFit = !isAuto;
     }
 
     public addAllMeasureColumns(columnWidth: number, allColumns: Column[]) {
@@ -151,12 +157,15 @@ export class ResizedColumnsStore {
         );
     }
 
-    private convertItem(item: IResizedColumnsCollectionItem): IResizedColumnsItem {
+    private convertItem(item: IResizedColumnsCollectionItem): IManuallyResizedColumnsItem {
         // columns with width = auto are hidden
+
         if (isAbsoluteColumnWidth(item.width)) {
+            const { width, source, isAuto } = item;
             return {
-                width: item.width,
-                source: item.source,
+                width,
+                source,
+                ...getIsAutoProp(isAuto),
             };
         }
     }
@@ -169,7 +178,7 @@ export class ResizedColumnsStore {
         return { width: "auto", source: ColumnEventSourceType.UI_DRAGGED };
     }
 
-    private getAllMeasureColumMapItem(): IResizedColumnsItem {
+    private getAllMeasureColumMapItem(): IManuallyResizedColumnsItem {
         return { width: this.allMeasureColumnWidth, source: ColumnEventSourceType.UI_DRAGGED };
     }
 

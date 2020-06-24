@@ -45,6 +45,12 @@ export interface IResizedColumnsItem {
     source: ColumnEventSourceType;
 }
 
+export interface IManuallyResizedColumnsItem {
+    width: number;
+    source: ColumnEventSourceType;
+    isAuto?: boolean;
+}
+
 export interface IResizedColumns {
     [columnIdentifier: string]: IResizedColumnsItem;
 }
@@ -60,15 +66,12 @@ export function isAbsoluteColumnWidth(columnWidth: ColumnWidth): columnWidth is 
     return Number(columnWidth) === columnWidth;
 }
 
-export function isColumnWidthAuto(columnWidth: ColumnWidth): boolean {
-    return columnWidth === "auto";
-}
-
 export interface IAttributeColumnWidthItem {
     attributeColumnWidthItem: {
         width: AbsoluteColumnWidth;
         attributeIdentifier: AFM.Identifier;
         aggregation?: "sum";
+        isAuto?: boolean;
     };
 }
 
@@ -76,6 +79,7 @@ export interface IMeasureColumnWidthItem {
     measureColumnWidthItem: {
         width: ColumnWidth;
         locators: LocatorItem[];
+        isAuto?: boolean;
     };
 }
 
