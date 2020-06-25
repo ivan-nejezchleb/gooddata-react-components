@@ -96,7 +96,7 @@ test("should reset first column with default width by double click to auto size 
     await t.expect(item).notEql(undefined);
     await checkWidthWithTolerance(
         t,
-        item.attributeColumnWidthItem.width,
+        item.attributeColumnWidthItem.width.value,
         FIRST_CELL_AUTORESIZE_WIDTH,
         AUTO_SIZE_TOLERANCE,
         "Width of item from callback array",
@@ -137,7 +137,7 @@ test("should reset first column with manual width by double click to auto size a
     await t.expect(item).notEql(undefined);
     await checkWidthWithTolerance(
         t,
-        item.attributeColumnWidthItem.width,
+        item.attributeColumnWidthItem.width.value,
         FIRST_CELL_AUTORESIZE_WIDTH,
         AUTO_SIZE_TOLERANCE,
         "Width of item from callback array",
@@ -216,7 +216,7 @@ test("should resize first column by DnD and notify column as manually resized vi
     await t.expect(item).notEql(undefined);
     await checkWidthWithTolerance(
         t,
-        item.attributeColumnWidthItem.width,
+        item.attributeColumnWidthItem.width.value,
         CELL_DEFAULT_WIDTH + dragOffset,
         DND_SIZE_TOLERANCE,
         "Width of item from callback array",
@@ -262,7 +262,7 @@ test("should reset second column with default width by double click to auto size
     await t.expect(item).notEql(undefined);
     await checkWidthWithTolerance(
         t,
-        item.measureColumnWidthItem.width,
+        item.measureColumnWidthItem.width.value,
         SECOND_CELL_AUTORESIZE_WIDTH,
         AUTO_SIZE_TOLERANCE,
         "Width of item from callback array",
@@ -308,7 +308,7 @@ test("should reset second column with manual width by double click to auto size 
     await t.expect(item).notEql(undefined);
     await checkWidthWithTolerance(
         t,
-        item.measureColumnWidthItem.width,
+        item.measureColumnWidthItem.width.value,
         SECOND_CELL_AUTORESIZE_WIDTH,
         AUTO_SIZE_TOLERANCE,
         "Width of item from callback array",
@@ -392,7 +392,7 @@ test("should resize second column by DnD and notify column as manually resized v
     await t.expect(item).notEql(undefined);
     await checkWidthWithTolerance(
         t,
-        item.measureColumnWidthItem.width,
+        item.measureColumnWidthItem.width.value,
         CELL_DEFAULT_WIDTH + dragOffset,
         DND_SIZE_TOLERANCE,
         "Width of item from callback array",
@@ -450,7 +450,7 @@ test("should resize second column by DnD while meta key pressed and resize all m
     await t.expect(item).notEql(undefined);
     await checkWidthWithTolerance(
         t,
-        item.measureColumnWidthItem.width,
+        item.measureColumnWidthItem.width.value,
         CELL_DEFAULT_WIDTH + dragOffset,
         DND_SIZE_TOLERANCE,
         "Width of item from callback array",
@@ -496,7 +496,7 @@ test("should reset previously resized column with metaKey and notify column as m
     await t.expect(itemAfterReset).notEql(undefined);
     await checkWidthWithTolerance(
         t,
-        itemAfterReset.measureColumnWidthItem.width,
+        itemAfterReset.measureColumnWidthItem.width.value,
         SECOND_CELL_AUTORESIZE_WIDTH,
         AUTO_SIZE_TOLERANCE,
         "Width of item from callback array",
@@ -542,7 +542,7 @@ test("when autosize on it should reset previously resized column with metaKey an
 
     await t.expect(itemAfterReset).notEql(undefined);
 
-    await t.expect(itemAfterReset.measureColumnWidthItem.width).eql("auto");
+    await t.expect(itemAfterReset.measureColumnWidthItem.width.value).eql("auto");
 });
 
 test("should remove all measure width when reset with metaKey and all measures columns should be auto sized", async t => {
