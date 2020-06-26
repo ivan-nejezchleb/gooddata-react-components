@@ -24,14 +24,17 @@ import {
     isAttributeColumnWidthItem,
     ColumnWidthItem,
     isMeasureColumnWidthItem,
-    ColumnEventSourceType,
     IResizedColumns,
     ColumnWidth,
     isAbsoluteColumnWidth,
 } from "../../../interfaces/PivotTable";
 import { IGridHeader } from "./agGridTypes";
 import { ColumnApi, Column } from "ag-grid-community";
-import { ResizedColumnsStore, IResizedColumnsCollection } from "./ResizedColumnsStore";
+import {
+    ResizedColumnsStore,
+    IResizedColumnsCollection,
+    IWeakMeasureColumnWidthItemsMap,
+} from "./ResizedColumnsStore";
 
 export const MIN_WIDTH = 60;
 export const AUTO_SIZED_MAX_WIDTH = 500;
@@ -58,14 +61,14 @@ export const convertColumnWidthsToMap = (
             const [field, width] = getAttributeColumnWidthItemFieldAndWidth(columnWidth, attributeHeaders);
             columnWidthsMap[field] = {
                 width: widthValidator(width),
-                source: ColumnEventSourceType.UI_DRAGGED,
             };
         }
         if (isMeasureColumnWidthItem(columnWidth)) {
             const [field, width] = getMeasureColumnWidthItemFieldAndWidth(columnWidth, measureHeaderItems);
             columnWidthsMap[field] = {
                 width: widthValidator(width),
-                source: ColumnEventSourceType.UI_DRAGGED,
+                measureIdentifier: columnWidth.measureColumnWidthItem.locators.filter(isMeasureLocatorItem)[0]
+                    .measureLocatorItem.measureIdentifier,
             };
         }
     });
@@ -198,6 +201,12 @@ export const getColumnWidthsFromMap = (
     });
 };
 
+export const getWeakColumnWidthsFromMap = (map: IWeakMeasureColumnWidthItemsMap): ColumnWidthItem[] => {
+    return Object.keys(map).map((measureIdentifier: string) => {
+        return map[measureIdentifier];
+    });
+};
+
 export const defaultWidthValidator = (width: ColumnWidth): ColumnWidth => {
     if (isAbsoluteColumnWidth(width)) {
         return Math.min(Math.max(width, MIN_WIDTH), MANUALLY_SIZED_MAX_WIDTH);
@@ -300,7 +309,7 @@ export const resizeAllMeasuresColumns = (
             columnApi.setColumnWidth(col, columnWidth);
         }
     });
-    resizedColumnsStore.addAllMeasureColumns(columnWidth, allColumns);
+    resizedColumnsStore.addAllMeasureColumn(columnWidth, allColumns);
 };
 
 export const resizeWeakMeasureColumns = (
@@ -308,19 +317,5 @@ export const resizeWeakMeasureColumns = (
     resizedColumnsStore: ResizedColumnsStore,
     column: Column,
 ) => {
-    const columnWidth = column.getActualWidth();
-    const allColumns = columnApi.getAllColumns();
-
-    // set width wor same measure
-    // initMid = get measure id
-
-    allColumns.forEach(col => {
-        if (isMeasureColumn(col)) {
-            // get measure id === initMid than set columns
-            columnApi.setColumnWidth(col, columnWidth);
-        }
-    });
-
-    // add weakMerasure def to map
-    resizedColumnsStore.addAllMeasureColumns(columnWidth, allColumns);
+    resizedColumnsStore.addWeekMeasureColumn(column, columnApi);
 };

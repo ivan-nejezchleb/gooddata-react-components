@@ -17,6 +17,7 @@ import {
 const wrapperStyle = { width: 1200, height: 300 };
 const ATTRIBUTE_WIDTH = 400;
 const MEASURE_WIDTH = 60;
+const MEASURE_2_WIDTH = 150;
 const ALL_MEASURE_WIDTH = 300;
 
 const measureColumnWidthItemSimple: IMeasureColumnWidthItem = {
@@ -76,7 +77,7 @@ const weakMeasureColumnWidthItemM1: IWeakMeasureColumnWidthItem = {
 
 const weakMeasureColumnWidthItemM2: IWeakMeasureColumnWidthItem = {
     measureColumnWidthItem: {
-        width: 320,
+        width: MEASURE_2_WIDTH,
         locator: {
             measureLocatorItem: {
                 measureIdentifier: MEASURE_2.measure.localIdentifier,
@@ -546,8 +547,8 @@ storiesOf("Core components/PivotTable/ManualResizing/With weak measure width def
     })
     .add("autoResize=on, growToFit=off", () => {
         const columnWidths = [
-            allMeasureColumnWidthItem,
-            measureColumnWidthItemWithAttr,
+            weakMeasureColumnWidthItemM2,
+            weakMeasureColumnWidthItemM1,
             attributeColumnWidthItem,
         ];
 
@@ -577,8 +578,8 @@ storiesOf("Core components/PivotTable/ManualResizing/With weak measure width def
     })
     .add("autoResize=on, growToFit=on", () => {
         const columnWidths = [
-            allMeasureColumnWidthItem,
-            measureColumnWidthItemWithAttr,
+            weakMeasureColumnWidthItemM2,
+            weakMeasureColumnWidthItemM1,
             attributeColumnWidthItem,
         ];
 

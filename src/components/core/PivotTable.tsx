@@ -501,7 +501,6 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
                 ...acc,
                 [columnId]: {
                     width: col.getActualWidth(),
-                    source: ColumnEventSourceType.AUTOSIZE_COLUMNS,
                 },
             };
         }, this.autoResizedColumns);
@@ -659,7 +658,6 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
 
             this.growToFittedColumns[id] = {
                 width: col.getActualWidth(),
-                source: ColumnEventSourceType.FIT_GROW,
             };
         });
     }
@@ -1055,6 +1053,7 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
             // skip columns out of viewport because these can not be autoresized
             this.resizedColumnsStore.addToManuallyResizedColumn(column);
         }
+        column.getColDef().suppressSizeToFit = false;
     }
 
     private onGridColumnResized = async (columnEvent: ColumnResizedEvent) => {
@@ -1089,12 +1088,24 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
         return this.isMetaOrCtrlKeyPressed;
     }
 
+    private getAllMeasureColumns() {
+        return this.columnApi.getAllColumns().filter(col => isMeasureColumn(col));
+    }
+
     private onColumnsManualReset = async (columns: Column[]) => {
         let columnsToReset = columns;
 
         if (this.isAllMeasureResetOperation()) {
             this.resizedColumnsStore.removeAllMeasureColumns();
-            columnsToReset = this.columnApi.getAllColumns().filter(col => isMeasureColumn(col));
+            columnsToReset = this.getAllMeasureColumns();
+        }
+
+        if (this.isWeakMeasureResizeOperation(columns)) {
+            columnsToReset = this.resizedColumnsStore.getMatchingColumnsByMeasure(
+                columns[0],
+                this.getAllMeasureColumns(),
+            );
+            this.resizedColumnsStore.removeWeakMeasureColumn(columns[0]);
         }
 
         for (const column of columnsToReset) {
@@ -1116,7 +1127,6 @@ export class PivotTableInner extends BaseVisualization<IPivotTableInnerProps, IP
         if (this.isAllMeasureResizeOperation(columns)) {
             resizeAllMeasuresColumns(this.columnApi, this.resizedColumnsStore, columns[0]);
         } else if (this.isWeakMeasureResizeOperation(columns)) {
-            console.log("Weak resize");
             resizeWeakMeasureColumns(this.columnApi, this.resizedColumnsStore, columns[0]);
         } else {
             columns.forEach(column => {

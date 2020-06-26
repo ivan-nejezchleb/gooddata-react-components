@@ -1,6 +1,6 @@
 // (C) 2020 GoodData Corporation
 import { ResizedColumnsStore } from "../ResizedColumnsStore";
-import { ColumnEventSourceType, ColumnWidthItem } from "../../../../interfaces/PivotTable";
+import { ColumnWidthItem } from "../../../../interfaces/PivotTable";
 import { Execution } from "@gooddata/typings";
 import { ColDef, Column } from "ag-grid-community";
 import { MEASURE_COLUMN, ROW_ATTRIBUTE_COLUMN } from "../agGridConst";
@@ -116,13 +116,13 @@ describe("ResizedColumnsStore", () => {
         it("should return correct manually resized measure column", () => {
             const resizedColumnsStore: any = new ResizedColumnsStore();
             resizedColumnsStore.manuallyResizedColumns = {
-                m_0: { width: 400, source: "uiColumnDragged" },
-                a_4DOTdf: { width: 200, source: "uiColumnDragged" },
+                m_0: { width: 400 },
+                a_4DOTdf: { width: 200 },
             };
             const columnMock = getFakeColumn({
                 colId: "m_0",
             });
-            const expectedResult = { width: 400, source: "uiColumnDragged" };
+            const expectedResult = { width: 400 };
             const result = resizedColumnsStore.getManuallyResizedColumn(columnMock);
             expect(result).toEqual(expectedResult);
         });
@@ -133,7 +133,7 @@ describe("ResizedColumnsStore", () => {
             const columnMock = getFakeColumn({
                 type: MEASURE_COLUMN,
             });
-            const expectedResult = { width: 42, source: "uiColumnDragged" };
+            const expectedResult = { width: 42 };
             const result = resizedColumnsStore.getManuallyResizedColumn(columnMock);
             expect(result).toEqual(expectedResult);
         });
@@ -141,15 +141,15 @@ describe("ResizedColumnsStore", () => {
         it("should return all measure column width when manuallyResizedColumns exists", () => {
             const resizedColumnsStore: any = new ResizedColumnsStore();
             resizedColumnsStore.manuallyResizedColumns = {
-                m_0: { width: 400, source: "uiColumnDragged" },
-                a_4DOTdf: { width: 200, source: "uiColumnDragged" },
+                m_0: { width: 400 },
+                a_4DOTdf: { width: 200 },
             };
             resizedColumnsStore.allMeasureColumnWidth = 42;
 
             const columnMock = getFakeColumn({
                 type: MEASURE_COLUMN,
             });
-            const expectedResult = { width: 42, source: "uiColumnDragged" };
+            const expectedResult = { width: 42 };
             const result = resizedColumnsStore.getManuallyResizedColumn(columnMock);
             expect(result).toEqual(expectedResult);
         });
@@ -159,7 +159,7 @@ describe("ResizedColumnsStore", () => {
         it("should return true for manually resized column", () => {
             const resizedColumnsStore: any = new ResizedColumnsStore();
             resizedColumnsStore.manuallyResizedColumns = {
-                m_0: { width: 400, source: "uiColumnDragged" },
+                m_0: { width: 400 },
             };
             const columnMock = getFakeColumn({
                 colId: "m_0",
@@ -193,7 +193,7 @@ describe("ResizedColumnsStore", () => {
         });
     });
 
-    describe("addAllMeasureColumns", () => {
+    describe("addAllMeasureColumn", () => {
         it("should add all measure columns", () => {
             const resizedColumnsStore: any = new ResizedColumnsStore();
             const columnsMock = [
@@ -201,7 +201,7 @@ describe("ResizedColumnsStore", () => {
                     type: MEASURE_COLUMN,
                 }),
             ];
-            resizedColumnsStore.addAllMeasureColumns(42, columnsMock);
+            resizedColumnsStore.addAllMeasureColumn(42, columnsMock);
             const expectedResult = 42;
             const result = resizedColumnsStore.allMeasureColumnWidth;
             expect(result).toEqual(expectedResult);
@@ -210,7 +210,7 @@ describe("ResizedColumnsStore", () => {
         it("should omit from manually resized map by colId", () => {
             const resizedColumnsStore: any = new ResizedColumnsStore();
             resizedColumnsStore.manuallyResizedColumns = {
-                m_0: { width: 400, source: "uiColumnDragged" },
+                m_0: { width: 400 },
             };
             const columnsMock = [
                 getFakeColumn({
@@ -221,7 +221,7 @@ describe("ResizedColumnsStore", () => {
                     type: MEASURE_COLUMN,
                 }),
             ];
-            resizedColumnsStore.addAllMeasureColumns(42, columnsMock);
+            resizedColumnsStore.addAllMeasureColumn(42, columnsMock);
             const result = resizedColumnsStore.manuallyResizedColumns.m_0;
             expect(result).toBeUndefined();
         });
@@ -229,8 +229,8 @@ describe("ResizedColumnsStore", () => {
         it("should omit from manually resized map by colId and kept other items", () => {
             const resizedColumnsStore: any = new ResizedColumnsStore();
             resizedColumnsStore.manuallyResizedColumns = {
-                m_0: { width: 400, source: "uiColumnDragged" },
-                a_4DOTdf: { width: 200, source: "uiColumnDragged" },
+                m_0: { width: 400 },
+                a_4DOTdf: { width: 200 },
             };
             const columnsMock = [
                 getFakeColumn({
@@ -241,7 +241,7 @@ describe("ResizedColumnsStore", () => {
                     type: MEASURE_COLUMN,
                 }),
             ];
-            resizedColumnsStore.addAllMeasureColumns(42, columnsMock);
+            resizedColumnsStore.addAllMeasureColumn(42, columnsMock);
             const result = resizedColumnsStore.manuallyResizedColumns.a_4DOTdf.width;
             const correctWidth = 200;
             expect(result).toEqual(correctWidth);
@@ -259,7 +259,7 @@ describe("ResizedColumnsStore", () => {
         it("should omit from manually resized columns when width is auto", () => {
             const resizedColumnsStore: any = new ResizedColumnsStore();
             resizedColumnsStore.manuallyResizedColumns = {
-                m_0: { width: "auto", source: "uiColumnDragged" },
+                m_0: { width: "auto" },
             };
             resizedColumnsStore.removeAllMeasureColumns();
             const result = resizedColumnsStore.manuallyResizedColumns.m_0;
@@ -269,8 +269,8 @@ describe("ResizedColumnsStore", () => {
         it("should omit from manually resized columns when width is auto and kept other items", () => {
             const resizedColumnsStore: any = new ResizedColumnsStore();
             resizedColumnsStore.manuallyResizedColumns = {
-                m_0: { width: "auto", source: "uiColumnDragged" },
-                a_4DOTdf: { width: 200, source: "uiColumnDragged" },
+                m_0: { width: "auto" },
+                a_4DOTdf: { width: 200 },
             };
             resizedColumnsStore.removeAllMeasureColumns();
             const result = resizedColumnsStore.manuallyResizedColumns.a_4DOTdf.width;
@@ -283,8 +283,8 @@ describe("ResizedColumnsStore", () => {
         it("should remove measure from manually resized column map by colId", () => {
             const resizedColumnsStore: any = new ResizedColumnsStore();
             resizedColumnsStore.manuallyResizedColumns = {
-                m_0: { width: 200, source: "uiColumnDragged" },
-                a_4DOTdf: { width: 200, source: "uiColumnDragged" },
+                m_0: { width: 200 },
+                a_4DOTdf: { width: 200 },
             };
             const columnMock = getFakeColumn({
                 colId: "m_0",
@@ -302,8 +302,8 @@ describe("ResizedColumnsStore", () => {
             (allMeasuresWidth: number) => {
                 const resizedColumnsStore: any = new ResizedColumnsStore();
                 resizedColumnsStore.manuallyResizedColumns = {
-                    m_0: { width: 200, source: "uiColumnDragged" },
-                    a_4DOTdf: { width: 200, source: "uiColumnDragged" },
+                    m_0: { width: 200 },
+                    a_4DOTdf: { width: 200 },
                 };
                 resizedColumnsStore.allMeasureColumnWidth = allMeasuresWidth;
                 const columnMock = getFakeColumn({
@@ -326,7 +326,7 @@ describe("ResizedColumnsStore", () => {
                 type: MEASURE_COLUMN,
             });
             resizedColumnsStore.removeFromManuallyResizedColumn(columnMock);
-            const expectedResult = { width: "auto", source: "uiColumnDragged" };
+            const expectedResult = { width: "auto" };
             const result = resizedColumnsStore.manuallyResizedColumns.m_0;
             expect(result).toEqual(expectedResult);
         });
@@ -335,14 +335,14 @@ describe("ResizedColumnsStore", () => {
             const resizedColumnsStore: any = new ResizedColumnsStore();
             resizedColumnsStore.allMeasureColumnWidth = 200;
             resizedColumnsStore.manuallyResizedColumns = {
-                m_0: { width: 200, source: "uiColumnDragged" },
+                m_0: { width: 200 },
             };
             const columnMock = getFakeColumn({
                 colId: "m_0",
                 type: MEASURE_COLUMN,
             });
             resizedColumnsStore.removeFromManuallyResizedColumn(columnMock);
-            const expectedResult = { width: "auto", source: "uiColumnDragged" };
+            const expectedResult = { width: "auto" };
             const result = resizedColumnsStore.manuallyResizedColumns.m_0;
             expect(result).toEqual(expectedResult);
         });
@@ -411,8 +411,8 @@ describe("ResizedColumnsStore", () => {
         it("should update column widths", () => {
             const resizedColumnsStore: any = new ResizedColumnsStore();
             const expectedResult = {
-                m_0: { width: 400, source: ColumnEventSourceType.UI_DRAGGED },
-                a_4DOTdf: { width: 200, source: ColumnEventSourceType.UI_DRAGGED },
+                m_0: { width: 400, measureIdentifier: "m1" },
+                a_4DOTdf: { width: 200 },
             };
             resizedColumnsStore.updateColumnWidths(columnWidthsMock, executionResponseMock);
             const result = resizedColumnsStore.manuallyResizedColumns;
@@ -422,7 +422,7 @@ describe("ResizedColumnsStore", () => {
         it("should update only measure columns", () => {
             const resizedColumnsStore: any = new ResizedColumnsStore();
             const expectedResult = {
-                m_0: { width: 400, source: ColumnEventSourceType.UI_DRAGGED },
+                m_0: { width: 400, measureIdentifier: "m1" },
             };
             const columnWidthsOnlyMeasureMock = [columnWidthsMock[0]];
             resizedColumnsStore.updateColumnWidths(columnWidthsOnlyMeasureMock, executionResponseMock);
@@ -433,7 +433,7 @@ describe("ResizedColumnsStore", () => {
         it("should update only attribute measure columns", () => {
             const resizedColumnsStore: any = new ResizedColumnsStore();
             const expectedResult = {
-                a_4DOTdf: { width: 200, source: ColumnEventSourceType.UI_DRAGGED },
+                a_4DOTdf: { width: 200 },
             };
             const columnWidthsOnlyAttributeMock = [columnWidthsMock[1]];
             resizedColumnsStore.updateColumnWidths(columnWidthsOnlyAttributeMock, executionResponseMock);

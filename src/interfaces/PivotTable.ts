@@ -42,7 +42,6 @@ export enum UIClick {
 
 export interface IResizedColumnsItem {
     width: number;
-    source: ColumnEventSourceType;
 }
 
 export interface IResizedColumns {
