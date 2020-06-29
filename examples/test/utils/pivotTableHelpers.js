@@ -40,8 +40,7 @@ export const waitForPivotTableStopLoading = async (t, pivotSelector) => {
     const loadingSelector = pivotSelector
         ? pivotSelector.find(loadingSelectorString)
         : Selector(loadingSelectorString);
-
-    await t.expect(loadingSelector.exists).notOk();
+    await t.expect(loadingSelector.exists).notOk({ timeout: 15000 });
 };
 
 export const getMenu = cell => {

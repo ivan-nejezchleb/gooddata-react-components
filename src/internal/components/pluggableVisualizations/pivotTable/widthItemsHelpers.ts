@@ -93,6 +93,7 @@ function transformToWeakMeasureColumnWidthItem(
 ): IWeakMeasureColumnWidthItem {
     if (
         isAbsoluteColumnWidth(columnWidth.measureColumnWidthItem.width) &&
+        columnWidth.measureColumnWidthItem.locators.length === 1 &&
         isMeasureLocatorItem(columnWidth.measureColumnWidthItem.locators[0])
     ) {
         return {
@@ -129,14 +130,6 @@ function adaptWidthItemsToPivotTable(
                 },
             };
 
-            // TODO INE: test this
-            if (firstColumnAttributeAdded) {
-                return [
-                    ...columnWidths,
-                    transformToWeakMeasureColumnWidthItem(filteredMeasureColumnWidthItem),
-                ];
-            }
-
             if (
                 matchesWidthItemFilters(filteredMeasureColumnWidthItem, filters) &&
                 widthItemLocatorsHaveProperLength(
@@ -146,6 +139,14 @@ function adaptWidthItemsToPivotTable(
                 )
             ) {
                 return [...columnWidths, filteredMeasureColumnWidthItem];
+            }
+
+            // TODO INE: test this
+            if (firstColumnAttributeAdded) {
+                const transformedWeakMeasureWidthItem = transformToWeakMeasureColumnWidthItem(columnWidth);
+                if (transformedWeakMeasureWidthItem) {
+                    return [...columnWidths, transformedWeakMeasureWidthItem];
+                }
             }
         } else if (isAttributeColumnWidthItem(columnWidth)) {
             if (

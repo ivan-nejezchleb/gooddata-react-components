@@ -317,5 +317,12 @@ export const resizeWeakMeasureColumns = (
     resizedColumnsStore: ResizedColumnsStore,
     column: Column,
 ) => {
-    resizedColumnsStore.addWeekMeasureColumn(column, columnApi);
+    const allColumns = columnApi.getAllColumns();
+    resizedColumnsStore.addWeekMeasureColumn(column, allColumns);
+    allColumns.forEach(col => {
+        const weakColumnWidth = resizedColumnsStore.getMatchedWeakMeasuresColumnWidths(col);
+        if (isMeasureColumn(col) && weakColumnWidth) {
+            columnApi.setColumnWidth(col, weakColumnWidth.measureColumnWidthItem.width);
+        }
+    });
 };

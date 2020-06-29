@@ -4,6 +4,7 @@ import {
     IMeasureColumnWidthItem,
     IAttributeColumnWidthItem,
     IAllMeasureColumnWidthItem,
+    IWeakMeasureColumnWidthItem,
 } from "../../../../../interfaces/PivotTable";
 
 export const validMeasureColumnWidthItem: IMeasureColumnWidthItem = {
@@ -118,5 +119,16 @@ export const invalidMeasureColumnWidthItemLocatorsTooShort: IMeasureColumnWidthI
                 },
             },
         ],
+    },
+};
+
+export const transformedWeakMeasureColumnWidth: IWeakMeasureColumnWidthItem = {
+    measureColumnWidthItem: {
+        width: 100,
+        locator: {
+            measureLocatorItem: {
+                measureIdentifier: "m1",
+            },
+        },
     },
 };

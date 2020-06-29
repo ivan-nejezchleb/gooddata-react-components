@@ -1,6 +1,6 @@
 // (C) 2007-2020 GoodData Corporation
 import { Execution } from "@gooddata/typings";
-import { ColDef, Column, ColumnApi } from "ag-grid-community";
+import { ColDef, Column } from "ag-grid-community";
 import omit = require("lodash/omit");
 
 import {
@@ -96,8 +96,7 @@ export class ResizedColumnsStore {
         this.weakMeasuresColumnWidths = {};
     }
 
-    public addWeekMeasureColumn(column: Column, columnApi: ColumnApi) {
-        const allColumns: Column[] = columnApi.getAllColumns();
+    public addWeekMeasureColumn(column: Column, allColumns: Column[]) {
         const width = column.getActualWidth();
         const measureHeaderLocalIdentifier: string = getMappingHeaderMeasureItemLocalIdentifier(column);
         if (measureHeaderLocalIdentifier) {
@@ -111,7 +110,6 @@ export class ResizedColumnsStore {
                     },
                 },
             };
-            column.getColDef().suppressSizeToFit = true;
             allColumns.forEach(col => {
                 const weakColumnWidth = this.getMatchedWeakMeasuresColumnWidths(col);
                 if (isMeasureColumn(col) && weakColumnWidth) {
@@ -119,7 +117,6 @@ export class ResizedColumnsStore {
                     if (this.manuallyResizedColumns[colId]) {
                         this.manuallyResizedColumns = omit(this.manuallyResizedColumns, colId);
                     }
-                    columnApi.setColumnWidth(col, weakColumnWidth.measureColumnWidthItem.width); // TODO INE: to remove columnApi from this file we would need to do forEach twice, once for cleanup of manuallyResizedColumns and once for setting new width
                     col.getColDef().suppressSizeToFit = true;
                 }
             });
@@ -225,6 +222,14 @@ export class ResizedColumnsStore {
         return [];
     }
 
+    public getMatchedWeakMeasuresColumnWidths(item: Column | ColDef): IWeakMeasureColumnWidthItem {
+        const measureHeaderLocalIdentifier: string = getMappingHeaderMeasureItemLocalIdentifier(item);
+
+        if (measureHeaderLocalIdentifier) {
+            return this.weakMeasuresColumnWidths[measureHeaderLocalIdentifier];
+        }
+    }
+
     private filterAllMeasureColumnWidthItem(columnWidths: ColumnWidthItem[]): IAllMeasureColumnWidthItem {
         if (columnWidths) {
             return columnWidths.filter(isAllMeasureColumnWidthItem)[0];
@@ -300,14 +305,6 @@ export class ResizedColumnsStore {
                 width: this.allMeasureColumnWidth,
             },
         };
-    }
-
-    private getMatchedWeakMeasuresColumnWidths(item: Column | ColDef): IWeakMeasureColumnWidthItem {
-        const measureHeaderLocalIdentifier: string = getMappingHeaderMeasureItemLocalIdentifier(item);
-
-        if (measureHeaderLocalIdentifier) {
-            return this.weakMeasuresColumnWidths[measureHeaderLocalIdentifier];
-        }
     }
 
     private isMatchingWeakWidth(
